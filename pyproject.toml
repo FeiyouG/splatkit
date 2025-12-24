@@ -4,4 +4,36 @@ version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = []
+package = true
+dependencies = [
+    # -------- macOS --------
+    "torch==2.2.2; sys_platform == 'darwin'",
+    "torchvision==0.17.2; sys_platform == 'darwin'",
+    # -------- Linux (GPU) --------
+    "torch==2.2.2+cu121; sys_platform == 'linux'",
+    "torchvision==0.17.2+cu121; sys_platform == 'linux'",
+    # ------- Shared --------
+    "numpy<2.0",
+    "pycolmap>=3.13.0",
+    "imageio>=2.37.2",
+    "gsplat>=1.5.3",
+    "tqdm>=4.67.1",
+    "tyro>=1.0.3",
+    "torchmetrics>=1.8.2",
+    "tensorboard>=2.20.0",
+    "matplotlib>=3.10.8",
+    "scikit-learn>=1.7.2",
+    "opencv-python>=4.11.0.86",
+]
+
+
+
+[tool.uv.sources]
+torch = { index = "pytorch-cu121-linux", marker = "sys_platform == 'linux'" }
+torchvision = { index = "pytorch-cu121-linux", marker = "sys_platform == 'linux'" }
+
+# PyTorch CUDA 12.1 index
+[[tool.uv.index]]
+name = "pytorch-cu121-linux"
+url = "https://download.pytorch.org/whl/cu121"
+explicit = true
