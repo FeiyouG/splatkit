@@ -5,23 +5,22 @@ from pathlib import Path
 import numpy as np
 import imageio
 import torch
-from torch.utils.data import Dataset
-
 import pycolmap
-from .item import DataSetItem
 
-class ColmapDataset(Dataset):
+from ..item import DataSetItem
+from .abc import SparsePointCloudDataset
+
+class ColmapDataset(SparsePointCloudDataset):
     """
     Torch-compatible COLMAP dataset.
     """
 
-    _dir: str
+    _colmap_dir: str
+    _images_dir: str
     _factor: int
     _normalize: bool
-    _load_masks: bool
     _load_depth: bool
     _masks_dir: str | None
-    _images_dir: str | None
 
     _image_names: List[str] = []
     _image_paths: List[str] = []
@@ -43,29 +42,25 @@ class ColmapDataset(Dataset):
 
     def __init__(
         self,
-        dir: str,
+        colmap_dir: str,
+        images_dir: str,
         factor: int = 1,
         normalize: bool = False,
-        load_masks: bool= False,
-        load_depth: bool = False,
         masks_dir: str | None = None,
-        images_dir: str | None = None,
+        load_depth: bool = False,
     ):
-        self._dir = dir
+        self._colmap_dir = colmap_dir
+        self._images_dir = images_dir
         self._factor = factor
         self._normalize = normalize
-        self._load_masks = load_masks
         self._load_depth = load_depth
         self._parent = None
 
         # Load COLMAP reconstruction
-        colmap_dir = os.path.join(self._dir, "sparse/0")
-        if not os.path.exists(colmap_dir):
-            colmap_dir = os.path.join(self._dir, "sparse")
         if not os.path.exists(colmap_dir):
             raise FileNotFoundError(f"COLMAP directory not found: {colmap_dir}")
 
-        recon = pycolmap.Reconstruction(colmap_dir)
+        recon = pycolmap.Reconstruction(self._colmap_dir)
         if recon.num_reg_images == 0:
             raise ValueError("No registered images in COLMAP reconstruction")
 
@@ -76,13 +71,12 @@ class ColmapDataset(Dataset):
             self._transform = np.eye(4, dtype=np.float32)
 
         # Validate image directory
-        self._images_dir = os.path.join(self._dir, "images") if images_dir is None else images_dir
+        self._images_dir = images_dir
         if not os.path.exists(self._images_dir):
             raise FileNotFoundError(f"Image directory not found: {self._images_dir}")
         
-        self._mask_dir = None
-        if load_masks:
-            self._masks_dir = os.path.join(self._dir, "masks") if masks_dir is None else masks_dir
+        self._masks_dir = masks_dir
+        if self._masks_dir is not None:
             if not os.path.exists(self._masks_dir):
                 raise FileNotFoundError(f"Mask directory not found: {self._masks_dir}")
 
@@ -124,7 +118,7 @@ class ColmapDataset(Dataset):
             Ks.append(K)
             image_sizes.append((width, height))
 
-            if self._load_masks:
+            if self._masks_dir is not None:
                 stem = Path(name).stem  # filename without extension
 
                 matches = list(Path(self._masks_dir).glob(f"{stem}.*"))
@@ -142,6 +136,7 @@ class ColmapDataset(Dataset):
         self._image_names = [image_names[i] for i in order]
         self._image_paths = [image_paths[i] for i in order]
         self._image_sizes = [image_sizes[i] for i in order]
+        self._mask_paths = [mask_paths[i] for i in order] if self._masks_dir is not None else None
 
         self._world_to_cam = np.stack([world_to_cam[i] for i in order], axis=0)
         assert self._world_to_cam.shape[1:] == (4, 4)
@@ -152,10 +147,7 @@ class ColmapDataset(Dataset):
         self._Ks = np.stack([Ks[i] for i in order], axis=0)
         assert self._Ks.shape[1:] == (3, 3)
 
-        if load_masks:
-            self._mask_paths = [mask_paths[i] for i in order]
-        else:
-            self._mask_paths = None
+       
 
         # Sparse point cloud
         self._points = np.array([p.xyz for p in recon.points3D.values()], dtype=np.float32)
@@ -210,13 +202,12 @@ class ColmapDataset(Dataset):
         
         # Share all data from the root parent
         root = instance._parent
-        instance._dir = root._dir
+        instance._colmap_dir = root._colmap_dir
+        instance._images_dir = root._images_dir
         instance._factor = root._factor
         instance._normalize = root._normalize
-        instance._load_masks = root._load_masks
-        instance._load_depth = root._load_depth
-        instance._images_dir = root._images_dir
         instance._masks_dir = root._masks_dir
+        instance._load_depth = root._load_depth
         instance._transform = root._transform
         instance._scene_scale = root._scene_scale
         
@@ -259,7 +250,7 @@ class ColmapDataset(Dataset):
         }
 
 
-        if self._load_masks:
+        if self._masks_dir is not None:
             item["mask"] = torch.from_numpy(
                 imageio.imread(self._mask_paths[actul_index])
             ).bool()
@@ -294,30 +285,6 @@ class ColmapDataset(Dataset):
         return item
 
     def split(self, predicate: Callable[[int, str], bool]) -> 'ColmapDataset':
-        """
-        Create a new dataset containing only items that match the predicate.
-        
-        Args:
-            predicate: A function that takes an index and an image name and returns True/False.
-                      Items returning True will be included in the new dataset.
-        
-        Returns:
-            A new ColmapDataset containing only the filtered items (shares data with parent).
-        
-        Raises:
-            ValueError: If no items match the predicate.
-        
-        Examples:
-            >>> # Split into train/test based on every 8th image
-            >>> train = dataset.split(lambda index, image_name: index % 8 != 0)
-            >>> test = dataset.split(lambda index, image_name: index % 8 == 0)
-            
-            >>> # Split based on filename pattern
-            >>> outdoor = dataset.split(lambda index, image_name: 'outdoor' in image_name)
-            
-            >>> # Filter by image brightness
-            >>> bright = dataset.split(lambda index, image_name: image.mean() > 128)
-        """
         selected_indices = []
         
         for idx in range(len(self)):
