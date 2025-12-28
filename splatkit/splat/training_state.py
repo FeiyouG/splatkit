@@ -1,13 +1,17 @@
 import torch
+from torch._C import NoneType
+from torch.cuda import is_initialized
 import torch.nn as nn
 import torch.distributed as dist
 import math
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, Tuple
 from dataclasses import dataclass
 from pathlib import Path
+import numpy as np
 
 from .model import SplatModel
 from ..utils.sh_utils import sh_to_K
+from ..utils.distributed import distribute_metadata, distribute_tensor, gather_tensor
 
 @dataclass
 class SplatTrainingState:
@@ -21,6 +25,7 @@ class SplatTrainingState:
     - Rank 0 owns Gaussians [0, K, 2K, 3K, ...]
     - Rank 1 owns Gaussians [1, K+1, 2K+1, 3K+1, ...]
     - Rank r owns Gaussians [r, r+K, r+2K, r+3K, ...]
+    - ...
 
     This ensures balanced distribution and simplifies gather/scatter operations.
 
@@ -28,6 +33,11 @@ class SplatTrainingState:
     - Rank 0: [0, 3, 6, 9]
     - Rank 1: [1, 4, 7]
     - Rank 2: [2, 5, 8]
+
+    Invariant:
+    - Each rank owns params[rank::world_size]
+    - Optimizer steps are synchronized
+    - Only rank 0 may serialize state (save/load checkpoints, convert to/from splat model, etc.)
     """
 
     REQUIRED_PARAMS = frozenset([
@@ -59,6 +69,10 @@ class SplatTrainingState:
         https://github.com/nerfstudio-project/gsplat/blob/b60e917c95afc449c5be33a634f1f457e116ff5e/gsplat/strategy/base.py#L15
         """
 
+        if self.world_size > 1:
+            if not dist.is_initialized():
+                raise RuntimeError("Distributed training has not initialized for distributed training")
+
         # Check parameters are present
         keys = self.params.keys()
         missing = SplatTrainingState.REQUIRED_PARAMS - keys
@@ -85,7 +99,7 @@ class SplatTrainingState:
                                  f"but got {len(optimizer.param_groups)}")
         
         # Check parameter shapes are consistent
-        N = len(self.params['means'])
+        N = self.params['means'].shape[0]
         if self.params['means'].shape != (N, 3):
             raise ValueError(f"Parameter 'means' shape mismatch: {self.params['means'].shape} != ({N}, 3)")
         if self.params['scales'].shape != (N, 3):
@@ -105,7 +119,7 @@ class SplatTrainingState:
     @classmethod
     def from_splat_model(
         cls,
-        model: SplatModel,
+        model: Optional[SplatModel],  # Only rank 0 needs to provide this
         device: str = "cuda",
         world_rank: int = 0,
         world_size: int = 1,
@@ -121,8 +135,12 @@ class SplatTrainingState:
         """
         Create training state from SplatModel.
         
+        For distributed training:
+        - Rank 0: Must provide model, broadcasts to other ranks
+        - Other ranks: Pass None, receive via broadcast
+        
         Args:
-            model: SplatModel to convert
+            model: SplatModel to convert (only rank 0 needs to provide this)
             device: Device to place parameters
             world_rank: Current rank for distributed training
             world_size: Total number of ranks
@@ -133,133 +151,38 @@ class SplatTrainingState:
         Returns:
             SplatTrainingState ready for training
         """
-        # Get numpy arrays from model
-        points = model.points
-        scales = model.scales
-        quats = model.quats
-        opacities = model.opacities
-        sh0 = model.sh0
-        shN = model.shN
-        
-        # Distribute across ranks (striped)
-        if world_size > 1:
-            points = points[world_rank::world_size]
-            scales = scales[world_rank::world_size]
-            quats = quats[world_rank::world_size]
-            opacities = opacities[world_rank::world_size]
-            sh0 = sh0[world_rank::world_size]
-            shN = shN[world_rank::world_size]
-        
-        # Convert to torch and wrap in Parameters
-        params = nn.ParameterDict({
-            'means': nn.Parameter(torch.from_numpy(points).clone()),
-            'scales': nn.Parameter(torch.from_numpy(scales).clone()),
-            'quats': nn.Parameter(torch.from_numpy(quats).clone()),
-            'opacities': nn.Parameter(torch.from_numpy(opacities).clone()),
-            'sh0': nn.Parameter(torch.from_numpy(sh0).clone()),
-            'shN': nn.Parameter(torch.from_numpy(shN).clone()),
-        }).to(device)
-        
-        # Create optimizers
-        optimizers = cls._create_optimizers(
-            params=params,
-            lr_means=lr_means,
-            lr_scales=lr_scales,
-            lr_quats=lr_quats,
-            lr_opacities=lr_opacities,
-            lr_sh0=lr_sh0,
-            lr_shN=lr_shN,
-            scene_scale=scene_scale,
-            batch_size=batch_size,
-            world_size=world_size,
-        )
-        
-        return cls(
-            params=params,
-            optimizers=optimizers,
-            sh_degree=model.sh_degree,
-            device=device,
-            world_rank=world_rank,
-            world_size=world_size,
+
+        if world_size == 1 or world_rank == cls.LEADER_RANK:
+            means_full = torch.from_numpy(model.points).clone().float()
+            scales_full = torch.from_numpy(model.scales).clone().float()
+            quats_full = torch.from_numpy(model.quats).clone().float()
+            opacities_full = torch.from_numpy(model.opacities).clone().float()
+            sh0_full = torch.from_numpy(model.sh0).clone().float()
+            shN_full = torch.from_numpy(model.shN).clone().float()
+            sh_degree = model.sh_degree
+
+            params = {
+                'means': means_full,
+                'scales': scales_full,
+                'quats': quats_full,
+                'opacities': opacities_full,
+                'sh0': sh0_full,
+                'shN': shN_full,
+            }
+        else:
+            params = None
+            sh_degree = None
+
+        return cls._distribute(
+            params, 
+            None, 
+            sh_degree, 
+            device, 
+            world_rank, 
+            world_size, 
+            lr_means, lr_scales, lr_quats, lr_opacities, lr_sh0, lr_shN, scene_scale, batch_size,
         )
     
-    def to_splat_model(self) -> SplatModel | None:
-        """
-        Convert training state back to SplatModel.
-        
-        If distributed, gathers from all ranks first.
-        
-        Returns:
-            SplatModel with current parameters (None for non-main ranks in distributed mode)
-        """
-
-        gathered_params = self._gather_params()
-        if gathered_params is None:
-            return None  # Only main rank returns model
-        
-        # Convert to numpy
-        points = gathered_params['means'].detach().cpu().numpy()
-        scales = gathered_params['scales'].detach().cpu().numpy()
-        quats = gathered_params['quats'].detach().cpu().numpy()
-        opacities = gathered_params['opacities'].detach().cpu().numpy()
-        sh0 = gathered_params['sh0'].detach().cpu().numpy()
-        shN = gathered_params['shN'].detach().cpu().numpy()
-        
-        return SplatModel(
-            _sh_degree=self.sh_degree,
-            _points=points,
-            _scales=scales,
-            _quats=quats,
-            _opacities=opacities,
-            _sh0=sh0,
-            _shN=shN,
-        )
-    
-    def save_ckpt(
-        self,
-        path: str,
-        step: int,
-        include_optimizers: bool = True,
-        metadata: Optional[Dict] = None,
-    ) -> None:
-        """
-        Save checkpoint to disk.
-        
-        Only main rank writes to disk in distributed mode.
-        
-        Args:
-            path: Checkpoint path
-            step: Training step
-            include_optimizers: If True, save optimizer state (recommended for resuming training)
-            metadata: Optional additional metadata
-        """
-
-        gathered_params = self._gather_params()
-        if gathered_params is None:
-            if self.is_distributed and not self.is_main_rank:
-                return  # Non-main ranks exit successfully
-            else:
-                raise RuntimeError("Failed to gather parameters")
-
-        Path(path).parent.mkdir(parents=True, exist_ok=True)
-        
-        data = {
-            'step': step,
-            'sh_degree': self.sh_degree,
-            'params': {k: v.detach().cpu() for k, v in gathered_params.items()},
-        }
-        
-        if include_optimizers:
-            gathered_optimizer_states = self._gather_optimizer_states()
-            if gathered_optimizer_states is None:
-                # At this point, only main rank can raise an error
-                raise RuntimeError("Failed to gather optimizer states")
-            data['optimizers'] = gathered_optimizer_states
-        
-        if metadata is not None:
-            data['metadata'] = metadata
-        
-        torch.save(data, path)
 
     @classmethod
     def from_ckpt(
@@ -295,6 +218,9 @@ class SplatTrainingState:
         
         Returns:
             SplatTrainingState with distributed parameters
+
+            After reloading from ckpt, the tensor will not be ditributed 
+            exactly the same way as they were before.
         """
         # Only leader rank loads from disk
         if world_size == 1 or world_rank == SplatTrainingState.LEADER_RANK:
@@ -308,37 +234,282 @@ class SplatTrainingState:
                 raise ValueError(f"Invalid checkpoint file: missing required keys: {missing}")
             
             params_state = ckpt['params']
-            step = ckpt['step']
             sh_degree = ckpt['sh_degree']
-            metadata = ckpt.get('metadata', {})
-            optimizers_state = ckpt.get('optimizers', {}) if load_optimizers else {}
+            optimizers_state = ckpt.get('optimizers', None) if load_optimizers else None
         else:
             params_state = None
             sh_degree = None
-            step = None
-            metadata = {}
-            optimizers_state = {}
+            optimizers_state = None
         
-        # Broadcast metadata if distributed
-        if world_size > 1:
-            metadata_to_broadcast = {
-                'sh_degree': sh_degree,
+        return cls._distribute(
+            params_state, 
+            optimizers_state, 
+            sh_degree, 
+            device, 
+            world_rank, 
+            world_size,
+            lr_means, lr_scales, lr_quats, lr_opacities, lr_sh0, lr_shN, scene_scale, batch_size,
+        )
+    
+    def to_splat_model(self) -> SplatModel | None:
+        """
+        Convert training state to splat model.
+        """
+        params = SplatTrainingState._gather_params(self.params, self.world_rank, self.world_size)
+        if self.world_rank != SplatTrainingState.LEADER_RANK:
+            return None
+        
+        if params is None:
+            raise RuntimeError(f"Failed to gather parameters on leader rank {SplatTrainingState.LEADER_RANK}")
+        
+        return SplatModel(
+            _points=params['means'].cpu().numpy(),
+            _scales=params['scales'].cpu().numpy(),
+            _quats=params['quats'].cpu().numpy(),
+            _opacities=params['opacities'].cpu().numpy(),
+            _sh0=params['sh0'].cpu().numpy(),
+            _shN=params['shN'].cpu().numpy(),
+            _sh_degree=self.sh_degree,
+        )
+    
+    def save_ckpt(
+        self,
+        path: str,
+        step: int,
+        metadata: Optional[Dict] = None,
+    ) -> None:
+        """
+        Save checkpoint to disk.
+        
+        Only main rank writes to disk in distributed mode.
+        
+        Args:
+            path: Checkpoint path
+            step: Training step
+            include_optimizers: If True, save optimizer state (recommended for resuming training)
+            metadata: Optional additional metadata
+        """
+
+        params, optimizers, step = SplatTrainingState._gather(self)
+        if self.world_rank != SplatTrainingState.LEADER_RANK:
+            return
+
+        if params is None or optimizers is None or step is None:
+            raise RuntimeError(f"Failed to gather state on leader rank {SplatTrainingState.LEADER_RANK}: params={params}, optimizers={optimizers}, step={step}")
+        
+        data = {
+            'step': step,
+            'sh_degree': self.sh_degree,
+            'params': params,
+            'optimizers': optimizers,
+        }
+
+        if metadata is not None:
+            data['metadata'] = metadata
+        
+        torch.save(data, path)
+
+    @staticmethod
+    def _distribute_params(
+        params_dict: Dict[str, torch.Tensor] | None,
+        world_rank: int,
+        world_size: int,
+        device: str,
+    ) -> nn.ParameterDict:
+        """
+        Distribute parameter tensors from rank 0 to all ranks.
+        
+        Args:
+            params_dict: Dict of parameter tensors (only rank 0 provides)
+            world_rank: Current rank
+            world_size: Total ranks
+            device: Target device
+        
+        Returns:
+            ParameterDict with distributed parameters
+        """
+        if world_size == 1:
+            if params_dict is None:
+                raise ValueError("Params dict is missing but required for single GPU")
+            return nn.ParameterDict({
+                k: nn.Parameter(v.clone().to(device)) for k, v in params_dict.items()
+            })
+            
+        # Gather parameter names from all ranks so each rank knows how many parameters to expect
+        if world_rank == SplatTrainingState.LEADER_RANK:
+            if params_dict is None:
+                raise ValueError("Params dict is missing but required for leader rank")
+            param_names = list(params_dict.keys())
+        else:
+            param_names = None
+
+        data = distribute_metadata(
+            {'param_names': param_names},
+            world_rank,
+            world_size,
+            leader_rank=SplatTrainingState.LEADER_RANK,
+        )
+        param_names = data['param_names']
+
+        # Distribute each parameter tensor
+        local_params = {}
+        for name in param_names:
+            tensor = params_dict[name] if params_dict is not None else None
+            local_tensor = distribute_tensor(
+                tensor, world_rank, world_size, device, leader_rank=SplatTrainingState.LEADER_RANK, striped=True
+            )
+            local_params[name] = nn.Parameter(local_tensor)
+        
+        return nn.ParameterDict(local_params)
+    
+    @staticmethod
+    def _distribute_optimizer_state_dict(
+        optimizer_states: Optional[Dict[str, Dict[str, Any]]],
+        world_rank: int,
+        world_size: int,
+        device: str,
+    ) -> Optional[Dict[str, Dict[str, Any]]]:
+        """
+        Distribute optimizer state dicts from rank 0 to all ranks.
+
+        Note:
+            Optimizer scalar metadata is globally broadcast; tensor states are distributed via striped P2P.
+            All ranks must call these in identical order.
+        
+        Args:
+            optimizer_states: Dict mapping param_name to optimizer state
+                            Format: {'means': {'step': 100, 'exp_avg': tensor, ...}}
+                            Only rank 0 provides this
+            world_rank: Current rank
+            world_size: Total ranks
+            device: Target device for tensors
+        
+        Returns:
+            Dict of distributed optimizer states (same format as input)
+            Returns None if no optimizer states to distribute
+        """
+        if optimizer_states is None or len(optimizer_states) == 0:
+            return None
+        
+        # Broadcast parameter names so all ranks know what to expect
+        if world_rank == SplatTrainingState.LEADER_RANK:
+            param_names = list(optimizer_states.keys())
+        else:
+            param_names = None
+        
+        data = distribute_metadata(
+            {'param_names': param_names},
+            world_rank,
+            world_size,
+            leader_rank=SplatTrainingState.LEADER_RANK,
+        )
+        param_names = data['param_names']
+        
+        # Multi-GPU: distribute optimizer states
+        distributed_states = {}
+        
+        for param_name in param_names:
+            # Get full state on rank 0
+            # NOTE: Assuming using Adam optimizer for now
+            if world_rank == SplatTrainingState.LEADER_RANK:
+                full_state = optimizer_states[param_name]
+                step = full_state['step']
+                param_groups = full_state['param_groups']
+                exp_avg_full = full_state['exp_avg']
+                exp_avg_sq_full = full_state['exp_avg_sq']
+            else:
+                step = None
+                param_groups = None
+                exp_avg_full = None
+                exp_avg_sq_full = None
+            
+            # Broadcast scalar metadata (step, param_groups)
+            data = distribute_metadata(
+                {'step': step, 'param_groups': param_groups},
+                world_rank,
+                world_size,
+                leader_rank=SplatTrainingState.LEADER_RANK,
+            )
+            step = data['step']
+            param_groups = data['param_groups']
+            
+            # Distribute tensor state (exp_avg, exp_avg_sq)
+            exp_avg_local = distribute_tensor(
+                exp_avg_full, world_rank, world_size, device, leader_rank=SplatTrainingState.LEADER_RANK, striped=True
+            )
+            exp_avg_sq_local = distribute_tensor(
+                exp_avg_sq_full, world_rank, world_size, device, leader_rank=SplatTrainingState.LEADER_RANK, striped=True
+            )
+            
+            # Store distributed state in same format
+            distributed_states[param_name] = {
                 'step': step,
-                'metadata': metadata,
+                'exp_avg': exp_avg_local,
+                'exp_avg_sq': exp_avg_sq_local,
+                'param_groups': param_groups,
             }
-            metadata_to_broadcast = cls._broadcast_metadata(metadata_to_broadcast)
-            step = metadata_to_broadcast['step']
-            sh_degree = metadata_to_broadcast['sh_degree']
-            metadata = metadata_to_broadcast['metadata']
         
-        # Scatter parameters to all ranks
-        params = nn.ParameterDict()
-        for param_name in SplatTrainingState.REQUIRED_PARAMS:
-            param = params_state[param_name] if params_state is not None else None
-            local_param = cls._scatter_tensor(param, world_rank, world_size, device)
-            params[param_name] = nn.Parameter(local_param)
+        return distributed_states
+
+    @classmethod
+    def _distribute(
+        cls,
+        params_dict: Dict[str, torch.Tensor] | None,
+        optimizer_states: Dict[str, Dict[str, Any]] | None,
+        sh_degree: int | None,
+        device: str,
+        world_rank: int,
+        world_size: int,
+        lr_means: float = 1.6e-4,
+        lr_scales: float = 5e-3,
+        lr_quats: float = 1e-3,
+        lr_opacities: float = 5e-2,
+        lr_sh0: float = 2.5e-3,
+        lr_shN: float = 2.5e-3 / 20,
+        scene_scale: float = 1.0,
+        batch_size: int = 1,
+    ) -> 'SplatTrainingState':
+        """
+        Distribute parameters, optimizer states, and metadata to create training state.
         
-        # Create optimizers
+        This is the main distribution primitive used by from_splat_model and from_ckpt.
+        
+        Args:
+            params_dict: Dict of parameter tensors (only rank 0 provides)
+            optimizer_states: Dict of optimizer states (only rank 0 provides)
+            sh_degree: SH degree (only rank 0 provides)
+            device: Target device
+            world_rank: Current rank
+            world_size: Total ranks
+            lr_*: Learning rates for creating optimizers
+            scene_scale: Scene scale
+            batch_size: Batch size
+        
+        Returns:
+            SplatTrainingState with distributed parameters and optimizers
+        """
+
+        if world_size == 1:
+            if sh_degree is None:
+                raise ValueError("SH degree is missing but required for single GPU")
+        else:
+            data = distribute_metadata(
+                {'sh_degree': sh_degree},
+                world_rank,
+                world_size,
+                leader_rank=SplatTrainingState.LEADER_RANK,
+            )
+            sh_degree = data['sh_degree']
+        
+        # Distribute parameters
+        params = cls._distribute_params(params_dict, world_rank, world_size, device)
+        
+        # Distribute optimizer states (just the state dicts, not optimizers yet)
+        distributed_opt_states = cls._distribute_optimizer_state_dict(
+            optimizer_states, world_rank, world_size, device,
+        )
+        
+        # Create optimizers for all parameters
         optimizers = cls._create_optimizers(
             params=params,
             lr_means=lr_means,
@@ -352,32 +523,31 @@ class SplatTrainingState:
             world_size=world_size,
         )
         
-        # Load optimizer states if available
-        if load_optimizers and optimizers_state:
-            for param_name in optimizers.keys():
-                # Get full state on leader rank
-                full_opt_state = optimizers_state.get(param_name) if world_rank == cls.LEADER_RANK else None
+        # Load distributed states into optimizers (if available)
+        if distributed_opt_states is not None:
+            for param_name, opt_state in distributed_opt_states.items():
+                optimizer = optimizers[param_name]
+                param = params[param_name]
+                param_id = id(param)
                 
-                # Check if state exists (broadcast this info)
-                has_state = full_opt_state is not None if world_rank == cls.LEADER_RANK else None
-                has_state_list = [has_state]
-                if world_size > 1:
-                    dist.broadcast_object_list(has_state_list, src=cls.LEADER_RANK) 
-                has_state = has_state_list[0]
+                # Convert our custom format to PyTorch state_dict format
+                pytorch_state_dict = {
+                    'state': {
+                        param_id: {
+                            'step': opt_state['step'],
+                            'exp_avg': opt_state['exp_avg'],
+                            'exp_avg_sq': opt_state['exp_avg_sq'],
+                        }
+                    },
+                    'param_groups': [
+                        {
+                            'params': [param_id],
+                            **opt_state['param_groups'][0]  # Merge hyperparameters
+                        }
+                    ]
+                }
                 
-                if not has_state:
-                    continue  # Skip if no saved state for this optimizer
-                
-                # Scatter optimizer state
-                local_opt_state = cls._scatter_optimizer_state(
-                    full_state=full_opt_state,
-                    local_param=params[param_name],
-                    world_rank=world_rank,
-                    world_size=world_size,
-                )
-                
-                # Load into optimizer
-                optimizers[param_name].load_state_dict(local_opt_state)
+                optimizer.load_state_dict(pytorch_state_dict)
         
         return cls(
             params=params,
@@ -387,242 +557,167 @@ class SplatTrainingState:
             world_rank=world_rank,
             world_size=world_size,
         )
-    
-    # Helper methods
-    def _gather_params(self) -> Optional[nn.ParameterDict]:
-        """Gather parameters from all ranks to rank 0 (handles variable sizes)"""
-        if not self.is_distributed:
-            return self.params
+
+    @staticmethod
+    def _gather_params(
+        params: nn.ParameterDict,
+        world_rank: int,
+        world_size: int,
+    ) -> Optional[Dict[str, torch.Tensor]]:
+        """
+        Gather parameters from all ranks to leader rank in cpu.
         
-        leader_rank = SplatTrainingState.LEADER_RANK
+        Args:
+            params: Local ParameterDict from this rank
+            world_rank: Current rank
+            world_size: Total number of ranks
         
-        # Gather to CPU using object collectives (handles variable sizes)
-        gathered_params = nn.ParameterDict() if self.is_main_rank else None
+        Returns:
+            Dict of gathered tensors on leader rank (None for other ranks)
+        """
+        if world_size == 1:
+            return {k: v.data.cpu() for k, v in params.items()}
         
-        for param_name, param in self.params.items():
-            # Convert to CPU for gathering
-            local_tensor = param.data.cpu()
+        gathered_params = {} if world_rank == SplatTrainingState.LEADER_RANK else None
+        
+        for param_name, param in params.items():
+            gathered_tensor = gather_tensor(
+                param.data, world_rank, world_size, leader_rank=SplatTrainingState.LEADER_RANK
+            ).cpu()
             
-            # Gather all tensors (as objects, so variable size is OK)
-            gathered_objects = [None] * self.world_size
-            dist.all_gather_object(gathered_objects, local_tensor)
-            
-            if self.is_main_rank:
-                # Calculate total size for proper interleaving
-                sizes = [t.shape[0] for t in gathered_objects]
-                total_size = sum(sizes)
-                
-                # Interleave to reconstruct striped distribution
-                gathered_tensor = torch.zeros(
-                    (total_size, *param.shape[1:]),
-                    dtype=param.dtype,
-                    device='cpu'
-                )
-                
-                # Interleave: rank i owns indices [i, i+K, i+2K, ...]
-                for rank_idx in range(self.world_size):
-                    chunk = gathered_objects[rank_idx]
-                    gathered_tensor[rank_idx::self.world_size][:len(chunk)] = chunk
-                
-                gathered_params[param_name] = nn.Parameter(gathered_tensor.to(param.device))
+            if world_rank == SplatTrainingState.LEADER_RANK:
+                gathered_params[param_name] = gathered_tensor
         
         return gathered_params
 
-    def _gather_optimizer_states(self) -> Optional[Dict[str, Dict]]:
-        """Gather optimizer states from all ranks (manual, avoids param ID issues)"""
-        if not self.is_distributed:
-            # Single GPU: save in simple format
+    @staticmethod
+    def _gather_optimizer_state_dict(
+        optimizers: Dict[str, torch.optim.Optimizer],
+        world_rank: int,
+        world_size: int,
+    ) -> Tuple[Dict[str, Dict[str, Any]], int] | None:
+        """
+        Gather optimizer states from all ranks to leader rank in cpu.
+        
+        Validates that all ranks have consistent step counts.
+        
+        Args:
+            optimizers: Dict of optimizers from this rank
+            world_rank: Current rank
+            world_size: Total number of ranks
+        
+        Returns:
+            Dict of gathered optimizer states on leader rank (None for other ranks)
+        """
+        if world_size == 1:
+            # Single GPU: extract state in custom format
             result = {}
-            for name, optimizer in self.optimizers.items():
+            expected_step = None
+            for name, optimizer in optimizers.items():
                 state_dict = optimizer.state_dict()
                 param_state = list(state_dict['state'].values())[0]
+
+                step = param_state.get('step', 0)
+
+                if expected_step is None:
+                    expected_step = step
+                elif expected_step != step:
+                    raise ValueError(
+                        f"Inconsistent step counts for '{name}': {expected_step} != {step}. "
+                        f"All ranks should have the same step count."
+                    )
                 
+                # NOTE: This assumes using Adam optimizer for now
                 result[name] = {
                     'step': param_state.get('step', 0),
-                    'exp_avg': param_state.get('exp_avg'),
-                    'exp_avg_sq': param_state.get('exp_avg_sq'),
+                    'exp_avg': param_state.get('exp_avg').cpu(),
+                    'exp_avg_sq': param_state.get('exp_avg_sq').cpu(),
                     'param_groups': state_dict['param_groups'],
                 }
-            return result
+            return result, expected_step
         
-        # Distributed: gather each component
-        gathered_states = {} if self.is_main_rank else None
-        
-        for param_name, optimizer in self.optimizers.items():
+        # Gather states from all ranks to leader rank
+        gathered_states = {} if world_rank == SplatTrainingState.LEADER_RANK else None
+        expected_step = None
+        for param_name, optimizer in optimizers.items():
             state_dict = optimizer.state_dict()
             param_state = list(state_dict['state'].values())[0]
             
-            # Extract state components
+            # Extract local state
             step = param_state.get('step', 0)
             exp_avg = param_state.get('exp_avg')
             exp_avg_sq = param_state.get('exp_avg_sq')
+
+            if expected_step is None:
+                expected_step = step
+            elif expected_step != step:
+                raise ValueError(
+                    f"Inconsistent step counts for '{param_name}': {expected_step} != {step}. "
+                    f"All ranks should have the same step count."
+                )
             
-            # Gather exp_avg using all_gather_object (handles variable sizes)
-            gathered_exp_avg = [None] * self.world_size
-            gathered_exp_avg_sq = [None] * self.world_size
+            # Validate step consistency across ranks
+            step_list = [None] * world_size
+            dist.all_gather_object(step_list, step)
             
-            # Slow but safe, acceptable for saving checkpoints
-            dist.all_gather_object(gathered_exp_avg, exp_avg.cpu() if exp_avg is not None else None)
-            dist.all_gather_object(gathered_exp_avg_sq, exp_avg_sq.cpu() if exp_avg_sq is not None else None)
+            if world_rank == SplatTrainingState.LEADER_RANK:
+                if not all(s == step_list[0] for s in step_list):
+                    raise ValueError(
+                        f"Inconsistent step counts for '{param_name}': {step_list}. "
+                        f"All ranks should have the same step count."
+                    )
             
-            if self.is_main_rank:
-                # Interleave gathered tensors
-                if gathered_exp_avg[0] is not None:
-                    total_size = sum(t.shape[0] for t in gathered_exp_avg if t is not None)
-                    
-                    full_exp_avg = torch.zeros((total_size, *exp_avg.shape[1:]), dtype=exp_avg.dtype)
-                    full_exp_avg_sq = torch.zeros((total_size, *exp_avg_sq.shape[1:]), dtype=exp_avg_sq.dtype)
-                    
-                    for rank_idx in range(self.world_size):
-                        if gathered_exp_avg[rank_idx] is not None:
-                            chunk_size = gathered_exp_avg[rank_idx].shape[0]
-                            full_exp_avg[rank_idx::self.world_size][:chunk_size] = gathered_exp_avg[rank_idx]
-                            full_exp_avg_sq[rank_idx::self.world_size][:chunk_size] = gathered_exp_avg_sq[rank_idx]
-                else:
-                    full_exp_avg = None
-                    full_exp_avg_sq = None
-                
+            # Gather exp_avg and exp_avg_sq tensors
+            exp_avg_gathered = gather_tensor(
+                exp_avg, world_rank, world_size, leader_rank=SplatTrainingState.LEADER_RANK
+            ).cpu()
+            exp_avg_sq_gathered = gather_tensor(
+                exp_avg_sq, world_rank, world_size, leader_rank=SplatTrainingState.LEADER_RANK
+            ).cpu()
+            
+            if world_rank == SplatTrainingState.LEADER_RANK:
                 gathered_states[param_name] = {
                     'step': step,
-                    'exp_avg': full_exp_avg,
-                    'exp_avg_sq': full_exp_avg_sq,
+                    'exp_avg': exp_avg_gathered,
+                    'exp_avg_sq': exp_avg_sq_gathered,
                     'param_groups': state_dict['param_groups'],
                 }
         
-        return gathered_states
-    
-    @staticmethod
-    def _broadcast_metadata(metadata: Optional[Dict]) -> Dict:
-        """Broadcast metadata from rank 0 to all ranks"""
-        object_list = [metadata]
-        dist.broadcast_object_list(object_list, src=SplatTrainingState.LEADER_RANK)
-        return object_list[0]
-    
-    @staticmethod
-    def _scatter_tensor(
-        full_tensor: Optional[torch.Tensor],
-        world_rank: int,
-        world_size: int,
-        device: str,
-    ) -> torch.Tensor:
+        return gathered_states, expected_step
+
+    @classmethod
+    def _gather(
+        cls,
+        training_state: 'SplatTrainingState',
+    ) -> Optional[Tuple[Dict[str, torch.Tensor], Dict[str, Dict[str, Any]], int]]:
         """
-        Scatter tensor from rank 0 to all ranks (striped distribution).
-        
-        Strategy: Broadcast full tensor, then each rank takes its slice.
-        While this sends more data than necessary, it's much simpler and more robust.
-        For truly large models, consider using a more sophisticated approach.
-        """
-        if world_size == 1:
-            return full_tensor.to(device)
-        
-        # Broadcast tensor from rank 0
-        tensor_list = [full_tensor]
-        dist.broadcast_object_list(tensor_list, src=SplatTrainingState.LEADER_RANK) # Slower but safe
-        full_tensor = tensor_list[0]
-        
-        # Each rank takes its striped slice
-        local_tensor = full_tensor[world_rank::world_size].clone().to(device)
-        
-        return local_tensor
-    
-   
-    @staticmethod
-    def _scatter_optimizer_state(
-        full_state: Optional[Dict[str, Any]],
-        local_param: nn.Parameter,
-        world_rank: int,
-        world_size: int,
-    ) -> Optional[Dict[str, Any]]:
-        """
-        Scatter optimizer state (manual format, not PyTorch state_dict).
+        Gather all state from distributed ranks to rank leader rank in cpu.
         
         Args:
-            full_state: Dict with keys: 'step', 'exp_avg', 'exp_avg_sq', 'param_groups'
-            local_param: Local parameter
-            world_rank: Current rank
-            world_size: Total ranks
+            training_state: Current training state
         
         Returns:
-            PyTorch-compatible state dict for loading
+            Tuple of (params_dict, optimizer_states, num_steps) on rank 0
+            Returns None for other ranks
         """
-        if world_size == 1:
-            if full_state is None:
-                return None
-            
-            # Build PyTorch state dict
-            local_param_id = id(local_param)
-            return {
-                'state': {
-                    local_param_id: {
-                        'step': full_state['step'],
-                        'exp_avg': full_state['exp_avg'],
-                        'exp_avg_sq': full_state['exp_avg_sq'],
-                    }
-                },
-                'param_groups': full_state['param_groups']
-            }
+        world_rank = training_state.world_rank
+        world_size = training_state.world_size
         
-        leader_rank = SplatTrainingState.LEADER_RANK
+        # Gather parameters
+        params_dict = cls._gather_params(
+            training_state.params, world_rank, world_size
+        )
         
-        # Broadcast scalar metadata
-        if world_rank == leader_rank:
-            step = full_state['step']
+        # Gather optimizer states
+        optimizer_states, step = cls._gather_optimizer_state_dict(
+            training_state.optimizers, world_rank, world_size
+        )
+        
+        # Gather metadata (already on all ranks, just return)
+        if world_rank == SplatTrainingState.LEADER_RANK:
+            return params_dict, optimizer_states, step
         else:
-            step = None
-        step_list = [step]
-        dist.broadcast_object_list(step_list, src=leader_rank)
-        step = step_list[0]
-        
-        # Broadcast param_groups
-        if world_rank == leader_rank:
-            param_groups = full_state['param_groups']
-        else:
-            param_groups = None
-        pg_list = [param_groups]
-        dist.broadcast_object_list(pg_list, src=leader_rank)
-        param_groups = pg_list[0]
-        
-        # Scatter exp_avg and exp_avg_sq
-        if world_rank == leader_rank:
-            exp_avg = full_state['exp_avg']
-            exp_avg_sq = full_state['exp_avg_sq']
-        else:
-            exp_avg = None
-            exp_avg_sq = None
-        
-        # Use broadcast + slice (simple approach)
-        exp_avg_list = [exp_avg]
-        exp_avg_sq_list = [exp_avg_sq]
-        dist.broadcast_object_list(exp_avg_list, src=leader_rank)
-        dist.broadcast_object_list(exp_avg_sq_list, src=leader_rank)
-        
-        exp_avg = exp_avg_list[0]
-        exp_avg_sq = exp_avg_sq_list[0]
-        
-        if exp_avg is not None:
-            local_exp_avg = exp_avg[world_rank::world_size].clone().to(local_param.device)
-            local_exp_avg_sq = exp_avg_sq[world_rank::world_size].clone().to(local_param.device)
-        else:
-            local_exp_avg = None
-            local_exp_avg_sq = None
-        
-        # Build PyTorch state dict
-        local_param_id = id(local_param)
-        local_state = {
-            'step': step,
-        }
-        if local_exp_avg is not None:
-            local_state['exp_avg'] = local_exp_avg
-            local_state['exp_avg_sq'] = local_exp_avg_sq
-        
-        # Update param_groups to reference correct param
-        param_groups_copy = [pg.copy() for pg in param_groups]
-        param_groups_copy[0]['params'] = [local_param_id]
-        
-        return {
-            'state': {local_param_id: local_state},
-            'param_groups': param_groups_copy
-        }
+            return None
     
     @staticmethod
     def _create_optimizers(
@@ -681,6 +776,11 @@ class SplatTrainingState:
     def num_gaussians(self) -> int:
         """Number of Gaussians on this rank"""
         return len(self.params['means'])
+    
+    @property
+    def colors(self) -> torch.Tensor:
+        """Colors of the Gaussians on this rank"""
+        return torch.cat([self.params["sh0"], self.params["shN"]], dim=1)  # [N, K, 3]
     
     def zero_grad(self):
         """Zero all gradients"""
