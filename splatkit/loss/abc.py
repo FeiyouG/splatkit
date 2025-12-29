@@ -1,25 +1,24 @@
 from abc import ABC, abstractmethod
 import torch
-from typing import Dict, Any, Tuple
+from typing import Dict, Any, Tuple, Generic
 import torch.nn.functional as F
 from fused_ssim import fused_ssim
 
 from ..splat.training_state import SplatTrainingState
-from ..splat.model import SplatModel
-from ..utils.batched import normalize_batch_tensors
+from ..renderer import SplatRendererOutputType
 
-class SplatLoss(ABC):
+class SplatLoss(ABC, Generic[SplatRendererOutputType]):
     """
     Abstract base class for Splat losses.
     """
     
     @abstractmethod
     def compute(self,
-        renders: torch.Tensor,
-        targets: torch.Tensor,
+        renders: torch.Tensor, # (..., H, W, 3)
+        targets: torch.Tensor, # (..., H, W, 3)
         training_state: SplatTrainingState,
-        rend_meta: Dict[str, Any],
-        target_meta: Dict[str, Any],
+        rend_out: SplatRendererOutputType,
+        masks: torch.Tensor | None = None, # (..., H, W)
     ) -> torch.Tensor:
         """
         Compute loss.

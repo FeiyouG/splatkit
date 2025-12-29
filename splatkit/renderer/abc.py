@@ -1,21 +1,46 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Dict, Tuple, TypedDict, TypeVar, Generic, Literal
+from typing import Any, Dict, Tuple, TypedDict, TypeVar, Generic, Literal
 from torch import Tensor
 
 from ..splat.training_state import SplatTrainingState
 
-class SplatRendererOutput(TypedDict):
+@dataclass(frozen=True)
+class SplatRendererOutput:
     """Metadata for rendered images.
     """
     renders: Tensor  # (..., H, W, 3)
     alphas: Tensor  # (..., H, W, 1)
+    radii: Tensor  # (..., H, W, 1)
+    depths: Tensor # (..., H, W, 1)
     n_cameras: int
     n_batches: int
+    width: int
+    height: int
 
-TRendererOutput = TypeVar('TRendererOutput', bound=SplatRendererOutput)
+    def __getitem__(self, key: str) -> Any:
+        if not hasattr(self, key):
+            raise KeyError(key)
+        return getattr(self, key)
+    
+    def __contains__(self, key: str) -> bool:
+        return hasattr(self, key)
 
-class SplatRenderer(ABC, Generic[TRendererOutput]):
+    def keys(self):
+        return self.__dict__.keys()
+
+    def values(self):
+        return self.__dict__.values()
+
+    def items(self):
+        return self.__dict__.items()
+
+    def to_dict(self) -> dict:
+        return dict(self.__dict__)
+
+SplatRendererOutputType = TypeVar("SplatRendererOutputType", bound="SplatRendererOutput")
+
+class SplatRenderer(ABC, Generic[SplatRendererOutputType]):
     """Abstract base class for all renderers.
     
     Encapsulates rendering configuration and provides a simple render() interface.
@@ -36,7 +61,7 @@ class SplatRenderer(ABC, Generic[TRendererOutput]):
         sh_degree: int | None = None,
         world_rank: int = 0,
         world_size: int = 1,
-    ) -> TRendererOutput:
+    ) -> Tuple[Tensor, SplatRendererOutputType]:
         """
         Render splats from camera viewpoints.
         

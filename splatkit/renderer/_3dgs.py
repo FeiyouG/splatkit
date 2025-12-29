@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from typing import Literal, Tuple, Dict, Optional, TypeVar
 import torch
 from torch import Tensor
@@ -8,17 +9,16 @@ from ..splat.training_state import SplatTrainingState
 from ..dataset.item import DataSetItem
 from .abc import SplatRenderer, SplatRendererOutput
 
+@dataclass(frozen=True)
 class Splat3DGSRendererOutput(SplatRendererOutput):
     """
     Metadata for 3D Gaussian Splatting rendered images.
     """
-    radii: Tensor # (..., H, W, 1)
     means2d: Tensor # (..., H, W, 2)
-    depths: Tensor # (..., H, W, 1)
     conics: Tensor # (..., H, W, 1)
     opacities: Tensor # (..., H, W, 1)
-    width: int
-    height: int
+
+
 
 class Splat3DGSRenderer(SplatRenderer[Splat3DGSRendererOutput]):
     """3D Gaussian Splatting renderer.
@@ -99,7 +99,7 @@ class Splat3DGSRenderer(SplatRenderer[Splat3DGSRendererOutput]):
         sh_degree: int | None = None,
         world_rank: int = 0,
         world_size: int = 1,
-    ) -> Splat3DGSRendererOutput:
+    ) -> Tuple[Tensor, Splat3DGSRendererOutput]:
         """
         Render splats from camera viewpoints.
         
@@ -163,18 +163,17 @@ class Splat3DGSRenderer(SplatRenderer[Splat3DGSRendererOutput]):
         )
         
         # Build render_meta with alphas included
-        render_meta: Splat3DGSRendererOutput = {
-            "renders": renders,
-            "alphas": alphas,
-            "radii": info["radii"],
-            "means2d": info["means2d"],
-            "depths": info["depths"],
-            "conics": info["conics"],
-            "opacities": info["opacities"],
-            "width": info["width"],
-            "height": info["height"],
-            "n_cameras": info["n_cameras"],
-            "n_batches": info["n_batches"],
-        }
-        
-        return render_meta
+        outputs = Splat3DGSRendererOutput(
+            renders=renders,
+            alphas=alphas,
+            n_cameras=info["n_cameras"],
+            n_batches=info["n_batches"],
+            radii=info["radii"],
+            means2d=info["means2d"],
+            depths=info["depths"],
+            conics=info["conics"],
+            opacities=info["opacities"],
+            width=info["width"],
+            height=info["height"],
+        )
+        return renders, outputs

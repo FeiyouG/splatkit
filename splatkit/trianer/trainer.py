@@ -5,8 +5,10 @@ import tqdm
 from torch.utils.tensorboard import SummaryWriter
 import os
 
+from gsplat.strategy import DefaultStrategy, MCMCStrategy
+
 from ..splat.training_state import SplatTrainingState
-from ..renderer.renderer import SplatRenderer
+from ..renderer import SplatRenderer
 from ..loss import SplatLoss
 
 class SplatTrainer:
@@ -18,9 +20,6 @@ class SplatTrainer:
         renderer: SplatRenderer,
         loss_fn: SplatLoss,
         strategy: Union[DefaultStrategy, MCMCStrategy],
-        evaluator: Optional[SplatEvaluator] = None,
-        optional_modules: Optional[List[OptionalModule]] = None,
-        random_background: bool = False,
         sh_degree_interval: int = 1000,  # Increase SH degree every N steps
         device: str = "cuda",
     ):
@@ -30,9 +29,6 @@ class SplatTrainer:
             renderer: Renderer for rasterization
             loss_fn: Loss function
             strategy: Densification strategy (from gsplat)
-            evaluator: Optional evaluator for validation
-            optional_modules: List of optional modules (pose opt, etc.)
-            random_background: Use random background during training
             sh_degree_interval: Steps between SH degree increases
             device: Device to train on
         """
@@ -40,9 +36,6 @@ class SplatTrainer:
         self.renderer = renderer
         self.loss_fn = loss_fn
         self.strategy = strategy
-        self.evaluator = evaluator
-        self.optional_modules = optional_modules or []
-        self.random_background = random_background
         self.sh_degree_interval = sh_degree_interval
         self.device = device
         
@@ -59,7 +52,7 @@ class SplatTrainer:
     
     def train_step(
         self,
-        batch: Dict[str, Tensor],
+        batch: Dict[str, torch.Tensor],
         step: int,
     ) -> Dict[str, float]:
         """
