@@ -10,16 +10,21 @@ from pathlib import Path
 import numpy as np
 
 from .model import SplatModel
-from ..utils.sh_utils import sh_to_K
+from ..utils.sh import sh_to_K
 from ..utils.distributed import distribute_metadata, distribute_tensor, gather_tensor
 
 @dataclass
 class SplatTrainingState:
     """
-    SplatTrainingState: Mutable training state for 3D Gaussian Splatting
+    Mutable training state for 3D Gaussian Splatting
 
-    Distributed Training Strategy:
-    ------------------------------
+    ### Invariant:
+    - Each rank owns params[rank::world_size]
+    - Optimizer steps are synchronized
+    - Only rank 0 may serialize state (save/load checkpoints, convert to/from splat model, etc.)
+
+    ### Distributed Training Strategy:
+
     Parameters are distributed across ranks using a "striped" distribution pattern.
     For N Gaussians and K ranks:
     - Rank 0 owns Gaussians [0, K, 2K, 3K, ...]
@@ -34,10 +39,8 @@ class SplatTrainingState:
     - Rank 1: [1, 4, 7]
     - Rank 2: [2, 5, 8]
 
-    Invariant:
-    - Each rank owns params[rank::world_size]
-    - Optimizer steps are synchronized
-    - Only rank 0 may serialize state (save/load checkpoints, convert to/from splat model, etc.)
+    ### Batching:
+    - Support batching by specifying a batch size in factory methods
     """
 
     REQUIRED_PARAMS = frozenset([

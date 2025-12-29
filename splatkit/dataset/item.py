@@ -4,6 +4,7 @@ from typing import NotRequired, TypedDict
 class DataSetItem(TypedDict):
     id: int
     image_name: str
+    camera_model: str
 
     K: torch.Tensor                # (3, 3)
     cam_to_world: torch.Tensor     # (4, 4)

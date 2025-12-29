@@ -35,6 +35,7 @@ class ColmapDataset(SparsePointCloudDataset):
     _point_indices: Dict[str, np.ndarray] = {}
     _transform: np.ndarray = np.eye(4, dtype=np.float32)
     _scene_scale: float = 0.0
+    _camera_models: List[str] = []
 
     # Index mapping for split datasets
     _parent: Optional['ColmapDataset']
@@ -87,6 +88,7 @@ class ColmapDataset(SparsePointCloudDataset):
         cam_to_world: List[np.ndarray] = []
         Ks: List[np.ndarray] = []
         image_sizes: List[Tuple[int, int]] = []
+        camera_models: List[str] = []
 
         # Extract per-image data
         image: pycolmap.Image
@@ -117,6 +119,7 @@ class ColmapDataset(SparsePointCloudDataset):
             cam_to_world.append(c2w)
             Ks.append(K)
             image_sizes.append((width, height))
+            camera_models.append(camera.model)
 
             if self._masks_dir is not None:
                 stem = Path(name).stem  # filename without extension
@@ -137,6 +140,7 @@ class ColmapDataset(SparsePointCloudDataset):
         self._image_paths = [image_paths[i] for i in order]
         self._image_sizes = [image_sizes[i] for i in order]
         self._mask_paths = [mask_paths[i] for i in order] if self._masks_dir is not None else None
+        self._camera_models = [camera_models[i] for i in order]
 
         self._world_to_cam = np.stack([world_to_cam[i] for i in order], axis=0)
         assert self._world_to_cam.shape[1:] == (4, 4)
@@ -146,8 +150,6 @@ class ColmapDataset(SparsePointCloudDataset):
 
         self._Ks = np.stack([Ks[i] for i in order], axis=0)
         assert self._Ks.shape[1:] == (3, 3)
-
-       
 
         # Sparse point cloud
         self._points = np.array([p.xyz for p in recon.points3D.values()], dtype=np.float32)
@@ -219,6 +221,7 @@ class ColmapDataset(SparsePointCloudDataset):
         instance._Ks = root._Ks
         instance._image_sizes = root._image_sizes
         instance._mask_paths = root._mask_paths
+        instance._camera_models = root._camera_models
         
         instance._points = root._points
         instance._points_rgb = root._points_rgb
@@ -243,7 +246,8 @@ class ColmapDataset(SparsePointCloudDataset):
         item: DataSetItem = {
             "id": actul_index,
             "image_name": self._image_names[actul_index],
-            
+            "camera_model": self._camera_models[actul_index].name,
+
             "image": torch.from_numpy(image[..., :3]).float(),
             "K": torch.from_numpy(self._Ks[actul_index]).float(),
             "cam_to_world": torch.from_numpy(self._cam_to_world[actul_index]).float(),
@@ -251,9 +255,12 @@ class ColmapDataset(SparsePointCloudDataset):
 
 
         if self._masks_dir is not None:
-            item["mask"] = torch.from_numpy(
-                imageio.imread(self._mask_paths[actul_index])
-            ).bool()
+            mask = imageio.imread(self._mask_paths[actul_index])
+            if mask.ndim == 3:
+                # RGB or RGBA - take first channel only
+                mask = mask[..., 0] # (H, W, 3) -> (H, W)
+
+            item["mask"] = torch.from_numpy(mask).bool() # (H, W)
 
         if self._load_depth:
             world_to_cam = self._world_to_cam[actul_index]

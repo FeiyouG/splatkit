@@ -10,10 +10,6 @@ class VisualHullConfig(BaseModel):
     bounds_min: Tuple[float, float, float] = (-1.2, -1.2, -1.2)
     bounds_max: Tuple[float, float, float] = ( 1.2,  1.2,  1.2)
 
-    # ---- carving ----
-    batch_size: int = Field(
-        200_000, ge=10_000, description="Projection batch size"
-    )
 
     # ---- mask semantics ----
     mask_foreground_value: Literal[1] | Literal[255] = 1

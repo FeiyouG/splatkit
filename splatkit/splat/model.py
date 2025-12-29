@@ -4,8 +4,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from scipy.special import logit
 
-from ..utils.sh_utils import rgb_to_sh, sh_to_K
-from ..utils.knn_utils import knn
+from ..utils.sh import rgb_to_sh, sh_to_K
+from ..utils.knn import knn
 from ..dataset import SparsePointCloudDataset
 
 @dataclass
