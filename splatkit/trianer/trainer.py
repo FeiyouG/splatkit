@@ -1,45 +1,15 @@
-
-from dataclasses import dataclass, field
 from typing import Generic
 
 import torch
 import torch.distributed as dist
 from gsplat.distributed import cli
-from gsplat.strategy import DefaultStrategy, MCMCStrategy
 
 from ..modules import SplatBaseFrameT
 from ..data_provider import SplatDataProvider, SplatDataItemT
 from ..modules.base import SplatBaseModule
 from ..renderer import SplatRenderer
-from ..loss import SplatLossFn
-
-@dataclass
-class SplatTrainerConfig:
-    """Training configuration"""
-    max_steps: int = 30000
-    batch_size: int = 1
-    
-    lr_means: float = 1.6e-4
-    lr_scales: float = 5e-3
-    lr_quats: float = 1e-3
-    lr_opacities: float = 5e-2
-    lr_sh0: float = 2.5e-3
-    lr_shN: float = 2.5e-3 / 20
-    
-    log_steps: int = 100
-    result_dir: str = "results/default"
-    
-    strategy: DefaultStrategy | MCMCStrategy = field(
-        default_factory=lambda: DefaultStrategy(verbose=True)
-    )
-    
-    sh_degree: int = 3
-    sh_degree_interval: int = 1000
-    init_opacity: float = 0.1
-    init_scale: float = 1.0
-    
-    num_workers: int = 4
-    global_scale: float = 1.0
+from ..loss_fn import SplatLossFn
+from .config import SplatTrainerConfig
 
 
 class SplatTrainer(Generic[SplatBaseFrameT, SplatDataItemT]):
@@ -57,10 +27,9 @@ class SplatTrainer(Generic[SplatBaseFrameT, SplatDataItemT]):
     _modules: list[SplatBaseModule[SplatBaseFrameT]]
 
     # Distributed training variables
-    _is_distributed: bool = False
-    _local_rank: int | None = None
-    _world_rank: int | None = None
-    _world_size: int | None = None
+    _local_rank: int 
+    _world_rank: int 
+    _world_size: int
     
     def __init__(
         self,
@@ -70,6 +39,9 @@ class SplatTrainer(Generic[SplatBaseFrameT, SplatDataItemT]):
         test_data_provider: SplatDataProvider[SplatBaseFrameT, SplatDataItemT] | None = None,
         modules: list[SplatBaseModule[SplatBaseFrameT]] = [],
         config: SplatTrainerConfig = SplatTrainerConfig(),
+        local_rank: int = 0,
+        world_rank: int = 0,
+        world_size: int = 1,
     ):
         """
         Initialize trainer.
@@ -88,12 +60,16 @@ class SplatTrainer(Generic[SplatBaseFrameT, SplatDataItemT]):
         self._test_data_provider = test_data_provider
         self._modules = modules
 
+        self._local_rank = local_rank
+        self._world_rank = world_rank
+        self._world_size = world_size
+
         self.__post_init__()
         
     def __post_init__(self):
         """Post-initialization setup."""
         self._validate()
-        self._setup_distributed()
+        # self._setup_distributed()
     
     def _validate(self):
         """Validate configuration."""
@@ -106,99 +82,73 @@ class SplatTrainer(Generic[SplatBaseFrameT, SplatDataItemT]):
         if self._loss_fn is None:
             raise ValueError("Loss function is required")
 
-        vars_set = [self._world_rank is not None, self._world_size is not None]
-        if any(vars_set) and not all(vars_set):
-            raise ValueError(f"world rank and world size must be set together: world_rank={self._world_rank}, world_size={self._world_size}")
-    
-    def _setup_distributed(self):
-        """
-        Auto-detect if we're in a distributed context.
-        
-        Sets self._is_distributed and rank information based on detection.
-        
-        Detection logic:
-        1. Check if torch.distributed is available
-        2. Check if torch.distributed is initialized
-        3. If yes, we're in a worker, get ranks
-        4. If no, we're in parent mode
-        """
+        if self._world_rank == 0:
+            if self._world_size == 1:
+                print(f"[SplatTrainer] Start Single GPU training")
+            elif self._world_size > 1:
+                print(f"[SplatTrainer] Start Multi-GPU training: world_size={self._world_size}")
 
-       # Check if distributed is available and initialized
-        if not dist.is_available() or not dist.is_initialized():
-            if self._world_size is not None and self._world_size > 1:
-                raise ValueError(f"World size is set to {self._world_size} but distributed is not available or initialized")
-            if self._world_rank is not None and self._world_rank != 0:
-                raise ValueError(f"World rank is set to {self._world_rank} but distributed is not available or initialized")
-            if self._local_rank is not None and self._local_rank != 0:
-                raise ValueError(f"Local rank is set to {self._local_rank} but distributed is not available or initialized")
-            if self._is_distributed:
-                raise ValueError(f"Distributed is not available or initialized but is_distributed is True")
+        # vars_set = [self._world_rank is not None, self._world_size is not None]
+        # if any(vars_set) and not all(vars_set):
+        #     raise ValueError(f"world rank and world size must be set together: world_rank={self._world_rank}, world_size={self._world_size}")
+    
+    # def _setup_distributed(self):
+    #     """
+    #     Auto-detect if we're in a distributed context.
+        
+    #     Sets self._is_distributed and rank information based on detection.
+        
+    #     Detection logic:
+    #     1. Check if torch.distributed is available
+    #     2. Check if torch.distributed is initialized
+    #     3. If yes, we're in a worker, get ranks
+    #     4. If no, we're in parent mode
+    #     """
+
+    #    # Check if distributed is available and initialized
+    #     if not dist.is_available() or not dist.is_initialized():
+    #         if self._world_size is not None and self._world_size > 1:
+    #             raise ValueError(f"World size is set to {self._world_size} but distributed is not available or initialized")
+    #         if self._world_rank is not None and self._world_rank != 0:
+    #             raise ValueError(f"World rank is set to {self._world_rank} but distributed is not available or initialized")
+    #         if self._local_rank is not None and self._local_rank != 0:
+    #             raise ValueError(f"Local rank is set to {self._local_rank} but distributed is not available or initialized")
+    #         if self._is_distributed:
+    #             raise ValueError(f"Distributed is not available or initialized but is_distributed is True")
             
-            # No distributed support → parent mode OR single GPU mode
-            # self._is_distributed = False
-            # self._world_rank = 0
-            # self._world_size = 1
+    #         # No distributed support → parent mode OR single GPU mode
+    #         # self._is_distributed = False
+    #         # self._world_rank = 0
+    #         # self._world_size = 1
             
-            # For single GPU training, still set device properly
-            if torch.cuda.is_available():
-                # If we're here from worker_entry, CUDA device was set by cli()
-                self._local_rank = torch.cuda.current_device()
-        else:
-            # Distributed is initialized → multi-GPU worker mode
-            self._is_distributed = True
+    #         # For single GPU training, still set device properly
+    #         if torch.cuda.is_available():
+    #             # If we're here from worker_entry, CUDA device was set by cli()
+    #             self._local_rank = torch.cuda.current_device()
+    #     else:
+    #         # Distributed is initialized → multi-GPU worker mode
+    #         self._is_distributed = True
             
-            # Get ranks from torch.distributed
-            self._world_rank = dist.get_rank()
-            self._world_size = dist.get_world_size()
+    #         # Get ranks from torch.distributed
+    #         self._world_rank = dist.get_rank()
+    #         self._world_size = dist.get_world_size()
             
-            # Get local rank from current CUDA device
-            if torch.cuda.is_available():
-                self._local_rank = torch.cuda.current_device()
-            else:
-                raise RuntimeError(
-                    "Distributed training detected but CUDA is not available"
-                )
+    #         # Get local rank from current CUDA device
+    #         if torch.cuda.is_available():
+    #             self._local_rank = torch.cuda.current_device()
+    #         else:
+    #             raise RuntimeError(
+    #                 "Distributed training detected but CUDA is not available"
+    #             )
         
         # Log worker info (only rank 0)
-        if self._world_rank is None:
-            return
-        elif self._world_size == 1:
-            print(f"[Auto-detected] Single GPU training")
-        elif self._world_size > 1:
-            if self._world_rank == 0:
-                print(f"[Auto-detected] Multi-GPU training: world_size={self._world_size}")
+        # if self._world_rank == 0:
+        #     if self._world_size == 1:
+        #         print(f"[Auto-detected] Single GPU training")
+        #     elif self._world_size > 1:
+        #         print(f"[Auto-detected] Multi-GPU training: world_size={self._world_size}")
     
-    def train(self):
-        """
-        Main entry point - starts training.
-        
-        Automatically determines mode:
-        - If _world_size has not been assigned: Spawn workers via cli() (parent mode)
-        - If _world_size is assigned and less than or equal to 1: Run training loop (worker mode)
-        """
-        print(f"Training on rank {self._world_rank} of {self._world_size} GPUs")
-        if self._world_rank is None:
-            args = (
-                self._config,
-                self._train_data_provider,
-                self._test_data_provider,
-                self._renderer,
-                self._loss_fn,
-            )
-            # Parent mode: spawn workers via cli()
-            SplatTrainer._spawn_workers(args)
-        else:
-            # Worker mode: run training loop
-            self._run_training()
-    
-    @classmethod
-    def _spawn_workers(cls, args: tuple):
-        """
-        Spawn worker processes using gsplat's cli().
-        """
-        cli(splat_trainer_worker_entry, args=(cls, *args), verbose=True)
-    
-    def _run_training(self):
+    def run(self):
         """
         Core training loop implementation.
         
