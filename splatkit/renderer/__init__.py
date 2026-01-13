@@ -1,10 +1,8 @@
-from .abc import SplatRenderer, SplatRendererOutput, SplatRendererOutputType
-from ._3dgs import Splat3DGSRenderer, Splat3DGSRendererOutput
+from .base import SplatRenderer
+from ._3dgs import Splat3DGSRenderer, Splat3DGSFrame
 
 __all__ = [
     "SplatRenderer", 
-    "SplatRendererOutput", 
-    "SplatRendererOutputType", 
     "Splat3DGSRenderer", 
-    "Splat3DGSRendererOutput"
+    "Splat3DGSFrame"
 ]

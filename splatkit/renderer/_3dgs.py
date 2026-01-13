@@ -1,16 +1,16 @@
 from dataclasses import dataclass
-from typing import Literal, Tuple, Dict, Optional, TypeVar
+from typing import Literal, Tuple
 import torch
 from torch import Tensor
 
 from gsplat.rendering import rasterization
 
+from ..modules import SplatBaseFrame
 from ..splat.training_state import SplatTrainingState
-from ..dataset.item import DataSetItem
-from .abc import SplatRenderer, SplatRendererOutput
+from .base import SplatRenderer
 
 @dataclass(frozen=True)
-class Splat3DGSRendererOutput(SplatRendererOutput):
+class Splat3DGSFrame(SplatBaseFrame):
     """
     Metadata for 3D Gaussian Splatting rendered images.
     """
@@ -18,9 +18,7 @@ class Splat3DGSRendererOutput(SplatRendererOutput):
     conics: Tensor # (..., H, W, 1)
     opacities: Tensor # (..., H, W, 1)
 
-
-
-class Splat3DGSRenderer(SplatRenderer[Splat3DGSRendererOutput]):
+class Splat3DGSRenderer(SplatRenderer[Splat3DGSFrame]):
     """3D Gaussian Splatting renderer.
     """
     
@@ -99,7 +97,7 @@ class Splat3DGSRenderer(SplatRenderer[Splat3DGSRendererOutput]):
         sh_degree: int | None = None,
         world_rank: int = 0,
         world_size: int = 1,
-    ) -> Tuple[Tensor, Splat3DGSRendererOutput]:
+    ) -> Tuple[Tensor, Splat3DGSFrame]:
         """
         Render splats from camera viewpoints.
         

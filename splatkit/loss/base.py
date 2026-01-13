@@ -2,22 +2,25 @@ from abc import ABC, abstractmethod
 import torch
 from typing import Dict, Any, Tuple, Generic
 import torch.nn.functional as F
-from fused_ssim import fused_ssim
 
 from ..splat.training_state import SplatTrainingState
-from ..renderer import SplatRendererOutputType
+from ..modules import SplatBaseModule, SplatBaseFrameT
 
-class SplatLoss(ABC, Generic[SplatRendererOutputType]):
+class SplatLossFn(
+    SplatBaseModule[SplatBaseFrameT],
+    Generic[SplatBaseFrameT],
+    ABC
+):
     """
     Abstract base class for Splat losses.
     """
     
     @abstractmethod
-    def compute(self,
+    def compute_loss(self,
         renders: torch.Tensor, # (..., H, W, 3)
         targets: torch.Tensor, # (..., H, W, 3)
         training_state: SplatTrainingState,
-        rend_out: SplatRendererOutputType,
+        rend_out: SplatBaseFrameT,
         masks: torch.Tensor | None = None, # (..., H, W)
     ) -> torch.Tensor:
         """
@@ -39,6 +42,8 @@ class SplatLoss(ABC, Generic[SplatRendererOutputType]):
         """
         Compute photometric loss.
         """
+        from fused_ssim import fused_ssim
+
         l1_loss = F.l1_loss(renders, targets)
         ssim_loss = 1.0 - fused_ssim(
             renders.permute(0, 3, 1, 2), targets.permute(0, 3, 1, 2), padding="valid"

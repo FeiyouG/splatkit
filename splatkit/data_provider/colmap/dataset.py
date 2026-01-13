@@ -7,10 +7,10 @@ import imageio
 import torch
 import pycolmap
 
-from ..item import DataSetItem
-from .abc import SparsePointCloudDataset
+from .item import ColmapDataItem
+from .config import SplatColmapDataProviderConfig
 
-class ColmapDataset(SparsePointCloudDataset):
+class SplatColmapDataset():
     """
     Torch-compatible COLMAP dataset.
     """
@@ -38,45 +38,39 @@ class ColmapDataset(SparsePointCloudDataset):
     _camera_models: List[str] = []
 
     # Index mapping for split datasets
-    _parent: Optional['ColmapDataset']
+    _parent: Optional['SplatColmapDataset']
     _valid_indices: np.ndarray
 
     def __init__(
         self,
-        colmap_dir: str,
-        images_dir: str,
-        factor: int = 1,
-        normalize: bool = False,
-        masks_dir: str | None = None,
-        load_depth: bool = False,
+        config: SplatColmapDataProviderConfig,
     ):
-        self._colmap_dir = colmap_dir
-        self._images_dir = images_dir
-        self._factor = factor
-        self._normalize = normalize
-        self._load_depth = load_depth
+        self._colmap_dir = config.colmap_dir
+        self._images_dir = config.images_dir
+        self._factor = config.factor
+        self._normalize = config.normalize
+        self._load_depth = config.load_depth
+        self._masks_dir = config.masks_dir
         self._parent = None
 
         # Load COLMAP reconstruction
-        if not os.path.exists(colmap_dir):
-            raise FileNotFoundError(f"COLMAP directory not found: {colmap_dir}")
+        if not os.path.exists(self._colmap_dir):
+            raise FileNotFoundError(f"COLMAP directory not found: {self._colmap_dir}")
 
         recon = pycolmap.Reconstruction(self._colmap_dir)
         if recon.num_reg_images == 0:
             raise ValueError("No registered images in COLMAP reconstruction")
 
-        if normalize:
+        if self._normalize:
             self._transform = recon.normalize()
             recon.transform(self._transform)
         else:
             self._transform = np.eye(4, dtype=np.float32)
 
         # Validate image directory
-        self._images_dir = images_dir
         if not os.path.exists(self._images_dir):
             raise FileNotFoundError(f"Image directory not found: {self._images_dir}")
         
-        self._masks_dir = masks_dir
         if self._masks_dir is not None:
             if not os.path.exists(self._masks_dir):
                 raise FileNotFoundError(f"Mask directory not found: {self._masks_dir}")
@@ -108,10 +102,10 @@ class ColmapDataset(SparsePointCloudDataset):
             c2w = np.vstack((c2w_3x4, np.array([0, 0, 0, 1]))).astype(np.float32)
 
             K = camera.calibration_matrix().astype(np.float32)
-            K[:2, :] /= factor
+            K[:2, :] /= self._factor
 
-            width = int(camera.width // factor)
-            height = int(camera.height // factor)
+            width = int(camera.width // self._factor)
+            height = int(camera.height // self._factor)
 
             image_names.append(name)
             image_paths.append(img_path)
@@ -185,7 +179,7 @@ class ColmapDataset(SparsePointCloudDataset):
         del recon
 
     @classmethod
-    def _from_parent(cls, parent: 'ColmapDataset', indices: np.ndarray) -> 'ColmapDataset':
+    def _from_parent(cls, parent: 'SplatColmapDataset', indices: np.ndarray) -> 'SplatColmapDataset':
         """
         Private constructor for creating a split dataset from a parent.
         
@@ -238,12 +232,12 @@ class ColmapDataset(SparsePointCloudDataset):
     def __len__(self) -> int:
         return len(self._valid_indices)
 
-    def __getitem__(self, index: int) -> DataSetItem:
+    def __getitem__(self, index: int) -> ColmapDataItem:
         actul_index = self._valid_indices[index]
 
         image = imageio.imread(self._image_paths[actul_index])
         
-        item: DataSetItem = {
+        item: ColmapDataItem = {
             "id": actul_index,
             "image_name": self._image_names[actul_index],
             "camera_model": self._camera_models[actul_index].name,
@@ -291,7 +285,7 @@ class ColmapDataset(SparsePointCloudDataset):
 
         return item
 
-    def split(self, predicate: Callable[[int, str], bool]) -> 'ColmapDataset':
+    def split(self, predicate: Callable[[int, str], bool]) -> 'SplatColmapDataset':
         selected_indices = []
         
         for idx in range(len(self)):

@@ -1,11 +1,12 @@
-import torch.nn.functional as F
+from typing import Generic
 
-from ..renderer import SplatRendererOutput
-
+from ..modules import SplatBaseFrame, SplatBaseFrame
 from ..utils.batched import normalize_batch_tensors
-from .abc import SplatLoss
+from .base import SplatLossFn
 
-class DefaultSplatLoss(SplatLoss[SplatRendererOutput]):
+class SplatDefaultLossFn(
+    SplatLossFn[SplatBaseFrame],
+):
     """Simple 3DGS loss: L1 + SSIM + regularization."""
     
     def __init__(
@@ -16,7 +17,7 @@ class DefaultSplatLoss(SplatLoss[SplatRendererOutput]):
         scale_reg: float = 0.0,
     ):
         """
-        Initialize the DefaultSplatLoss.
+        Initialize the SplatDefaultLossFn.
         
         Args:
             ssim_lambda: Weight for SSIM loss
@@ -28,7 +29,7 @@ class DefaultSplatLoss(SplatLoss[SplatRendererOutput]):
         self.opacity_reg = opacity_reg
         self.scale_reg = scale_reg
     
-    def compute(self, renders, targets, splat_state, rend_out, masks=None):
+    def compute_loss(self, renders, targets, splat_state, rend_out, masks=None):
         """
         Compute loss.
         """

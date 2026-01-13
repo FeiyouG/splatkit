@@ -1,4 +1,4 @@
-from .abc import SplatLoss
-from .default import DefaultSplatLoss
+from .base import SplatLossFn
+from .default import SplatDefaultLossFn
 
-__all__ = ['SplatLoss', 'DefaultSplatLoss']
+__all__ = ['SplatLossFn', 'SplatDefaultLossFn']

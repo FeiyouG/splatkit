@@ -1,317 +1,391 @@
-from typing import Dict, List, Optional, Union
-import torch
-from torch.utils.data import DataLoader
-import tqdm
-from torch.utils.tensorboard import SummaryWriter
-import os
 
+from dataclasses import dataclass, field
+from typing import Generic
+
+import torch
+import torch.distributed as dist
+from gsplat.distributed import cli
 from gsplat.strategy import DefaultStrategy, MCMCStrategy
 
-from ..splat.training_state import SplatTrainingState
+from ..modules import SplatBaseFrameT
+from ..data_provider import SplatDataProvider, SplatDataItemT
+from ..modules.base import SplatBaseModule
 from ..renderer import SplatRenderer
-from ..loss import SplatLoss
+from ..loss import SplatLossFn
 
-class SplatTrainer:
-    """Main trainer for 3D Gaussian Splatting."""
+@dataclass
+class SplatTrainerConfig:
+    """Training configuration"""
+    max_steps: int = 30000
+    batch_size: int = 1
+    
+    lr_means: float = 1.6e-4
+    lr_scales: float = 5e-3
+    lr_quats: float = 1e-3
+    lr_opacities: float = 5e-2
+    lr_sh0: float = 2.5e-3
+    lr_shN: float = 2.5e-3 / 20
+    
+    log_steps: int = 100
+    result_dir: str = "results/default"
+    
+    strategy: DefaultStrategy | MCMCStrategy = field(
+        default_factory=lambda: DefaultStrategy(verbose=True)
+    )
+    
+    sh_degree: int = 3
+    sh_degree_interval: int = 1000
+    init_opacity: float = 0.1
+    init_scale: float = 1.0
+    
+    num_workers: int = 4
+    global_scale: float = 1.0
+
+
+class SplatTrainer(Generic[SplatBaseFrameT, SplatDataItemT]):
+    """
+    Trainer for 3D Gaussian Splatting.
+    
+    Automatically detects whether it's running in:
+    - Parent mode: Not in a distributed context → spawns workers via cli()
+    - Worker mode: In a distributed context → runs training
+    """
+
+    _config: SplatTrainerConfig
+    _train_data_provider: SplatDataProvider
+    _test_data_provider: SplatDataProvider | None
+    _modules: list[SplatBaseModule[SplatBaseFrameT]]
+
+    # Distributed training variables
+    _is_distributed: bool = False
+    _local_rank: int | None = None
+    _world_rank: int | None = None
+    _world_size: int | None = None
     
     def __init__(
         self,
-        splat_state: SplatTrainingState,
-        renderer: SplatRenderer,
-        loss_fn: SplatLoss,
-        strategy: Union[DefaultStrategy, MCMCStrategy],
-        sh_degree_interval: int = 1000,  # Increase SH degree every N steps
-        device: str = "cuda",
+        renderer: SplatRenderer[SplatBaseFrameT],
+        loss_fn: SplatLossFn[SplatBaseFrameT],
+        train_data_provider: SplatDataProvider[SplatBaseFrameT, SplatDataItemT],
+        test_data_provider: SplatDataProvider[SplatBaseFrameT, SplatDataItemT] | None = None,
+        modules: list[SplatBaseModule[SplatBaseFrameT]] = [],
+        config: SplatTrainerConfig = SplatTrainerConfig(),
     ):
         """
+        Initialize trainer.
+        
         Args:
-            splat_state: SplatTrainingState managing gaussians and optimizers
-            renderer: Renderer for rasterization
-            loss_fn: Loss function
-            strategy: Densification strategy (from gsplat)
-            sh_degree_interval: Steps between SH degree increases
-            device: Device to train on
+            config: Training configuration
+            trainset: Lazy wrapper for training dataset
+            testset: Lazy wrapper for test dataset (optional)
+            renderer: Lazy wrapper for renderer
+            loss: Lazy wrapper for loss function
         """
-        self.splat_state = splat_state
-        self.renderer = renderer
-        self.loss_fn = loss_fn
-        self.strategy = strategy
-        self.sh_degree_interval = sh_degree_interval
-        self.device = device
+        self._config = config
+        self._renderer = renderer
+        self._loss_fn = loss_fn
+        self._train_data_provider = train_data_provider
+        self._test_data_provider = test_data_provider
+        self._modules = modules
+
+        self.__post_init__()
         
-        # Initialize strategy state
-        if isinstance(strategy, DefaultStrategy):
-            self.strategy_state = strategy.initialize_state(
-                scene_scale=splat_state.scene_scale
-            )
-        elif isinstance(strategy, MCMCStrategy):
-            self.strategy_state = strategy.initialize_state()
-        
-        # Validate strategy
-        strategy.check_sanity(splat_state.params, splat_state.optimizers)
+    def __post_init__(self):
+        """Post-initialization setup."""
+        self._validate()
+        self._setup_distributed()
     
-    def train_step(
-        self,
-        batch: Dict[str, torch.Tensor],
-        step: int,
-    ) -> Dict[str, float]:
-        """
-        Single training step.
-        
-        Args:
-            batch: Training batch with keys:
-                - cam_to_world: [B, 4, 4]
-                - K: [B, 3, 3]
-                - image: [B, H, W, 3]
-                - id: [B] image indices
-                - mask (optional): [B, H, W]
-            step: Current training step
-        
-        Returns:
-            Dictionary of metrics/losses for logging
-        """
-        # 1. Preprocess batch (optional modules can modify)
-        for module in self.optional_modules:
-            batch = module.preprocess_batch(batch)
-        
-        # 2. Extract batch data
-        camtoworlds = batch["cam_to_world"]
-        Ks = batch["K"]
-        targets = batch["image"]
-        height, width = targets.shape[1:3]
-        
-        # 3. Determine SH degree for this step
-        sh_degree = min(step // self.sh_degree_interval, self.splat_state.sh_degree)
-        
-        # 4. Render
-        renders, alphas, info = self.renderer.render(
-            splat_state=self.splat_state,
-            camtoworlds=camtoworlds,
-            Ks=Ks,
-            width=width,
-            height=height,
-            sh_degree=sh_degree,
-        )
-        
-        # 5. Postprocess renders (optional modules)
-        for module in self.optional_modules:
-            renders = module.postprocess_renders(renders, batch)
-        
-        # 6. Add random background if enabled
-        if self.random_background:
-            bkgd = torch.rand(1, 3, device=self.device)
-            renders = renders + bkgd * (1.0 - alphas)
-        
-        # 7. Pre-backward strategy hook
-        self.strategy.step_pre_backward(
-            params=self.splat_state.params,
-            optimizers=self.splat_state.optimizers,
-            state=self.strategy_state,
-            step=step,
-            info=info,
-        )
-        
-        # 8. Compute loss
-        loss, loss_dict = self.loss_fn.compute(
-            renders=renders,
-            targets=targets,
-            splat_state=self.splat_state,
-            info=info,
-            batch=batch,
-        )
-        
-        # 9. Optional module losses
-        for module in self.optional_modules:
-            module_loss, module_loss_dict = module.compute_loss(
-                renders, targets, batch
-            )
-            loss += module_loss
-            loss_dict.update(module_loss_dict)
-        
-        # 10. Backward
-        loss.backward()
-        
-        # 11. Handle sparse gradients if needed
-        if self.renderer.sparse_grad:
-            self._convert_to_sparse_gradients(info)
-        
-        # 12. Optimizer steps
-        for optimizer in self.splat_state.optimizers.values():
-            optimizer.step()
-            optimizer.zero_grad(set_to_none=True)
-        
-        for module in self.optional_modules:
-            for optimizer in module.get_optimizers():
-                optimizer.step()
-                optimizer.zero_grad(set_to_none=True)
-        
-        # 13. Post-backward strategy hook
-        if isinstance(self.strategy, DefaultStrategy):
-            self.strategy.step_post_backward(
-                params=self.splat_state.params,
-                optimizers=self.splat_state.optimizers,
-                state=self.strategy_state,
-                step=step,
-                info=info,
-                packed=self.renderer.packed,
-            )
-        elif isinstance(self.strategy, MCMCStrategy):
-            # MCMC needs current LR
-            current_lr = self.schedulers[0].get_last_lr()[0]
-            self.strategy.step_post_backward(
-                params=self.splat_state.params,
-                optimizers=self.splat_state.optimizers,
-                state=self.strategy_state,
-                step=step,
-                info=info,
-                lr=current_lr,
-            )
-        
-        # Add metadata
-        loss_dict["sh_degree"] = sh_degree
-        loss_dict["num_gaussians"] = len(self.splat_state.params["means"])
-        
-        return loss_dict
+    def _validate(self):
+        """Validate configuration."""
+        if self._config is None:
+            raise ValueError("Config is required")
+        if self._train_data_provider is None:
+            raise ValueError("Trainset is required")
+        if self._renderer is None:
+            raise ValueError("Renderer is required")
+        if self._loss_fn is None:
+            raise ValueError("Loss function is required")
+
+        vars_set = [self._world_rank is not None, self._world_size is not None]
+        if any(vars_set) and not all(vars_set):
+            raise ValueError(f"world rank and world size must be set together: world_rank={self._world_rank}, world_size={self._world_size}")
     
-    def train(
-        self,
-        dataloader: DataLoader,
-        max_steps: int,
-        eval_dataset: Optional[Dataset] = None,
-        eval_steps: Optional[List[int]] = None,
-        save_ckpt_steps: Optional[List[int]] = None,
-        save_ply_steps: Optional[List[int]] = None,
-        ckpt_dir: Optional[str] = None,
-        ply_dir: Optional[str] = None,
-        log_dir: Optional[str] = None,
-        log_every: int = 100,
-    ):
+    def _setup_distributed(self):
         """
-        Main training loop.
+        Auto-detect if we're in a distributed context.
         
-        Args:
-            dataloader: Training data loader
-            max_steps: Maximum training steps
-            eval_dataset: Optional validation dataset
-            eval_steps: Steps at which to run evaluation
-            save_ckpt_steps: Steps at which to save checkpoints
-            save_ply_steps: Steps at which to save PLY files
-            ckpt_dir: Directory to save checkpoints
-            ply_dir: Directory to save PLY files
-            log_dir: Directory for tensorboard logs
-            log_every: Log metrics every N steps
+        Sets self._is_distributed and rank information based on detection.
+        
+        Detection logic:
+        1. Check if torch.distributed is available
+        2. Check if torch.distributed is initialized
+        3. If yes, we're in a worker, get ranks
+        4. If no, we're in parent mode
         """
-        # Setup directories
-        if ckpt_dir:
-            os.makedirs(ckpt_dir, exist_ok=True)
-        if ply_dir:
-            os.makedirs(ply_dir, exist_ok=True)
-        
-        # Setup tensorboard
-        writer = None
-        if log_dir:
-            os.makedirs(log_dir, exist_ok=True)
-            writer = SummaryWriter(log_dir)
-        
-        # Setup schedulers
-        self.schedulers = self._create_schedulers(max_steps)
-        
-        # Setup optional modules
-        for module in self.optional_modules:
-            module.setup(num_images=len(dataloader.dataset), device=self.device)
-        
-        # Training loop
-        dataloader_iter = iter(dataloader)
-        pbar = tqdm.tqdm(range(max_steps))
-        
-        for step in pbar:
-            # Get batch
-            try:
-                batch = next(dataloader_iter)
-            except StopIteration:
-                dataloader_iter = iter(dataloader)
-                batch = next(dataloader_iter)
+
+       # Check if distributed is available and initialized
+        if not dist.is_available() or not dist.is_initialized():
+            if self._world_size is not None and self._world_size > 1:
+                raise ValueError(f"World size is set to {self._world_size} but distributed is not available or initialized")
+            if self._world_rank is not None and self._world_rank != 0:
+                raise ValueError(f"World rank is set to {self._world_rank} but distributed is not available or initialized")
+            if self._local_rank is not None and self._local_rank != 0:
+                raise ValueError(f"Local rank is set to {self._local_rank} but distributed is not available or initialized")
+            if self._is_distributed:
+                raise ValueError(f"Distributed is not available or initialized but is_distributed is True")
             
-            # Move to device
-            batch = {k: v.to(self.device) if isinstance(v, Tensor) else v 
-                    for k, v in batch.items()}
+            # No distributed support → parent mode OR single GPU mode
+            # self._is_distributed = False
+            # self._world_rank = 0
+            # self._world_size = 1
             
-            # Train step
-            metrics = self.train_step(batch, step)
+            # For single GPU training, still set device properly
+            if torch.cuda.is_available():
+                # If we're here from worker_entry, CUDA device was set by cli()
+                self._local_rank = torch.cuda.current_device()
+        else:
+            # Distributed is initialized → multi-GPU worker mode
+            self._is_distributed = True
             
-            # Update schedulers
-            for scheduler in self.schedulers:
-                scheduler.step()
+            # Get ranks from torch.distributed
+            self._world_rank = dist.get_rank()
+            self._world_size = dist.get_world_size()
             
-            # Logging
-            if writer and step % log_every == 0:
-                for k, v in metrics.items():
-                    writer.add_scalar(f"train/{k}", v, step)
-                writer.flush()
-            
-            # Progress bar
-            pbar.set_description(
-                f"loss={metrics['total']:.3f} | "
-                f"sh_deg={metrics['sh_degree']} | "
-                f"#GS={metrics['num_gaussians']}"
-            )
-            
-            # Evaluation
-            if eval_steps and step in eval_steps and self.evaluator and eval_dataset:
-                eval_loader = DataLoader(eval_dataset, batch_size=1, shuffle=False)
-                eval_metrics = self.evaluator.evaluate(
-                    self.splat_state, eval_loader, step
+            # Get local rank from current CUDA device
+            if torch.cuda.is_available():
+                self._local_rank = torch.cuda.current_device()
+            else:
+                raise RuntimeError(
+                    "Distributed training detected but CUDA is not available"
                 )
-                
-                if writer:
-                    for k, v in eval_metrics.items():
-                        writer.add_scalar(f"eval/{k}", v, step)
-            
-            # Save checkpoint
-            if save_ckpt_steps and step in save_ckpt_steps and ckpt_dir:
-                self.splat_state.save_ckpt(
-                    f"{ckpt_dir}/ckpt_{step}.pt",
-                    step=step,
-                    include_optimizers=True,
-                )
-            
-            # Save PLY
-            if save_ply_steps and step in save_ply_steps and ply_dir:
-                splat_model = self.splat_state.to_splat_model()
-                if splat_model is not None:
-                    splat_model.save_ply(f"{ply_dir}/point_cloud_{step}.ply")
         
-        if writer:
-            writer.close()
+        # Log worker info (only rank 0)
+        if self._world_rank is None:
+            return
+        elif self._world_size == 1:
+            print(f"[Auto-detected] Single GPU training")
+        elif self._world_size > 1:
+            if self._world_rank == 0:
+                print(f"[Auto-detected] Multi-GPU training: world_size={self._world_size}")
     
-    def _create_schedulers(self, max_steps: int) -> List:
-        """Create LR schedulers for main optimizers and optional modules."""
-        schedulers = []
+    def train(self):
+        """
+        Main entry point - starts training.
         
-        # Main means scheduler (exponential decay to 1%)
-        schedulers.append(
-            torch.optim.lr_scheduler.ExponentialLR(
-                self.splat_state.optimizers["means"],
-                gamma=0.01 ** (1.0 / max_steps),
+        Automatically determines mode:
+        - If _world_size has not been assigned: Spawn workers via cli() (parent mode)
+        - If _world_size is assigned and less than or equal to 1: Run training loop (worker mode)
+        """
+        print(f"Training on rank {self._world_rank} of {self._world_size} GPUs")
+        if self._world_rank is None:
+            args = (
+                self._config,
+                self._train_data_provider,
+                self._test_data_provider,
+                self._renderer,
+                self._loss_fn,
             )
-        )
-        
-        # Optional module schedulers
-        for module in self.optional_modules:
-            schedulers.extend(module.get_schedulers(max_steps))
-        
-        return schedulers
+            # Parent mode: spawn workers via cli()
+            SplatTrainer._spawn_workers(args)
+        else:
+            # Worker mode: run training loop
+            self._run_training()
     
-    def _convert_to_sparse_gradients(self, info: Dict):
-        """Convert dense gradients to sparse (for packed mode)."""
-        gaussian_ids = info["gaussian_ids"]
-        for k in self.splat_state.params.keys():
-            grad = self.splat_state.params[k].grad
-            if grad is None or grad.is_sparse:
-                continue
-            self.splat_state.params[k].grad = torch.sparse_coo_tensor(
-                indices=gaussian_ids[None],
-                values=grad[gaussian_ids],
-                size=self.splat_state.params[k].size(),
-                is_coalesced=True,
+    @classmethod
+    def _spawn_workers(cls, args: tuple):
+        """
+        Spawn worker processes using gsplat's cli().
+        """
+        cli(splat_trainer_worker_entry, args=(cls, *args), verbose=True)
+    
+    def _run_training(self):
+        """
+        Core training loop implementation.
+        
+        Works for both single-GPU and distributed modes.
+        """
+        print(f"Running training on rank {self._world_rank} of {self._world_size} GPUs")
+        print(self._train_data_provider)
+        print(self._test_data_provider)
+        print(self._renderer)
+        print(self._loss_fn)
+
+        modules = [
+            self._renderer,
+            self._loss_fn,
+            self._train_data_provider,
+            *([self._test_data_provider] if self._test_data_provider is not None else []),
+            *self._modules,
+        ]
+
+        print("Number of modules: ", len(modules))
+
+        # Setup
+        for module in self._modules:
+            module.on_setup(
+                world_rank=self._world_rank,
+                world_size=self._world_size,
             )
+        
+        for step in range(self._config.max_steps):
+            pass
+
+        raise NotImplementedError("Not implemented")
+        
+        # local_rank = self._local_rank
+        # world_rank = self._world_rank
+        # world_size = self._world_size
+        # is_distributed = self._is_distributed
+        
+        # # Set device
+        # device = torch.device(f"cuda:{local_rank}")
+        
+        # if world_rank == 0:
+        #     mode = f"distributed ({world_size} GPUs)" if world_size > 1 else "single-GPU"
+        #     print(f"[Running] {mode} training")
+        
+        # # Construct objects from lazy wrappers
+        # if world_rank == 0:
+        #     print("Loading datasets...")
+        # trainset = self._trainset_lazy.get()
+        # testset = self._testset_lazy.get() if self._testset_lazy is not None else None
+        
+        # if world_rank == 0:
+        #     print("Creating renderer and loss...")
+        # renderer = self._renderer_lazy.get()
+        # loss_fn = self._loss_lazy.get()
+        
+        # # Get scene scale
+        # scene_scale = trainset.scene_scale * 1.1 * self._config.global_scale
+        
+        # # Initialize Gaussians (only on rank 0)
+        # if world_rank == 0:
+        #     print("Initializing Gaussians...")
+        #     splat_model = SplatModel.from_pcd(
+        #         trainset,
+        #         sh_degree=self._config.sh_degree,
+        #         init_opacity=self._config.init_opacity,
+        #         init_scale=self._config.init_scale,
+        #     )
+        # else:
+        #     splat_model = None
+        
+        # # Create training state (handles distribution if world_size > 1)
+        # splat_state = SplatTrainingState.from_splat_model(
+        #     splat_model,
+        #     device=device,
+        #     world_rank=world_rank,
+        #     world_size=world_size,
+        #     lr_means=self._config.lr_means,
+        #     lr_scales=self._config.lr_scales,
+        #     lr_quats=self._config.lr_quats,
+        #     lr_opacities=self._config.lr_opacities,
+        #     lr_sh0=self._config.lr_sh0,
+        #     lr_shN=self._config.lr_shN,
+        #     scene_scale=scene_scale,
+        #     batch_size=self._config.batch_size,
+        # )
+        
+        # if world_rank == 0:
+        #     print(f"Number of Gaussians: {len(splat_state.params['means'])}")
+        
+        # # Setup dataloader
+        # trainloader = DataLoader(
+        #     trainset,
+        #     batch_size=self._config.batch_size,
+        #     shuffle=True,
+        #     num_workers=self._config.num_workers,
+        # )
+        # trainloader_iter = iter(trainloader)
+        
+        # # Training loop
+        # pbar = range(self._config.max_steps)
+        # if world_rank == 0:
+        #     import tqdm
+        #     pbar = tqdm.tqdm(pbar)
+        
+        # for step in pbar:
+        #     # Get batch
+        #     try:
+        #         data = next(trainloader_iter)
+        #     except StopIteration:
+        #         trainloader_iter = iter(trainloader)
+        #         data = next(trainloader_iter)
+            
+        #     # Move to device
+        #     cam_to_worlds = data["cam_to_world"].to(device)
+        #     Ks = data["K"].to(device)
+        #     images = data["image"].to(device) / 255.0
+        #     height, width = images.shape[1:3]
+            
+        #     # SH degree scheduling
+        #     sh_degree = min(step // self._config.sh_degree_interval, self._config.sh_degree)
+            
+        #     # Render
+        #     renders, render_outputs = renderer.render(
+        #         splat_state=splat_state,
+        #         cam_to_worlds=cam_to_worlds,
+        #         Ks=Ks,
+        #         width=width,
+        #         height=height,
+        #         sh_degree=sh_degree,
+        #         world_rank=world_rank,
+        #         world_size=world_size,
+        #     )
+            
+        #     # Compute loss
+        #     loss = loss_fn.compute(
+        #         renders=renders,
+        #         targets=images,
+        #         splat_state=splat_state,
+        #         rend_out=render_outputs,
+        #     )
+            
+        #     # Backward
+        #     loss.backward()
+            
+        #     # Optimize
+        #     for optimizer in splat_state.optimizers.values():
+        #         optimizer.step()
+        #         optimizer.zero_grad(set_to_none=True)
+            
+        #     # Logging
+        #     if world_rank == 0 and isinstance(pbar, tqdm.tqdm):
+        #         mode = "dist" if world_size > 1 else "single"
+        #         pbar.set_description(
+        #             f"[{mode}] loss={loss.item():.3f} | "
+        #             f"gs={len(splat_state.params['means'])} | "
+        #             f"sh={sh_degree}"
+        #         )
+
+
+def splat_trainer_worker_entry(
+    local_rank: int,
+    world_rank: int,
+    world_size: int,
+    args: tuple,
+):
+    """
+    Entry point for each worker process.
+    
+    Creates a new SplatTrainer instance.
+    The trainer will auto-detect that it's in a distributed context.
+    """
+    cls, config, train_data_provider, test_data_provider, renderer, loss_fn, modules = args
+    
+    # Create worker trainer
+    # In __post_init__, it will detect dist.is_initialized() == True
+    # and automatically set _is_distributed=True and get ranks
+    worker_trainer = cls.__new__(cls)
+    worker_trainer._config = config
+    worker_trainer._train_data_provider = train_data_provider
+    worker_trainer._test_data_provider = test_data_provider
+    worker_trainer._renderer = renderer
+    worker_trainer._loss_fn = loss_fn
+    worker_trainer._modules = modules
+    worker_trainer._local_rank = local_rank
+    worker_trainer._world_rank = world_rank
+    worker_trainer._world_size = world_size
+    worker_trainer.__post_init__()
+
+    worker_trainer.train()

@@ -6,7 +6,6 @@ from scipy.special import logit
 
 from ..utils.sh import rgb_to_sh, sh_to_K
 from ..utils.knn import knn
-from ..dataset import SparsePointCloudDataset
 
 @dataclass
 class SplatModel:
@@ -132,30 +131,30 @@ class SplatModel:
             _shN=shN,
         )
     
-    @classmethod
-    def from_pcd(
-        cls,
-        dataset: SparsePointCloudDataset,
-        sh_degree: int = 3,
-        init_opacity: float = 0.1,
-        init_scale: float = 1.0,
-    ) -> 'SplatModel':
-        """
-        Initialize from sparse point cloud dataset.
+    # @classmethod
+    # def from_colmap(
+    #     cls,
+    #     provider: SplatColmapDataProvider,
+    #     sh_degree: int = 3,
+    #     init_opacity: float = 0.1,
+    #     init_scale: float = 1.0,
+    # ) -> 'SplatModel':
+    #     """
+    #     Initialize from COLMAP data provider.
         
-        Args:
-            dataset: SPC Dataset with points and colors
-            sh_degree: Maximum SH degree
-            init_opacity: Initial opacity
-            init_scale: Scale multiplier
+    #     Args:
+    #         provider: COLMAP data provider
+    #         sh_degree: Maximum SH degree
+    #         init_opacity: Initial opacity
+    #         init_scale: Scale multiplier
         
-        Returns:
-            SplatModel initialized from dataset
-        """
-        points = dataset.points.astype(np.float32)
-        colors = (dataset.points_rgb / 255.0).astype(np.float32)
+    #     Returns:
+    #         SplatModel initialized from COLMAP data provider
+    #     """
+    #     points = provider._colmap_dataset.points.astype(np.float32)
+    #     colors = (provider._colmap_dataset.points_rgb / 255.0).astype(np.float32)
         
-        return cls.from_points(points, colors, sh_degree, init_opacity, init_scale)
+    #     return cls.from_points(points, colors, sh_degree, init_opacity, init_scale)
     
     @classmethod
     def from_random(
