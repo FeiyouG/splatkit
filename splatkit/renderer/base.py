@@ -1,15 +1,15 @@
 from abc import ABC, abstractmethod
-from typing import Generic, Literal, Tuple
+from typing import Generic, Literal, Sequence, Tuple, Type
 
 from torch import Tensor
 
-from ..modules import SplatBaseFrameT
+from ..modules import SplatRenderPayloadT
 from ..splat.training_state import SplatTrainingState
 from ..modules.base import SplatBaseModule
 
 class SplatRenderer(
-    SplatBaseModule[SplatBaseFrameT], 
-    Generic[SplatBaseFrameT], 
+    SplatBaseModule[SplatRenderPayloadT], 
+    Generic[SplatRenderPayloadT], 
     ABC
 ):
     """Abstract base class for all renderers.
@@ -17,6 +17,21 @@ class SplatRenderer(
     Encapsulates rendering configuration and provides a simple render() interface.
     All configuration parameters are private and set via constructor or setters.
     """
+
+    def __init__(self):
+        super().__init__()
+    
+    def on_setup(
+        self,
+        render_payload_T: type,
+        data_item_T: type,
+        modules: Sequence[SplatBaseModule[SplatRenderPayloadT]], 
+        world_rank: int = 0,
+        world_size: int = 1,
+        scene_scale: float = 1.0,
+    ):
+        if not issubclass(render_payload_T, self.render_payload_T):
+            raise ValueError(f"Render payload type {render_payload_T} is not compatible with {self.render_payload_T} for renderer {self.__class__.__name__}")
     
     @abstractmethod
     def render(
@@ -24,15 +39,15 @@ class SplatRenderer(
         splat_state: SplatTrainingState,
         cam_to_worlds: Tensor, # (..., 4, 4)
         Ks: Tensor, # (..., 3, 3)
-        camera_model: str,
-        width: int,
         height: int,
+        width: int,
+        camera_model: Literal["pinhole", "ortho", "fisheye", "ftheta"] | None = None,
         backgrounds: Tensor | None = None,
         render_mode: Literal["RGB", "D", "ED", "RGB+D", "RGB+ED"] = "RGB",
         sh_degree: int | None = None,
         world_rank: int = 0,
         world_size: int = 1,
-    ) -> Tuple[Tensor, SplatBaseFrameT]:
+    ) -> Tuple[Tensor, SplatRenderPayloadT]:
         """
         Render splats from camera viewpoints.
         

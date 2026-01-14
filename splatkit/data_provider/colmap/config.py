@@ -12,3 +12,6 @@ class SplatColmapDataProviderConfig:
     load_depth: bool = False
     masks_dir: str | None = None
     train_test_ratio: float = 0.8
+
+    batch_size: int = 1
+    num_workers: int = 4

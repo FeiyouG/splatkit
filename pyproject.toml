@@ -39,3 +39,7 @@ fused-ssim = { git = "https://github.com/rahul-goel/fused-ssim", rev="98126b7781
 name = "pytorch-cu121-linux"
 url = "https://download.pytorch.org/whl/cu121"
 explicit = true
+
+[tool.pyright]
+typeCheckingMode = "standard"
+reportImplicitRelativeImport = "warning"

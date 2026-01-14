@@ -3,7 +3,7 @@ from typing import Any, KeysView, ItemsView, ValuesView, TypeVar
 from torch import Tensor
 
 @dataclass(frozen=True)
-class SplatBaseFrame:
+class SplatRenderPayload:
     """
     Metadata for rendered images.
     """
@@ -36,4 +36,5 @@ class SplatBaseFrame:
     def to_dict(self) -> dict:
         return dict(self.__dict__)
 
-SplatBaseFrameT = TypeVar("SplatBaseFrameType", bound="SplatBaseFrame")
+# We use contravariant to allow for sub-classes of SplatRenderedOutput to be used as the type parameter.
+SplatRenderPayloadT = TypeVar("SplatRenderPayloadT", bound="SplatRenderPayload", contravariant=True)

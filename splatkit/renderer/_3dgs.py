@@ -1,16 +1,16 @@
 from dataclasses import dataclass
-from typing import Literal, Tuple
+from typing import Literal, Sequence, Tuple
 import torch
 from torch import Tensor
 
 from gsplat.rendering import rasterization
 
-from ..modules import SplatBaseFrame
+from ..modules import SplatBaseModule, SplatRenderPayload
 from ..splat.training_state import SplatTrainingState
 from .base import SplatRenderer
 
 @dataclass(frozen=True)
-class Splat3DGSFrame(SplatBaseFrame):
+class Splat3dgsRenderPayload(SplatRenderPayload):
     """
     Metadata for 3D Gaussian Splatting rendered images.
     """
@@ -18,9 +18,20 @@ class Splat3DGSFrame(SplatBaseFrame):
     conics: Tensor # (..., H, W, 1)
     opacities: Tensor # (..., H, W, 1)
 
-class Splat3DGSRenderer(SplatRenderer[Splat3DGSFrame]):
+class Splat3DGSRenderer(SplatRenderer[Splat3dgsRenderPayload]):
     """3D Gaussian Splatting renderer.
     """
+
+    _camera_model: Literal["pinhole", "ortho", "fisheye", "ftheta"]
+    _near_plane: float
+    _far_plane: float
+    _tile_size: int
+    _sparse_grad: bool
+    _radius_clip: float
+    _antialiased: bool
+    _eps2d: float
+    _absgrad: bool
+    _channel_chunk: int
     
     def __init__(
         self,
@@ -71,33 +82,20 @@ class Splat3DGSRenderer(SplatRenderer[Splat3DGSFrame]):
         self._absgrad = absgrad
         self._channel_chunk = channel_chunk
     
-    # Setters for commonly adjusted parameters
-    def set_antialiased(self, antialiased: bool):
-        """Enable or disable antialiasing."""
-        self._antialiased = antialiased
-    
-    def set_radius_clip(self, radius_clip: float):
-        """Set radius clipping threshold."""
-        self._radius_clip = radius_clip
-    
-    def set_absgrad(self, absgrad: bool):
-        """Enable or disable absolute gradient computation."""
-        self._absgrad = absgrad
-    
     def render(
         self,
         splat_state: SplatTrainingState,
         cam_to_worlds: Tensor,
         Ks: Tensor,
-        width: int,
         height: int,
+        width: int,
+        camera_model: Literal["pinhole", "ortho", "fisheye", "ftheta"] | None = None,
         backgrounds: Tensor | None = None,
         render_mode: Literal["RGB", "D", "ED", "RGB+D", "RGB+ED"] = "RGB",
-        camera_model: str | None = None,
         sh_degree: int | None = None,
         world_rank: int = 0,
         world_size: int = 1,
-    ) -> Tuple[Tensor, Splat3DGSFrame]:
+    ) -> Tuple[Tensor, Splat3dgsRenderPayload]:
         """
         Render splats from camera viewpoints.
         
@@ -156,12 +154,12 @@ class Splat3DGSRenderer(SplatRenderer[Splat3DGSFrame]):
             rasterize_mode="antialiased" if self._antialiased else "classic",
             channel_chunk=self._channel_chunk,
             distributed=distributed,
-            camera_model=self._camera_model,
+            camera_model=camera_model,
             packed=False, # Never pack
         )
         
         # Build render_meta with alphas included
-        outputs = Splat3DGSRendererOutput(
+        outputs = Splat3dgsRenderPayload(
             renders=renders,
             alphas=alphas,
             n_cameras=info["n_cameras"],
@@ -175,3 +173,18 @@ class Splat3DGSRenderer(SplatRenderer[Splat3DGSFrame]):
             height=info["height"],
         )
         return renders, outputs
+
+
+    
+    # Setters for commonly adjusted parameters
+    def set_antialiased(self, antialiased: bool):
+        """Enable or disable antialiasing."""
+        self._antialiased = antialiased
+    
+    def set_radius_clip(self, radius_clip: float):
+        """Set radius clipping threshold."""
+        self._radius_clip = radius_clip
+    
+    def set_absgrad(self, absgrad: bool):
+        """Enable or disable absolute gradient computation."""
+        self._absgrad = absgrad

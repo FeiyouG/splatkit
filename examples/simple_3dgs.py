@@ -1,18 +1,21 @@
-
+import os
 from typing import Any
 
 
-from splatkit.trianer import SplatTrainer
-from splatkit.data_provider import SplatColmapDataProvider, SplatColmapDataProviderConfig
-from splatkit.renderer import Splat3DGSRenderer, Splat3DGSFrame
-from splatkit.loss import Splat3dgsSimpleLossFn
+from splatkit.trainer import SplatTrainer
+from splatkit.data_provider import SplatColmapDataProvider, SplatColmapDataProviderConfig, ColmapDataItem
+from splatkit.renderer import Splat3DGSRenderer, Splat3dgsRenderPayload
+from splatkit.loss_fn import SplatDefaultLossFn
+from splatkit.modules import SplatExporter
+from splatkit.densification import SplatDefaultDensification
     
 if __name__ == "__main__":
+    work_dir = "/Users/feiyouguo/Downloads/test/crossbag2/new"
     data_provider = SplatColmapDataProvider(
         config = SplatColmapDataProviderConfig(
-            colmap_dir="/Users/feiyouguo/Downloads/test/crossbag2/new/undistorted/sparse/0",
-            images_dir="/Users/feiyouguo/Downloads/test/crossbag2/new/undistorted/images",
-            masks_dir="/Users/feiyouguo/Downloads/test/crossbag2/new/undistorted/masks",
+            colmap_dir=os.path.join(work_dir, "undistorted/sparse/0"),
+            images_dir=os.path.join(work_dir, "undistorted/images"),
+            masks_dir=os.path.join(work_dir, "undistorted/masks/object_0"),
             factor=1,
             normalize=True,
             load_depth=True,
@@ -21,12 +24,23 @@ if __name__ == "__main__":
     )
 
     renderer = Splat3DGSRenderer()
-    loss_func = Splat3dgsSimpleLossFn()
+    loss_func = SplatDefaultLossFn()
+    densification = SplatDefaultDensification()
 
-    trainer = SplatTrainer[Splat3DGSFrame](
+    modules = [
+        SplatExporter(
+            splat_dir=os.path.join(work_dir, "splat"),
+            splat_save_on=[0, 100, 200, 300, 400, 500],
+            ckpt_dir=os.path.join(work_dir, "ckpt"),
+            ckpt_save_on=[0, 100, 200, 300, 400, 500],
+        )
+    ]
+
+    trainer = SplatTrainer[ColmapDataItem, Splat3dgsRenderPayload](
         renderer=renderer,
         loss_fn=loss_func,
-        train_data_provider=data_provider,
-        test_data_provider=data_provider,
+        data_provider=data_provider,
+        densification=densification,
+        modules=modules,
     )
-    trainer.train()
+    trainer.run()

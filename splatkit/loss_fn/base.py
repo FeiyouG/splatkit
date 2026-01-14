@@ -4,11 +4,11 @@ from typing import Dict, Any, Tuple, Generic
 import torch.nn.functional as F
 
 from ..splat.training_state import SplatTrainingState
-from ..modules import SplatBaseModule, SplatBaseFrameT
+from ..modules import SplatRenderPayloadT, SplatBaseModule
 
 class SplatLossFn(
-    SplatBaseModule[SplatBaseFrameT],
-    Generic[SplatBaseFrameT],
+    SplatBaseModule[SplatRenderPayloadT],
+    Generic[SplatRenderPayloadT],
     ABC
 ):
     """
@@ -20,7 +20,7 @@ class SplatLossFn(
         renders: torch.Tensor, # (..., H, W, 3)
         targets: torch.Tensor, # (..., H, W, 3)
         training_state: SplatTrainingState,
-        rend_out: SplatBaseFrameT,
+        rend_out: SplatRenderPayloadT,
         masks: torch.Tensor | None = None, # (..., H, W)
     ) -> torch.Tensor:
         """
@@ -57,7 +57,7 @@ class SplatLossFn(
         if opacity_reg > 0:
             return opacity_reg * torch.sigmoid(opacities).mean()
         else:
-            return 0.0
+            return opacities.new_zeros(())
 
     def _scale_reg(self, scales: torch.Tensor, scale_reg: float = 0.0) -> torch.Tensor:
         """
@@ -66,4 +66,4 @@ class SplatLossFn(
         if scale_reg > 0:
             return scale_reg * torch.exp(scales).mean()
         else:
-            return 0.0
+            return scales.new_zeros(())

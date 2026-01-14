@@ -1,8 +1,14 @@
 from .base import SplatBaseModule
-from .frame import SplatBaseFrame, SplatBaseFrameT
+from .composite import SplatModuleComposite
+from .frame import SplatRenderPayload, SplatRenderPayloadT
+
+from .exporter import SplatExporter
 
 __all__ = [
     "SplatBaseModule",
-    "SplatBaseFrame",
-    "SplatBaseFrameT",
+    "SplatRenderPayload",
+    "SplatRenderPayloadT",
+    "SplatModuleComposite",
+    
+    "SplatExporter",
 ]

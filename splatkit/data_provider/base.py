@@ -1,12 +1,11 @@
-from typing import Any, KeysView, ItemsView, ValuesView, TypeVar, Generic
-from typing_extensions import NotRequired
+from typing import Any, TypeVar, Generic
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 
 import torch
 
 from ..splat import SplatModel
-from ..modules import SplatBaseFrameT, SplatBaseModule
+from ..modules import SplatRenderPayloadT, SplatBaseModule
 
 @dataclass(frozen=True)
 class SplatDataItem():
@@ -17,13 +16,13 @@ class SplatDataItem():
     image_name: str
     camera_model: str
 
-    K: torch.Tensor                # (3, 3)
-    cam_to_world: torch.Tensor     # (4, 4)
-    image: torch.Tensor            # (H, W, 3), float32
+    K: torch.Tensor                # (B, 3, 3)
+    cam_to_world: torch.Tensor     # (B, 4, 4)
+    image: torch.Tensor            # (B, H, W, 3), float32
     
-    mask: NotRequired[torch.Tensor]        # (H, W), bool
-    points: NotRequired[torch.Tensor]      # (M, 2)
-    depths: NotRequired[torch.Tensor]      # (M,)
+    mask: torch.Tensor | None = None    # (B, H, W), bool
+    points: torch.Tensor | None = None      # (B, M, 2)
+    depths: torch.Tensor | None = None      # (B, M,)
 
     
     def __getitem__(self, key: str) -> Any:
@@ -33,24 +32,53 @@ class SplatDataItem():
     
     def __contains__(self, key: str) -> bool:
         return hasattr(self, key)
+    
+    def to(self, device: torch.device | str) -> "SplatDataItem":
+        """
+        Move the data item to the given device and return a new instance.
+        """
+        values = {}
+        for f in fields(self):
+            v = getattr(self, f.name)
+            if torch.is_tensor(v):
+                values[f.name] = v.to(torch.device(device))
+            else:
+                values[f.name] = v
+        return type(self)(**values)
 
-    def keys(self) -> KeysView[str]:
-        return self.__dict__.keys()
+    
+    @classmethod
+    def from_batch(cls, batch: list[dict[str, Any]]) -> "SplatDataItem":
+        if not batch:
+            raise ValueError("Empty batch")
 
-    def values(self) -> ValuesView[Any]:
-        return self.__dict__.values()
+        values: dict[str, Any] = {}
 
-    def items(self) -> ItemsView[str, Any]:
-        return self.__dict__.items()
+        for f in fields(cls):
+            name = f.name
+            elems = [b[name] for b in batch]
 
-    def to_dict(self) -> dict:
-        return dict(self.__dict__)
+            first = elems[0]
 
-SplatDataItemT = TypeVar("SplatDataItemType", bound="SplatDataItem")
+            # Tensor → stack
+            if torch.is_tensor(first):
+                values[name] = torch.stack(elems, dim=0)
+
+            # Optional tensor
+            elif first is None:
+                values[name] = None
+
+            # Metadata → list
+            else:
+                values[name] = elems
+
+        return cls(**values)
+
+SplatDataItemT = TypeVar("SplatDataItemT", bound="SplatDataItem")
 
 class SplatDataProvider(
-    SplatBaseModule[SplatBaseFrameT], 
-    Generic[SplatBaseFrameT, SplatDataItemT], 
+    SplatBaseModule[SplatRenderPayloadT], 
+    Generic[SplatRenderPayloadT, SplatDataItemT], 
     ABC
 ):
     """
@@ -58,12 +86,14 @@ class SplatDataProvider(
     """
 
     @abstractmethod
-    def next_train_data(
-        self,
-        step: int,
-        world_rank: int = 0,
-        world_size: int = 1,
-    ) -> SplatDataItemT:
+    def load_data(self) -> float:
+        """
+        Load the data and return the scene scale.
+        """
+        raise NotImplementedError("Subclasses must implement this method")
+
+    @abstractmethod
+    def next_train_data(self, step: int) -> SplatDataItemT:
         """
         Return the next training data item.
 
@@ -75,7 +105,7 @@ class SplatDataProvider(
         Returns:
             The next training data item.
         """
-        pass
+        raise NotImplementedError("Subclasses must implement this method")
 
     @abstractmethod
     def get_train_data_size(
@@ -86,7 +116,7 @@ class SplatDataProvider(
         """
         Return the length of the training data.
         """
-        pass
+        raise NotImplementedError("Subclasses must implement this method")
 
     @abstractmethod
     def next_test_data(
@@ -106,7 +136,7 @@ class SplatDataProvider(
         Returns:
             The next test data item.
         """
-        pass
+        raise NotImplementedError("Subclasses must implement this method")
     
 
     @abstractmethod
@@ -118,7 +148,7 @@ class SplatDataProvider(
         """
         Return the size of the test data.
         """
-        pass
+        raise NotImplementedError("Subclasses must implement this method")
 
     @abstractmethod
     def init_splat_model(
@@ -126,7 +156,11 @@ class SplatDataProvider(
         sh_degree: int = 3,
         init_opacity: float = 0.1,
         init_scale: float = 1.0,
-    ) -> SplatModel:
+        world_rank: int = 0,
+        world_size: int = 1,
+
+        leader_rank: int = 0,
+    ) -> SplatModel | None:
         """
         Initialize a SplatModel.
             
@@ -134,8 +168,16 @@ class SplatDataProvider(
             sh_degree: Maximum SH degree
             init_opacity: Initial opacity
             init_scale: Scale multiplier
-            
+            world_rank: The current world rank.
+            world_size: The current world size.
         Returns:
             SplatModel initialized from data provider
         """
-        pass
+        raise NotImplementedError("Subclasses must implement this method")
+
+    @property
+    def scene_scale(self) -> float:
+        """
+        Return the scene scale.
+        """
+        raise NotImplementedError("Subclasses must implement this method")

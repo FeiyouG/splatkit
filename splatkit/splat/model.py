@@ -131,31 +131,6 @@ class SplatModel:
             _shN=shN,
         )
     
-    # @classmethod
-    # def from_colmap(
-    #     cls,
-    #     provider: SplatColmapDataProvider,
-    #     sh_degree: int = 3,
-    #     init_opacity: float = 0.1,
-    #     init_scale: float = 1.0,
-    # ) -> 'SplatModel':
-    #     """
-    #     Initialize from COLMAP data provider.
-        
-    #     Args:
-    #         provider: COLMAP data provider
-    #         sh_degree: Maximum SH degree
-    #         init_opacity: Initial opacity
-    #         init_scale: Scale multiplier
-        
-    #     Returns:
-    #         SplatModel initialized from COLMAP data provider
-    #     """
-    #     points = provider._colmap_dataset.points.astype(np.float32)
-    #     colors = (provider._colmap_dataset.points_rgb / 255.0).astype(np.float32)
-        
-    #     return cls.from_points(points, colors, sh_degree, init_opacity, init_scale)
-    
     @classmethod
     def from_random(
         cls,

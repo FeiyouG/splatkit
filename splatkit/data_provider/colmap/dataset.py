@@ -6,11 +6,12 @@ import numpy as np
 import imageio
 import torch
 import pycolmap
+from torch.utils.data import Dataset
 
 from .item import ColmapDataItem
 from .config import SplatColmapDataProviderConfig
 
-class SplatColmapDataset():
+class SplatColmapDataset(Dataset[ColmapDataItem]):
     """
     Torch-compatible COLMAP dataset.
     """
@@ -24,16 +25,16 @@ class SplatColmapDataset():
 
     _image_names: List[str] = []
     _image_paths: List[str] = []
-    _world_to_cam: List[np.ndarray] = []
-    _cam_to_world: List[np.ndarray] = []
-    _Ks: List[np.ndarray] = []
+    _world_to_cam: np.ndarray = np.array([], dtype=np.float32) # (N, 4, 4)
+    _cam_to_world: np.ndarray = np.array([], dtype=np.float32) # (N, 4, 4)
+    _Ks: np.ndarray = np.array([], dtype=np.float32) # (N, 3, 3)
     _image_sizes: List[Tuple[int, int]] = []
     _mask_paths: List[str] | None
-    _points: np.ndarray = []
-    _points_rgb: np.ndarray = []
-    _points_err: np.ndarray = []
-    _point_indices: Dict[str, np.ndarray] = {}
-    _transform: np.ndarray = np.eye(4, dtype=np.float32)
+    _points: np.ndarray = np.array([], dtype=np.float32) # (N, 3)
+    _points_rgb: np.ndarray = np.array([], dtype=np.uint8) # (N, 3)
+    _points_err: np.ndarray = np.array([], dtype=np.float32) # (N,)
+    _point_indices: Dict[str, np.ndarray] = {} # {image_name: np.ndarray[int32]}mo
+    _transform: pycolmap.Sim3d | None = None
     _scene_scale: float = 0.0
     _camera_models: List[str] = []
 
@@ -65,7 +66,7 @@ class SplatColmapDataset():
             self._transform = recon.normalize()
             recon.transform(self._transform)
         else:
-            self._transform = np.eye(4, dtype=np.float32)
+            self._transform = None
 
         # Validate image directory
         if not os.path.exists(self._images_dir):
@@ -88,6 +89,9 @@ class SplatColmapDataset():
         image: pycolmap.Image
         for image in recon.images.values():
             camera = image.camera
+
+            if camera is None:
+                raise ValueError(f"Camera not found for image: {image.name}")
 
             name = image.name
             img_path = os.path.join(self._images_dir, name)
@@ -113,7 +117,7 @@ class SplatColmapDataset():
             cam_to_world.append(c2w)
             Ks.append(K)
             image_sizes.append((width, height))
-            camera_models.append(camera.model)
+            camera_models.append(camera.model.name)
 
             if self._masks_dir is not None:
                 stem = Path(name).stem  # filename without extension
@@ -150,8 +154,7 @@ class SplatColmapDataset():
         self._points_rgb = np.array([p.color for p in recon.points3D.values()], dtype=np.uint8)
         self._points_err = np.array([p.error for p in recon.points3D.values()], dtype=np.float32)
 
-        self._point_indices: Dict[str, np.ndarray] = {}
-
+        point_indices: Dict[str, list[int]] = {}
         image_id_to_name = {i.image_id: i.name for i in recon.images.values()}
         point_id_to_index = {
             pid: idx for idx, pid in enumerate(recon.points3D.keys())
@@ -161,10 +164,10 @@ class SplatColmapDataset():
             pidx = point_id_to_index[point_id]
             for element in point3D.track.elements:
                 name = image_id_to_name[element.image_id]
-                self._point_indices.setdefault(name, []).append(pidx)
+                point_indices.setdefault(name, []).append(pidx)
 
         # Convert to numpy
-        for k, v in self._point_indices.items():
+        for k, v in point_indices.items():
             self._point_indices[k] = np.asarray(v, dtype=np.int32)
 
         # Scene scale
@@ -236,26 +239,22 @@ class SplatColmapDataset():
         actul_index = self._valid_indices[index]
 
         image = imageio.imread(self._image_paths[actul_index])
-        
-        item: ColmapDataItem = {
-            "id": actul_index,
-            "image_name": self._image_names[actul_index],
-            "camera_model": self._camera_models[actul_index].name,
 
-            "image": torch.from_numpy(image[..., :3]).float(),
-            "K": torch.from_numpy(self._Ks[actul_index]).float(),
-            "cam_to_world": torch.from_numpy(self._cam_to_world[actul_index]).float(),
-        }
-
-
+        mask: torch.Tensor | None = None
         if self._masks_dir is not None:
-            mask = imageio.imread(self._mask_paths[actul_index])
-            if mask.ndim == 3:
+            if self._mask_paths is None:
+                raise ValueError("Mask paths are not set")
+
+            mask_np = imageio.imread(self._mask_paths[actul_index])
+            if mask_np.ndim == 3:
                 # RGB or RGBA - take first channel only
-                mask = mask[..., 0] # (H, W, 3) -> (H, W)
+                mask_np = mask_np[..., 0] # (H, W, 3) -> (H, W)
 
-            item["mask"] = torch.from_numpy(mask).bool() # (H, W)
-
+            mask = torch.from_numpy(mask_np).bool() # (H, W)
+        
+        
+        points: torch.Tensor | None = None
+        depths: torch.Tensor | None = None
         if self._load_depth:
             world_to_cam = self._world_to_cam[actul_index]
             image_name = self._image_names[actul_index]
@@ -271,17 +270,32 @@ class SplatColmapDataset():
 
                 points_proj = (self._Ks[actul_index] @ points_cam.T).T
                 xy = points_proj[:, :2] / points_proj[:, 2:3]
-                depths = points_cam[:, 2]
+                depths_np = points_cam[:, 2]
 
                 H, W = image.shape[:2]
                 valid = (
                     (xy[:, 0] >= 0) & (xy[:, 0] < W) &
                     (xy[:, 1] >= 0) & (xy[:, 1] < H) &
-                    (depths > 0)
+                    (depths_np > 0)
                 )
 
-                item["points"] = torch.from_numpy(xy[valid]).float()
-                item["depths"] = torch.from_numpy(depths[valid]).float()
+                points = torch.from_numpy(xy[valid]).float()
+                depths = torch.from_numpy(depths_np[valid]).float()
+        
+
+        item: ColmapDataItem = ColmapDataItem(
+            id=actul_index,
+            image_name=self._image_names[actul_index],
+            camera_model=self._camera_models[actul_index],
+
+            image=torch.from_numpy(image[..., :3]).float(),
+            K=torch.from_numpy(self._Ks[actul_index]).float(),
+            cam_to_world=torch.from_numpy(self._cam_to_world[actul_index]).float(),
+            
+            mask=mask,
+            points=points,
+            depths=depths,
+        )
 
         return item
 

@@ -1,11 +1,11 @@
 from typing import Generic
 
-from ..modules import SplatBaseFrame, SplatBaseFrame
+from ..modules import SplatRenderPayload, SplatRenderPayload
 from ..utils.batched import normalize_batch_tensors
 from .base import SplatLossFn
 
 class SplatDefaultLossFn(
-    SplatLossFn[SplatBaseFrame],
+    SplatLossFn[SplatRenderPayload],
 ):
     """Simple 3DGS loss: L1 + SSIM + regularization."""
     
@@ -29,7 +29,7 @@ class SplatDefaultLossFn(
         self.opacity_reg = opacity_reg
         self.scale_reg = scale_reg
     
-    def compute_loss(self, renders, targets, splat_state, rend_out, masks=None):
+    def compute_loss(self, renders, targets, training_state, rend_out, masks=None):
         """
         Compute loss.
         """
@@ -51,8 +51,8 @@ class SplatDefaultLossFn(
             photometric_loss = self._photometric_loss(renders, targets, self.ssim_lambda)
 
         # Regularization
-        opa_loss = self._opacity_reg(splat_state.params["opacities"], self.opacity_reg)
-        scale_loss = self._scale_reg(splat_state.params["scales"], self.scale_reg)
+        opa_loss = self._opacity_reg(training_state.params["opacities"], self.opacity_reg)
+        scale_loss = self._scale_reg(training_state.params["scales"], self.scale_reg)
 
         loss = photometric_loss + bg_loss + opa_loss + scale_loss
         

@@ -82,12 +82,12 @@ def distribute_tensor(
 
             dtype_code = torch.empty(1, dtype=torch.long, device=common_device)
             dist.recv(dtype_code, src=leader_rank)
-            dtype = _code_to_dtype(dtype_code.item())
+            dtype = _code_to_dtype(int(dtype_code.item()))
 
             n_dim = torch.empty(1, dtype=torch.long, device=common_device)
             dist.recv(n_dim, src=leader_rank)
 
-            shape = torch.empty(n_dim.item(), dtype=torch.long, device=common_device)
+            shape = torch.empty(int(n_dim.item()), dtype=torch.long, device=common_device)
             dist.recv(shape, src=leader_rank)
 
             local_tensor = torch.empty(tuple(shape.tolist()), dtype=dtype, device=common_device)
@@ -129,7 +129,7 @@ def gather_tensor(
             else:
                 dtype_code = torch.empty(1, dtype=torch.long, device=common_device)
                 dist.recv(dtype_code, src=r)
-                dtype = _code_to_dtype(dtype_code.item())
+                dtype = _code_to_dtype(int(dtype_code.item()))
                 if dtype != tensor.dtype:
                     raise ValueError(f"Inconsistent dtype: {dtype} != {tensor.dtype}")
 
@@ -138,7 +138,7 @@ def gather_tensor(
                 if n_dim.item() != tensor.ndim:
                     raise ValueError(f"Inconsistent n_dim: {n_dim.item()} != {tensor.ndim}")
 
-                shape = torch.empty(n_dim.item(), dtype=torch.long, device=common_device)
+                shape = torch.empty(int(n_dim.item()), dtype=torch.long, device=common_device)
                 dist.recv(shape, src=r)
                 r_tensor = torch.empty(tuple(shape.tolist()), dtype=dtype, device=common_device)
                 dist.recv(r_tensor, src=r)
