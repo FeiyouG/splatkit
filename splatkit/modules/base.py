@@ -17,6 +17,7 @@ class SplatBaseModule(Generic[SplatRenderPayloadT], ABC):
         render_payload_T: type,
         data_item_T: type,
         modules: Sequence["SplatBaseModule[SplatRenderPayloadT]"], 
+        max_steps: int,
         world_rank: int = 0,
         world_size: int = 1,
         scene_scale: float = 1.0,
@@ -64,6 +65,21 @@ class SplatBaseModule(Generic[SplatRenderPayloadT], ABC):
         Hook invoked before a loss has been computed.
         """
         pass
+    
+    def post_compute_loss(
+        self,
+        step: int,
+        max_steps: int,
+        loss: torch.Tensor,
+        training_state: SplatTrainingState,
+        masks: torch.Tensor | None = None, # (..., H, W)
+        world_rank: int = 0,
+        world_size: int = 1,
+    ):
+        """
+        Hook invoked before a loss has been backwarded.
+        """
+        pass
 
     def on_optimize(
         self,
@@ -92,6 +108,16 @@ class SplatBaseModule(Generic[SplatRenderPayloadT], ABC):
     ):
         """
         Hook invoked after a step has been executed.
+        """
+        pass
+    
+    def on_cleanup(
+        self,
+        world_rank: int = 0,
+        world_size: int = 1,
+    ):
+        """
+        Hook invoked after the training loop has finished.
         """
         pass
 

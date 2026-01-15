@@ -26,6 +26,7 @@ class SplatRenderer(
         render_payload_T: type,
         data_item_T: type,
         modules: Sequence[SplatBaseModule[SplatRenderPayloadT]], 
+        max_steps: int,
         world_rank: int = 0,
         world_size: int = 1,
         scene_scale: float = 1.0,

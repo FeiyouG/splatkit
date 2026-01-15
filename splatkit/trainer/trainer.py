@@ -122,6 +122,7 @@ class SplatTrainer(Generic[SplatDataItemT, SplatRenderPayloadT]):
             render_payload_T=self._render_payload_T,
             data_item_T=self._data_item_T,
             modules=self._modules,
+            max_steps=self._config.max_steps,
             world_rank=self._world_rank,
             world_size=self._world_size,
             scene_scale=scene_scale,
@@ -201,6 +202,16 @@ class SplatTrainer(Generic[SplatDataItemT, SplatRenderPayloadT]):
                 masks=masks,
             )
 
+            all_modules.post_compute_loss(
+                step=step,
+                max_steps=self._config.max_steps,
+                loss=loss,
+                training_state=splat_training_state,
+                masks=masks,
+                world_rank=self._world_rank,
+                world_size=self._world_size,
+            )
+
             loss.backward()
 
             # Step 5: Step Optimizers
@@ -227,4 +238,17 @@ class SplatTrainer(Generic[SplatDataItemT, SplatRenderPayloadT]):
                 rend_out=rend_out,
             )
 
-        # raise NotImplementedError("Not implemented")
+            all_modules.post_step(
+                step=step,
+                max_steps=self._config.max_steps,
+                rendered_frames=renders,
+                target_frames=target_frames,
+                training_state=splat_training_state,
+                rend_out=rend_out,
+            )
+        
+        # Cleanup resources
+        all_modules.on_cleanup(
+            world_rank=self._world_rank,
+            world_size=self._world_size,
+        )
