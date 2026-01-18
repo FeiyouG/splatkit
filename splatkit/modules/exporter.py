@@ -73,14 +73,14 @@ class SplatExporter(SplatBaseModule[SplatRenderPayload]):
             self._splat_dir is not None
             and (
                 step in self._splat_save_on
-                or step == max_steps
+                or step == max_steps - 1
             )
         ):
             splat_model = training_state.to_splat_model()
             if splat_model is not None:
                 if self._splat_format == "ply":
-                    splat_model.save_ply(os.path.join(self._splat_dir, f"splat_{step}.ply"))
-                    print(f"Saved splat model to {os.path.join(self._splat_dir, f'splat_{step}.ply')}")
+                    splat_model.save_ply(os.path.join(self._splat_dir, f"{step}.ply"))
+                    print(f"Saved splat model to {os.path.join(self._splat_dir, f'{step}.ply')}")
                 else: 
                     raise ValueError(f"Invalid splat format: {self._splat_format}")
             
@@ -88,8 +88,8 @@ class SplatExporter(SplatBaseModule[SplatRenderPayload]):
             self._ckpt_dir is not None
             and (
                 step in self._ckpt_save_on
-                or step == max_steps
+                or step == max_steps - 1
             )
         ):
-            training_state.save_ckpt(os.path.join(self._ckpt_dir, f"ckpt_{step}.pth"))
-            print(f"Saved checkpoint to {os.path.join(self._ckpt_dir, f'ckpt_{step}.pth')}")
+            training_state.save_ckpt(os.path.join(self._ckpt_dir, f"{step}.ckpt"))
+            print(f"Saved checkpoint to {os.path.join(self._ckpt_dir, f'{step}.ckpt')}")

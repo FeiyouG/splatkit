@@ -131,6 +131,9 @@ class SplatTrainer(Generic[SplatDataItemT, SplatRenderPayloadT]):
         # Initialize splat traininig state
         splat_model = self._data_provider.init_splat_model(
             leader_rank=leader_rank,
+            sh_degree=self._config.sh_degree,
+            init_opacity=self._config.init_opacity,
+            init_scale=self._config.init_scale,
             world_rank=self._world_rank,
             world_size=self._world_size,
         )

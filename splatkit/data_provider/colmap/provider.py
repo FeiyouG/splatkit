@@ -94,7 +94,7 @@ class SplatColmapDataProvider(
         return len(self._train_dataset)
 
     def next_train_data(self, step: int, world_rank: int = 0, world_size: int = 1) -> ColmapDataItem:
-        batch, self._train_iter = self._next_from_iter(
+        batch, self._train_data_iter = self._next_from_iter(
             self._train_data_loader,
             self._train_data_iter,
         )
@@ -125,7 +125,7 @@ class SplatColmapDataProvider(
             return None
 
         points = self._colmap_dataset.points.astype(np.float32)
-        colors = (self._colmap_dataset.points_rgb / 255.0).astype(np.float32)
+        colors = (self._colmap_dataset.points_rgb / 255.0).astype(np.float32)  # Normalize to [0, 1]
 
         return SplatModel.from_points(
             points,

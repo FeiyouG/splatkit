@@ -59,26 +59,8 @@ class SplatProgressTracker(SplatBaseModule[SplatRenderPayload]):
             total=max_steps,
             desc="Training",
             ncols=120,
-            bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}]'
+            bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}, {postfix}]'
         )
-    
-    @override
-    def pre_step(
-        self,
-        step: int,
-        max_steps: int,
-        target_frames: torch.Tensor,
-        training_state: SplatTrainingState,
-        masks: torch.Tensor | None = None,
-        world_rank: int = 0,
-        world_size: int = 1,
-    ):
-        """Initialize progress bar at first step."""
-        if world_rank != 0:
-            return
-
-        if self._pbar is not None:
-            self._pbar.set_description("Initializing...")
     
     @override
     def post_step(
@@ -100,26 +82,18 @@ class SplatProgressTracker(SplatBaseModule[SplatRenderPayload]):
         
         if self._pbar is not None and step % self._update_every == 0:
             self._pbar.update(self._update_every)
-            
-            # Build description with available metrics
-            desc_parts = []
-            
+
+            postfix: dict[str, float | int | str] = {
+                "#GS": training_state.num_gaussians,
+            }
+
             if self._last_loss is not None:
-                desc_parts.append(f"loss={self._last_loss:.4f}")
-            
-            # Add number of Gaussians
-            num_gs = training_state.num_gaussians
-            desc_parts.append(f"#GS={num_gs:,}")
-            
-            # Add any custom metrics
-            for key, value in self._last_metrics.items():
-                if isinstance(value, float):
-                    desc_parts.append(f"{key}={value:.4f}")
-                else:
-                    desc_parts.append(f"{key}={value}")
-            
-            desc = " | ".join(desc_parts)
-            self._pbar.set_description(desc)
+                postfix["loss"] = f"{self._last_loss:.4f}"
+
+            for k, v in self._last_metrics.items():
+                postfix[k] = f"{v:.4f}" if isinstance(v, float) else v
+
+            self._pbar.set_postfix(postfix, refresh=False)
     
     @override
     def post_compute_loss(
@@ -140,11 +114,10 @@ class SplatProgressTracker(SplatBaseModule[SplatRenderPayload]):
     @override
     def on_cleanup(self, world_rank: int = 0, world_size: int = 1):
         """Close progress bar after training."""
-        if self._world_rank != 0:
+        if world_rank != 0:
             return
         
         if self._pbar is not None:
             self._pbar.close()
             self._pbar = None
             print("\n✓ Training completed!")
-

@@ -288,7 +288,7 @@ class SplatColmapDataset(Dataset[ColmapDataItem]):
             image_name=self._image_names[actul_index],
             camera_model=self._camera_models[actul_index],
 
-            image=torch.from_numpy(image[..., :3]).float(),
+            image=torch.from_numpy(image[..., :3]).float() / 255.0,  # Normalize to [0, 1]
             K=torch.from_numpy(self._Ks[actul_index]).float(),
             cam_to_world=torch.from_numpy(self._cam_to_world[actul_index]).float(),
             
