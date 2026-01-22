@@ -15,7 +15,7 @@ from typing_extensions import override
 from .base import SplatBaseModule
 from .frame import SplatRenderPayload
 from ..splat.training_state import SplatTrainingState
-from ..data_provider import SplatDataProvider, SplatDataItemT
+
 from ..renderer import SplatRenderer    
 from ..logger import SplatLogger
 
@@ -78,8 +78,6 @@ class SplatEvaluator(SplatBaseModule[SplatRenderPayload]):
     def on_setup(
         self,
         logger: "SplatLogger",
-        render_payload_T: type,
-        data_item_T: type,
         renderer: SplatBaseModule[SplatRenderPayload],
         data_provider: SplatBaseModule[SplatRenderPayload],
         loss_fn: SplatBaseModule[SplatRenderPayload],
@@ -91,6 +89,7 @@ class SplatEvaluator(SplatBaseModule[SplatRenderPayload]):
         scene_scale: float = 1.0,
     ):
         """Initialize metrics with explicit renderer and data provider."""
+        from ..data_provider.base import SplatDataProvider
 
         # Validate types
         if not isinstance(data_provider, SplatDataProvider):
@@ -229,6 +228,12 @@ class SplatEvaluator(SplatBaseModule[SplatRenderPayload]):
             # Clamp renders to [0, 1]
             renders = torch.clamp(renders, 0.0, 1.0)
             
+            # Apply masks if present (to match training loss computation)
+            if masks is not None:
+                mask_3ch = masks.unsqueeze(-1)  # [B, H, W] -> [B, H, W, 1]
+                renders = renders * mask_3ch
+                pixels_gt = pixels_gt * mask_3ch
+            
             # Compute metrics
             pixels_gt_p = pixels_gt.permute(0, 3, 1, 2)  # [B, 3, H, W]
             renders_p = renders.permute(0, 3, 1, 2)  # [B, 3, H, W]
@@ -248,40 +253,40 @@ class SplatEvaluator(SplatBaseModule[SplatRenderPayload]):
                 image_path = images_dir / f"{step}_{i:04d}.png"
                 imageio.imwrite(image_path, canvas)
         
-        # Aggregate metrics
-        avg_metrics: dict[str, float | np.floating] = {k: np.mean(v) for k, v in metrics.items()}
-        avg_metrics["avg_render_time"] = total_render_time / max(num_images, 1)
-        avg_metrics["num_GS"] = training_state.num_gaussians
-        avg_metrics["num_images"] = num_images
+        # Aggregate metrics (matching gsplat's implementation)
+        stats: dict[str, float] = {k: float(np.mean(v)) for k, v in metrics.items()}
+        stats["avg_render_time"] = total_render_time / max(num_images, 1)
+        stats["num_GS"] = training_state.num_gaussians
+        stats["num_images"] = num_images
         
         # Add training time if available
         total_train_time = time.time() - self._train_start_time
-        avg_metrics["total_train_time"] = total_train_time
+        stats["total_train_time"] = total_train_time
 
         # Peak memory allocated since start (in GB)
         peak_memory_gb = torch.cuda.max_memory_allocated(self._device) / (1024 ** 3)
         # Current memory allocated (in GB)
         current_memory_gb = torch.cuda.memory_allocated(self._device) / (1024 ** 3)
-        avg_metrics["peak_memory_gb"] = peak_memory_gb
-        avg_metrics["current_memory_gb"] = current_memory_gb
+        stats["peak_memory_gb"] = peak_memory_gb
+        stats["current_memory_gb"] = current_memory_gb
         
         # Print to console
         if self._log_to_console:
             logger.info("=" * 60, module=self.module_name)
             logger.info(f"Evaluation Results at Step {step}", module=self.module_name)
             logger.info("=" * 60, module=self.module_name)
-            logger.info(f"PSNR:  {avg_metrics['psnr']:.3f}", module=self.module_name)
-            logger.info(f"SSIM:  {avg_metrics['ssim']:.4f}", module=self.module_name)
-            logger.info(f"LPIPS: {avg_metrics['lpips']:.4f}", module=self.module_name)
+            logger.info(f"PSNR:  {stats['psnr']:.3f}", module=self.module_name)
+            logger.info(f"SSIM:  {stats['ssim']:.4f}", module=self.module_name)
+            logger.info(f"LPIPS: {stats['lpips']:.4f}", module=self.module_name)
             
-            logger.info(f"Num Gaussians: {avg_metrics['num_GS']:,}", module=self.module_name)
-            logger.info(f"Num Images: {avg_metrics['num_images']}", module=self.module_name)
+            logger.info(f"Num Gaussians: {stats['num_GS']:,}", module=self.module_name)
+            logger.info(f"Num Images: {stats['num_images']}", module=self.module_name)
 
-            logger.info(f"Total Train Time: {avg_metrics['total_train_time']:.1f}s ({avg_metrics['total_train_time'] / 60:.1f}min)", module=self.module_name)
-            logger.info(f"Avg Render time: {avg_metrics['avg_render_time']:.3f}s/image", module=self.module_name)
+            logger.info(f"Total Train Time: {stats['total_train_time']:.1f}s ({stats['total_train_time'] / 60:.1f}min)", module=self.module_name)
+            logger.info(f"Avg Render time: {stats['avg_render_time']:.3f}s/image", module=self.module_name)
 
-            logger.info(f"Peak Memory: {avg_metrics['peak_memory_gb']:.2f}GB", module=self.module_name)
-            logger.info(f"Current Memory: {avg_metrics['current_memory_gb']:.2f}GB", module=self.module_name)
+            logger.info(f"Peak Memory: {stats['peak_memory_gb']:.2f}GB", module=self.module_name)
+            logger.info(f"Current Memory: {stats['current_memory_gb']:.2f}GB", module=self.module_name)
 
             logger.info("=" * 60, module=self.module_name)
         
@@ -290,7 +295,7 @@ class SplatEvaluator(SplatBaseModule[SplatRenderPayload]):
             stats_dir = Path(self._output_dir) / "stats"
             stats_path = stats_dir / f"{step}.json"
             with open(stats_path, 'w') as f:
-                json.dump(avg_metrics, f, indent=2)
+                json.dump(stats, f, indent=2)
             
             logger.info(f"Stats saved to: {stats_path}", module=self.module_name)
 

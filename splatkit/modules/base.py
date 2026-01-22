@@ -30,8 +30,6 @@ class SplatBaseModule(Generic[SplatRenderPayloadT], ABC):
     def on_setup(
         self,
         logger: "SplatLogger",
-        render_payload_T: type,
-        data_item_T: type,
         renderer: "SplatRenderer[SplatRenderPayloadT]",
         data_provider: "SplatDataProvider[SplatRenderPayloadT, Any]",
         loss_fn: "SplatLossFn[SplatRenderPayloadT]",
@@ -50,8 +48,6 @@ class SplatBaseModule(Generic[SplatRenderPayloadT], ABC):
 
         Args:
             logger: Logger instance for structured logging
-            render_payload_T: The concrete type for render payloads
-            data_item_T: The concrete type for data items
             renderer: The renderer instance
             data_provider: The data provider instance
             loss_fn: The loss function instance

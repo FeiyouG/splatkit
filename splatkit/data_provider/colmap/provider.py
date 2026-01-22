@@ -65,8 +65,6 @@ class SplatColmapDataProvider(
     def on_setup(
         self,
         logger: "SplatLogger",
-        render_payload_T: type,
-        data_item_T: type,
         renderer: SplatBaseModule[SplatRenderPayloadT],
         data_provider: SplatBaseModule[SplatRenderPayloadT],
         loss_fn: SplatBaseModule[SplatRenderPayloadT],

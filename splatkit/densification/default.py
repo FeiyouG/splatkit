@@ -27,8 +27,6 @@ class SplatDefaultDensification(
     @override
     def on_setup(self,
         logger: "SplatLogger",
-        render_payload_T: type,
-        data_item_T: type,
         renderer: SplatBaseModule[Splat3dgsRenderPayload],
         data_provider: SplatBaseModule[Splat3dgsRenderPayload],
         loss_fn: SplatBaseModule[Splat3dgsRenderPayload],
@@ -90,6 +88,7 @@ class SplatDefaultDensification(
         """
         info = rend_out.to_dict()
         info["gaussian_ids"] = None # So default strategy won't crash
+
         self._default_strategy.step_post_backward(
             params=training_state.params,
             optimizers=training_state.optimizers,

@@ -17,6 +17,7 @@ class Splat3dgsRenderPayload(SplatRenderPayload):
     means2d: Tensor # (..., H, W, 2)
     conics: Tensor # (..., H, W, 1)
     opacities: Tensor # (..., H, W, 1)
+    gaussian_ids: Tensor | None = None # Visible gaussian indices for densification
 
 class Splat3DGSRenderer(SplatRenderer[Splat3dgsRenderPayload]):
     """3D Gaussian Splatting renderer.
@@ -171,6 +172,7 @@ class Splat3DGSRenderer(SplatRenderer[Splat3dgsRenderPayload]):
             opacities=info["opacities"],
             width=info["width"],
             height=info["height"],
+            # gaussian_ids=info.get("gaussian_ids", None),  # Include gaussian_ids for densification
         )
         return renders, outputs
 

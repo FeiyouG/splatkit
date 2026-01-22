@@ -29,8 +29,6 @@ class SplatModuleComposite(SplatBaseModule[SplatRenderPayloadT], Generic[SplatRe
     def on_setup(
         self,
         logger: "SplatLogger",
-        render_payload_T: type,
-        data_item_T: type,
         renderer: "SplatRenderer[SplatRenderPayloadT]",
         data_provider: "SplatDataProvider[SplatRenderPayloadT, Any]",
         loss_fn: "SplatLossFn[SplatRenderPayloadT]",
@@ -44,8 +42,6 @@ class SplatModuleComposite(SplatBaseModule[SplatRenderPayloadT], Generic[SplatRe
         for m in self._modules:
             m.on_setup(
                 logger=logger,
-                render_payload_T=render_payload_T,
-                data_item_T=data_item_T,
                 renderer=renderer,
                 data_provider=data_provider,
                 loss_fn=loss_fn,

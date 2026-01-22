@@ -130,8 +130,6 @@ class SplatTrainer(Generic[SplatDataItemT, SplatRenderPayloadT]):
         # Setup modules
         all_modules.on_setup(
             logger=self._logger,
-            render_payload_T=self._render_payload_T,
-            data_item_T=self._data_item_T,
             renderer=self._renderer,
             data_provider=self._data_provider,
             loss_fn=self._loss_fn,

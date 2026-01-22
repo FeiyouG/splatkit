@@ -27,8 +27,6 @@ class SplatRenderer(
     def on_setup(
         self,
         logger: "SplatLogger",
-        render_payload_T: type,
-        data_item_T: type,
         renderer: SplatBaseModule[SplatRenderPayloadT],
         data_provider: SplatBaseModule[SplatRenderPayloadT],
         loss_fn: SplatBaseModule[SplatRenderPayloadT],
@@ -39,8 +37,6 @@ class SplatRenderer(
         world_size: int = 1,
         scene_scale: float = 1.0,
     ):
-        if not issubclass(render_payload_T, self.render_payload_T):
-            raise ValueError(f"Render payload type {render_payload_T} is not compatible with {self.render_payload_T} for renderer {self.__class__.__name__}")
         logger.info(f"Initialized renderer: {self.__class__.__name__}", module=self.module_name)
     
     @abstractmethod
