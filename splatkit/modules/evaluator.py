@@ -67,6 +67,7 @@ class SplatEvaluator(SplatBaseModule[SplatRenderPayload]):
         self._data_provider = None
         self._renderer = None
         self._device = None
+        self._train_start_time = None
         
         # Metrics (initialized in on_setup)
         self.psnr = None
@@ -102,6 +103,9 @@ class SplatEvaluator(SplatBaseModule[SplatRenderPayload]):
         
         # Setup device
         self._device = f"cuda:{world_rank}" if torch.cuda.is_available() else "cpu"
+        
+        # Track training start time
+        self._train_start_time = time.time()
         
         # Initialize metrics
         self.psnr = PeakSignalNoiseRatio(data_range=1.0).to(self._device)
@@ -183,6 +187,11 @@ class SplatEvaluator(SplatBaseModule[SplatRenderPayload]):
             raise ValueError("SSIM is not initialized")
         if self.lpips is None:
             raise ValueError("LPIPS is not initialized")
+
+        if self._train_start_time is None:
+            raise ValueError("Train start time is not set")
+        if not torch.cuda.is_available():
+            raise ValueError("CUDA is not available")
         
         # Iterate through test dataset
         test_size = self._data_provider.get_test_data_size(world_rank, world_size)
@@ -245,6 +254,17 @@ class SplatEvaluator(SplatBaseModule[SplatRenderPayload]):
         avg_metrics["num_GS"] = training_state.num_gaussians
         avg_metrics["num_images"] = num_images
         
+        # Add training time if available
+        total_train_time = time.time() - self._train_start_time
+        avg_metrics["total_train_time"] = total_train_time
+
+        # Peak memory allocated since start (in GB)
+        peak_memory_gb = torch.cuda.max_memory_allocated(self._device) / (1024 ** 3)
+        # Current memory allocated (in GB)
+        current_memory_gb = torch.cuda.memory_allocated(self._device) / (1024 ** 3)
+        avg_metrics["peak_memory_gb"] = peak_memory_gb
+        avg_metrics["current_memory_gb"] = current_memory_gb
+        
         # Print to console
         if self._log_to_console:
             logger.info("=" * 60, module=self.module_name)
@@ -253,9 +273,16 @@ class SplatEvaluator(SplatBaseModule[SplatRenderPayload]):
             logger.info(f"PSNR:  {avg_metrics['psnr']:.3f}", module=self.module_name)
             logger.info(f"SSIM:  {avg_metrics['ssim']:.4f}", module=self.module_name)
             logger.info(f"LPIPS: {avg_metrics['lpips']:.4f}", module=self.module_name)
-            logger.info(f"Avg Render time: {avg_metrics['avg_render_time']:.3f}s/image", module=self.module_name)
+            
             logger.info(f"Num Gaussians: {avg_metrics['num_GS']:,}", module=self.module_name)
             logger.info(f"Num Images: {avg_metrics['num_images']}", module=self.module_name)
+
+            logger.info(f"Total Train Time: {avg_metrics['total_train_time']:.1f}s ({avg_metrics['total_train_time'] / 60:.1f}min)", module=self.module_name)
+            logger.info(f"Avg Render time: {avg_metrics['avg_render_time']:.3f}s/image", module=self.module_name)
+
+            logger.info(f"Peak Memory: {avg_metrics['peak_memory_gb']:.2f}GB", module=self.module_name)
+            logger.info(f"Current Memory: {avg_metrics['current_memory_gb']:.2f}GB", module=self.module_name)
+
             logger.info("=" * 60, module=self.module_name)
         
         # Save stats to JSON

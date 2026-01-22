@@ -1,6 +1,5 @@
 from typing import Generic, Sequence, get_args, get_origin
 
-
 import torch
 
 from ..modules import SplatModuleComposite
@@ -183,7 +182,6 @@ class SplatTrainer(Generic[SplatDataItemT, SplatRenderPayloadT]):
                 gamma=0.01 ** (1.0 / self._config.max_steps)
             )
         ]
-
         
         # NOTE: step is 1-indexed
         for step in range(start_step, self._config.max_steps + 1):

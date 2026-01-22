@@ -83,7 +83,7 @@ class SplatProgressTracker(SplatBaseModule[SplatRenderPayload]):
         rend_out: SplatRenderPayload,
         masks: torch.Tensor | None = None,
         world_rank: int = 0, 
-        world_size: int = 1
+        world_size: int = 1,
     ):
         """Update progress bar after each training step."""
 
