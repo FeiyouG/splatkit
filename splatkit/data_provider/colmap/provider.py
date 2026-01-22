@@ -1,5 +1,5 @@
 import os
-from typing import Iterator, Sequence
+from typing import TYPE_CHECKING, Iterator, Sequence
 
 from typing_extensions import override
 import numpy as np
@@ -12,6 +12,9 @@ from .item import ColmapDataItem
 from ...splat import SplatModel
 from ...modules import SplatRenderPayload, SplatRenderPayloadT
 from ...modules.base import SplatBaseModule
+
+if TYPE_CHECKING:
+    from ...logger import SplatLogger
 
 
 class SplatColmapDataProvider(
@@ -61,8 +64,13 @@ class SplatColmapDataProvider(
     @override
     def on_setup(
         self,
+        logger: "SplatLogger",
         render_payload_T: type,
         data_item_T: type,
+        renderer: SplatBaseModule[SplatRenderPayloadT],
+        data_provider: SplatBaseModule[SplatRenderPayloadT],
+        loss_fn: SplatBaseModule[SplatRenderPayloadT],
+        densification: SplatBaseModule[SplatRenderPayloadT],
         modules: Sequence[SplatBaseModule[SplatRenderPayloadT]], 
         max_steps: int,
         world_rank: int = 0,
@@ -70,6 +78,7 @@ class SplatColmapDataProvider(
         scene_scale: float = 1.0,
     ): 
        
+        logger.info(f"Train set: {len(self._train_dataset)} images, Test set: {len(self._test_dataset)} images", module=self.module_name)
 
         self._train_data_loader = DataLoader[ColmapDataItem](
             dataset=self._train_dataset,

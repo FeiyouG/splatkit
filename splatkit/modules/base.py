@@ -1,4 +1,4 @@
-from typing import Generic, Sequence, get_args, get_origin
+from typing import TYPE_CHECKING, Any, Generic, Sequence, get_args, get_origin
 from abc import ABC
 
 import torch
@@ -7,15 +7,35 @@ from .frame import SplatRenderPayloadT
 from ..splat.training_state import SplatTrainingState
 from ..utils.generics import extract_subclass_generics, extrace_instance_generics
 
+if TYPE_CHECKING:
+    from ..logger import SplatLogger
+    from ..renderer.base import SplatRenderer
+    from ..data_provider.base import SplatDataProvider
+    from ..loss_fn.base import SplatLossFn
+    from ..densification.base import SplatDensification
+
 class SplatBaseModule(Generic[SplatRenderPayloadT], ABC):
     """
     Abstract base class for all Splat modules.
     """
+    
+    @property
+    def module_name(self) -> str:
+        """
+        Return the name of this module for logging.
+        Override in subclasses to provide custom names.
+        """
+        return self.__class__.__name__
 
     def on_setup(
         self,
+        logger: "SplatLogger",
         render_payload_T: type,
         data_item_T: type,
+        renderer: "SplatRenderer[SplatRenderPayloadT]",
+        data_provider: "SplatDataProvider[SplatRenderPayloadT, Any]",
+        loss_fn: "SplatLossFn[SplatRenderPayloadT]",
+        densification: "SplatDensification[SplatRenderPayloadT]",
         modules: Sequence["SplatBaseModule[SplatRenderPayloadT]"], 
         max_steps: int,
         world_rank: int = 0,
@@ -29,13 +49,24 @@ class SplatBaseModule(Generic[SplatRenderPayloadT], ABC):
         Use this to initialize the module.
 
         Args:
-            world_rank: The current world rank.
-            world_size: The current world size.
+            logger: Logger instance for structured logging
+            render_payload_T: The concrete type for render payloads
+            data_item_T: The concrete type for data items
+            renderer: The renderer instance
+            data_provider: The data provider instance
+            loss_fn: The loss function instance
+            densification: The densification strategy instance
+            modules: List of all modules (including this one)
+            max_steps: Maximum number of training steps
+            world_rank: The current world rank
+            world_size: The current world size
+            scene_scale: The scene scale factor
         """
         pass
     
     def pre_step(
         self,
+        logger: "SplatLogger",
         step: int,
         max_steps: int,
         target_frames: torch.Tensor, # (..., H, W, 3)
@@ -50,7 +81,8 @@ class SplatBaseModule(Generic[SplatRenderPayloadT], ABC):
         pass
 
     def pre_compute_loss(
-        self, 
+        self,
+        logger: "SplatLogger",
         step: int,
         max_steps: int,
         rendered_frames: torch.Tensor, # (..., H, W, 3)
@@ -68,6 +100,7 @@ class SplatBaseModule(Generic[SplatRenderPayloadT], ABC):
     
     def post_compute_loss(
         self,
+        logger: "SplatLogger",
         step: int,
         max_steps: int,
         loss: torch.Tensor,
@@ -83,6 +116,7 @@ class SplatBaseModule(Generic[SplatRenderPayloadT], ABC):
 
     def on_optimize(
         self,
+        logger: "SplatLogger",
         step: int,
         max_steps: int,
         training_state: SplatTrainingState,
@@ -95,7 +129,8 @@ class SplatBaseModule(Generic[SplatRenderPayloadT], ABC):
 
 
     def post_step(
-        self, 
+        self,
+        logger: "SplatLogger",
         step: int,
         max_steps: int,
         rendered_frames: torch.Tensor, # (..., H, W, 3)
@@ -113,6 +148,7 @@ class SplatBaseModule(Generic[SplatRenderPayloadT], ABC):
     
     def on_cleanup(
         self,
+        logger: "SplatLogger",
         world_rank: int = 0,
         world_size: int = 1,
     ):

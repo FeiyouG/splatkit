@@ -5,7 +5,7 @@ from gsplat.strategy import DefaultStrategy, MCMCStrategy
 @dataclass
 class SplatTrainerConfig:
     """Training configuration"""
-    max_steps: int = 30000
+    max_steps: int
     batch_size: int = 1
     
     lr_means: float = 1.6e-4

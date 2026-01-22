@@ -1,4 +1,4 @@
-from typing import Sequence
+from typing import TYPE_CHECKING, Sequence
 from typing_extensions import override
 
 import torch
@@ -8,6 +8,9 @@ from ..splat.training_state import SplatTrainingState
 
 from .base import SplatBaseModule
 from .frame import SplatRenderPayload, SplatRenderPayloadT
+
+if TYPE_CHECKING:
+    from ..logger import SplatLogger
 
 
 class SplatProgressTracker(SplatBaseModule[SplatRenderPayload]):
@@ -43,8 +46,13 @@ class SplatProgressTracker(SplatBaseModule[SplatRenderPayload]):
     @override
     def on_setup(
         self,
+        logger: "SplatLogger",
         render_payload_T: type,
         data_item_T: type,
+        renderer: SplatBaseModule[SplatRenderPayloadT],
+        data_provider: SplatBaseModule[SplatRenderPayloadT],
+        loss_fn: SplatBaseModule[SplatRenderPayloadT],
+        densification: SplatBaseModule[SplatRenderPayloadT],
         modules: Sequence[SplatBaseModule[SplatRenderPayloadT]], 
         max_steps: int,
         world_rank: int = 0,
@@ -61,10 +69,12 @@ class SplatProgressTracker(SplatBaseModule[SplatRenderPayload]):
             ncols=120,
             bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}, {postfix}]'
         )
+        logger.info(f"Initialized progress tracker for {max_steps} steps", module=self.module_name)
     
     @override
     def post_step(
-        self, 
+        self,
+        logger: "SplatLogger",
         step: int, 
         max_steps: int, 
         rendered_frames: torch.Tensor,
@@ -97,7 +107,8 @@ class SplatProgressTracker(SplatBaseModule[SplatRenderPayload]):
     
     @override
     def post_compute_loss(
-        self, 
+        self,
+        logger: "SplatLogger",
         step: int, 
         max_steps: int, 
         loss: torch.Tensor,
@@ -112,7 +123,7 @@ class SplatProgressTracker(SplatBaseModule[SplatRenderPayload]):
         self._last_loss = loss.item()
 
     @override
-    def on_cleanup(self, world_rank: int = 0, world_size: int = 1):
+    def on_cleanup(self, logger: "SplatLogger", world_rank: int = 0, world_size: int = 1):  # type: ignore
         """Close progress bar after training."""
         if world_rank != 0:
             return
@@ -120,4 +131,4 @@ class SplatProgressTracker(SplatBaseModule[SplatRenderPayload]):
         if self._pbar is not None:
             self._pbar.close()
             self._pbar = None
-            print("\n✓ Training completed!")
+            logger.info("Training completed!", module=self.module_name)

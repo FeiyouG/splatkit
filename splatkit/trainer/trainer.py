@@ -7,6 +7,7 @@ from ..modules import SplatModuleComposite
 
 from ..data_provider import SplatDataItemT, SplatDataProvider
 from ..densification import SplatDensification
+from ..logger import SplatLogger
 from ..loss_fn import SplatLossFn
 from ..modules import SplatRenderPayloadT
 from ..modules.base import SplatBaseModule
@@ -24,6 +25,7 @@ class SplatTrainer(Generic[SplatDataItemT, SplatRenderPayloadT]):
     """
 
     _config: SplatTrainerConfig
+    _logger: SplatLogger
 
     # Distributed training variables
     _local_rank: int 
@@ -33,12 +35,13 @@ class SplatTrainer(Generic[SplatDataItemT, SplatRenderPayloadT]):
 
     def __init__(
         self,
+        config: SplatTrainerConfig,
         renderer: SplatRenderer[SplatRenderPayloadT],
         loss_fn: SplatLossFn[SplatRenderPayloadT],
         data_provider: SplatDataProvider[SplatRenderPayloadT, SplatDataItemT],
         densification: SplatDensification[SplatRenderPayloadT],
         modules: Sequence[SplatBaseModule[SplatRenderPayloadT]] = [],
-        config: SplatTrainerConfig = SplatTrainerConfig(),
+        logger: SplatLogger | None = None,
         local_rank: int = 0,
         world_rank: int = 0,
         world_size: int = 1,
@@ -47,11 +50,16 @@ class SplatTrainer(Generic[SplatDataItemT, SplatRenderPayloadT]):
         Initialize trainer.
         
         Args:
+            renderer: Renderer instance
+            loss_fn: Loss function instance
+            data_provider: Data provider instance
+            densification: Densification strategy instance
+            modules: List of additional modules
             config: Training configuration
-            trainset: Lazy wrapper for training dataset
-            testset: Lazy wrapper for test dataset (optional)
-            renderer: Lazy wrapper for renderer
-            loss: Lazy wrapper for loss function
+            logger: Logger instance (creates default if None)
+            local_rank: Local GPU rank
+            world_rank: Global rank in distributed training
+            world_size: Total number of processes
         """
         self._config = config
         self._renderer = renderer
@@ -59,6 +67,7 @@ class SplatTrainer(Generic[SplatDataItemT, SplatRenderPayloadT]):
         self._data_provider = data_provider
         self._densification = densification
         self._modules = modules
+        self._logger = logger if logger is not None else SplatLogger(level="INFO")
 
         self._local_rank = local_rank
         self._world_rank = world_rank
@@ -96,9 +105,9 @@ class SplatTrainer(Generic[SplatDataItemT, SplatRenderPayloadT]):
 
         if self._world_rank == 0:
             if self._world_size == 1:
-                print(f"[SplatTrainer] Start Single GPU training")
+                self._logger.info("Starting single GPU training", module="SplatTrainer")
             elif self._world_size > 1:
-                print(f"[SplatTrainer] Start Multi-GPU training: world_size={self._world_size}")
+                self._logger.info(f"Starting multi-GPU training: world_size={self._world_size}", module="SplatTrainer")
 
     
     def run(self, leader_rank: int = 0):
@@ -119,8 +128,13 @@ class SplatTrainer(Generic[SplatDataItemT, SplatRenderPayloadT]):
 
         # Setup modules
         all_modules.on_setup(
+            logger=self._logger,
             render_payload_T=self._render_payload_T,
             data_item_T=self._data_item_T,
+            renderer=self._renderer,
+            data_provider=self._data_provider,
+            loss_fn=self._loss_fn,
+            densification=self._densification,
             modules=self._modules,
             max_steps=self._config.max_steps,
             world_rank=self._world_rank,
@@ -155,7 +169,8 @@ class SplatTrainer(Generic[SplatDataItemT, SplatRenderPayloadT]):
 
         del splat_model
         
-        for step in range(self._config.max_steps):
+        # NOTE: step is 1-indexed
+        for step in range(1, self._config.max_steps + 1):
 
             # STEP 1: Getting training data
             data = self._data_provider.next_train_data(step).to(self._device)
@@ -165,6 +180,7 @@ class SplatTrainer(Generic[SplatDataItemT, SplatRenderPayloadT]):
             masks = data.mask
 
             all_modules.pre_step(
+                logger=self._logger,
                 step=step,
                 max_steps=self._config.max_steps,
                 target_frames=target_frames,
@@ -188,6 +204,7 @@ class SplatTrainer(Generic[SplatDataItemT, SplatRenderPayloadT]):
 
             # STEP 3: Computing Loss
             all_modules.pre_compute_loss(
+                logger=self._logger,
                 step=step,
                 max_steps=self._config.max_steps,
                 rendered_frames=renders,
@@ -206,6 +223,7 @@ class SplatTrainer(Generic[SplatDataItemT, SplatRenderPayloadT]):
             )
 
             all_modules.post_compute_loss(
+                logger=self._logger,
                 step=step,
                 max_steps=self._config.max_steps,
                 loss=loss,
@@ -226,6 +244,7 @@ class SplatTrainer(Generic[SplatDataItemT, SplatRenderPayloadT]):
                 scheduler.step()
 
             all_modules.on_optimize(
+                logger=self._logger,
                 step=step,
                 max_steps=self._config.max_steps,
                 training_state=splat_training_state,
@@ -242,6 +261,7 @@ class SplatTrainer(Generic[SplatDataItemT, SplatRenderPayloadT]):
             )
 
             all_modules.post_step(
+                logger=self._logger,
                 step=step,
                 max_steps=self._config.max_steps,
                 rendered_frames=renders,
@@ -252,6 +272,7 @@ class SplatTrainer(Generic[SplatDataItemT, SplatRenderPayloadT]):
         
         # Cleanup resources
         all_modules.on_cleanup(
+            logger=self._logger,
             world_rank=self._world_rank,
             world_size=self._world_size,
         )

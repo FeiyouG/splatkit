@@ -20,12 +20,12 @@ class SplatDistributedTrainer(Generic[SplatDataItemT, SplatRenderPayloadT]):
 
     def __init__(
         self,
+        config: SplatTrainerConfig,
         renderer: SplatRenderer[SplatRenderPayloadT],
         loss_fn: SplatLossFn[SplatRenderPayloadT],
         data_provider: SplatDataProvider[SplatRenderPayloadT, SplatDataItemT],
         densification: SplatDensification[SplatRenderPayloadT],
         modules: list[SplatBaseModule[SplatRenderPayloadT]] = [],
-        config: SplatTrainerConfig = SplatTrainerConfig(),
     ):
         self._config = config
         self._renderer = renderer

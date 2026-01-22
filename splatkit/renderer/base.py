@@ -1,11 +1,14 @@
 from abc import ABC, abstractmethod
-from typing import Generic, Literal, Sequence, Tuple, Type
+from typing import TYPE_CHECKING, Generic, Literal, Sequence, Tuple, Type
 
 from torch import Tensor
 
 from ..modules import SplatRenderPayloadT
 from ..splat.training_state import SplatTrainingState
 from ..modules.base import SplatBaseModule
+
+if TYPE_CHECKING:
+    from ..logger import SplatLogger
 
 class SplatRenderer(
     SplatBaseModule[SplatRenderPayloadT], 
@@ -23,8 +26,13 @@ class SplatRenderer(
     
     def on_setup(
         self,
+        logger: "SplatLogger",
         render_payload_T: type,
         data_item_T: type,
+        renderer: SplatBaseModule[SplatRenderPayloadT],
+        data_provider: SplatBaseModule[SplatRenderPayloadT],
+        loss_fn: SplatBaseModule[SplatRenderPayloadT],
+        densification: SplatBaseModule[SplatRenderPayloadT],
         modules: Sequence[SplatBaseModule[SplatRenderPayloadT]], 
         max_steps: int,
         world_rank: int = 0,
@@ -33,6 +41,7 @@ class SplatRenderer(
     ):
         if not issubclass(render_payload_T, self.render_payload_T):
             raise ValueError(f"Render payload type {render_payload_T} is not compatible with {self.render_payload_T} for renderer {self.__class__.__name__}")
+        logger.info(f"Initialized renderer: {self.__class__.__name__}", module=self.module_name)
     
     @abstractmethod
     def render(

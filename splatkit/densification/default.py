@@ -1,4 +1,4 @@
-from typing import Dict, Any, Sequence
+from typing import TYPE_CHECKING, Dict, Any, Sequence
 
 from gsplat.strategy import DefaultStrategy
 from typing_extensions import override
@@ -10,6 +10,9 @@ from ..modules import SplatBaseModule
 from ..splat.training_state import SplatTrainingState
 from ..data_provider import SplatDataItemT
 from .base import SplatDensification
+
+if TYPE_CHECKING:
+    from ..logger import SplatLogger
 
 class SplatDefaultDensification(
     SplatDensification[Splat3dgsRenderPayload]
@@ -23,8 +26,13 @@ class SplatDefaultDensification(
 
     @override
     def on_setup(self,
+        logger: "SplatLogger",
         render_payload_T: type,
         data_item_T: type,
+        renderer: SplatBaseModule[Splat3dgsRenderPayload],
+        data_provider: SplatBaseModule[Splat3dgsRenderPayload],
+        loss_fn: SplatBaseModule[Splat3dgsRenderPayload],
+        densification: SplatBaseModule[Splat3dgsRenderPayload],
         modules: Sequence[SplatBaseModule[Splat3dgsRenderPayload]], 
         max_steps: int,
         world_rank: int = 0,
@@ -36,10 +44,12 @@ class SplatDefaultDensification(
         """
         self._default_strategy = DefaultStrategy()
         self._state = self._default_strategy.initialize_state(scene_scale)
+        logger.info("Initialized default densification strategy", module=self.module_name)
 
     @override
     def pre_compute_loss(
-        self, 
+        self,
+        logger: "SplatLogger",
         step: int,
         max_steps: int,
         rendered_frames: torch.Tensor, # (..., H, W, 3)
