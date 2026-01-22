@@ -41,9 +41,9 @@ if __name__ == "__main__":
             export_steps=[trainer_config.max_steps],
         ),
         SplatEvaluator(
-        output_dir=os.path.join(work_dir, "eval"),
-        eval_steps=[trainer_config.max_steps],
-    )
+            output_dir=os.path.join(work_dir, "eval"),
+            eval_steps=[trainer_config.max_steps],
+        )
     ]
 
     trainer = SplatTrainer[ColmapDataItem, Splat3dgsRenderPayload](

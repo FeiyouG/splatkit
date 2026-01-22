@@ -42,6 +42,7 @@ class SplatTrainer(Generic[SplatDataItemT, SplatRenderPayloadT]):
         densification: SplatDensification[SplatRenderPayloadT],
         modules: Sequence[SplatBaseModule[SplatRenderPayloadT]] = [],
         logger: SplatLogger | None = None,
+        ckpt_path: str | None = None,
         local_rank: int = 0,
         world_rank: int = 0,
         world_size: int = 1,
@@ -67,7 +68,8 @@ class SplatTrainer(Generic[SplatDataItemT, SplatRenderPayloadT]):
         self._data_provider = data_provider
         self._densification = densification
         self._modules = modules
-        self._logger = logger if logger is not None else SplatLogger(level="INFO")
+        self._logger = logger if logger else SplatLogger(level="INFO")
+        self._ckpt_path = ckpt_path
 
         self._local_rank = local_rank
         self._world_rank = world_rank
@@ -141,24 +143,39 @@ class SplatTrainer(Generic[SplatDataItemT, SplatRenderPayloadT]):
             world_size=self._world_size,
             scene_scale=scene_scale,
         )
+
+        # Load checkpoint or initialize from scratch
+        if self._ckpt_path:
+            splat_training_state, loaded_step = SplatTrainingState.from_ckpt(
+                path=self._ckpt_path,
+                world_rank=self._world_rank,
+                world_size=self._world_size,
+                leader_rank=leader_rank,
+                scene_scale=scene_scale,
+            )
+            start_step = loaded_step + 1  # Resume from next step
+            self._logger.info(f"Loaded checkpoint from step {loaded_step}, resuming from step {start_step}", module="SplatTrainer")
+        else:
         
-        # Initialize splat traininig state
-        splat_model = self._data_provider.init_splat_model(
-            leader_rank=leader_rank,
-            sh_degree=self._config.sh_degree,
-            init_opacity=self._config.init_opacity,
-            init_scale=self._config.init_scale,
-            world_rank=self._world_rank,
-            world_size=self._world_size,
-        )
-        
-        splat_training_state = SplatTrainingState.from_splat_model(
-            model=splat_model,
-            world_rank=self._world_rank,
-            world_size=self._world_size,
-            leader_rank=leader_rank,
-            scene_scale=scene_scale,
-        )
+            # Initialize splat traininig state
+            splat_model = self._data_provider.init_splat_model(
+                leader_rank=leader_rank,
+                sh_degree=self._config.sh_degree,
+                init_opacity=self._config.init_opacity,
+                init_scale=self._config.init_scale,
+                world_rank=self._world_rank,
+                world_size=self._world_size,
+            )
+            
+            splat_training_state = SplatTrainingState.from_splat_model(
+                model=splat_model,
+                world_rank=self._world_rank,
+                world_size=self._world_size,
+                leader_rank=leader_rank,
+                scene_scale=scene_scale,
+            )
+            del splat_model
+            start_step = 1
 
         schedulers = [
             torch.optim.lr_scheduler.ExponentialLR(
@@ -167,10 +184,9 @@ class SplatTrainer(Generic[SplatDataItemT, SplatRenderPayloadT]):
             )
         ]
 
-        del splat_model
         
         # NOTE: step is 1-indexed
-        for step in range(1, self._config.max_steps + 1):
+        for step in range(start_step, self._config.max_steps + 1):
 
             # STEP 1: Getting training data
             data = self._data_provider.next_train_data(step).to(self._device)

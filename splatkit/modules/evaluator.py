@@ -43,6 +43,7 @@ class SplatEvaluator(SplatBaseModule[SplatRenderPayload]):
         save_stats: bool = True,
         lpips_net: Literal["alex", "vgg"] = "alex",
         log_to_console: bool = True,
+        ckpt_path: str | None = None,
     ):
         """
         Initialize evaluator.
@@ -61,7 +62,7 @@ class SplatEvaluator(SplatBaseModule[SplatRenderPayload]):
         self._save_stats = save_stats
         self._lpips_net = lpips_net
         self._log_to_console = log_to_console
-        
+
         # Will be initialized in on_setup
         self._data_provider = None
         self._renderer = None

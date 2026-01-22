@@ -218,7 +218,7 @@ class SplatTrainingState:
         batch_size: int = 1,
         
         leader_rank: int = DEFAULT_LEADER_RANK,
-    ) -> 'SplatTrainingState':
+    ) -> Tuple['SplatTrainingState', int]:
         """
         Load checkpoint and distribute to ranks.
         
@@ -236,7 +236,7 @@ class SplatTrainingState:
             
             leader_rank: the rank that will be used to broadcast the model to all other ranks. Defaults to 0.
         Returns:
-            SplatTrainingState with distributed parameters
+            Tuple of (SplatTrainingState with distributed parameters, step)
 
             After reloading from ckpt, the tensor will not be ditributed 
             exactly the same way as they were before.
@@ -254,13 +254,28 @@ class SplatTrainingState:
             
             params_state = ckpt['params']
             sh_degree = ckpt['sh_degree']
+            step_loaded: int = ckpt['step']
             optimizers_state = ckpt.get('optimizers', None) if load_optimizers else None
         else:
             params_state = None
             sh_degree = None
+            step_loaded = None
             optimizers_state = None
         
-        return cls._distribute(
+        # Distribute step to all ranks
+        if world_size > 1:
+            data = distribute_metadata(
+                {'step': step_loaded},
+                world_rank,
+                world_size,
+                leader_rank=leader_rank,
+            )
+            assert data is not None
+            step = data['step']
+        else:
+            step = step_loaded
+        
+        training_state = cls._distribute(
             params_state, 
             optimizers_state, 
             sh_degree, 
@@ -270,6 +285,8 @@ class SplatTrainingState:
             lr_means, lr_scales, lr_quats, lr_opacities, lr_sh0, lr_shN, scene_scale, batch_size,
             leader_rank=leader_rank,
         )
+        
+        return training_state, step
     
     def to_splat_model(self, leader_rank: int = DEFAULT_LEADER_RANK) -> SplatModel | None:
         """
@@ -298,6 +315,7 @@ class SplatTrainingState:
     def save_ckpt(
         self,
         path: str,
+        step: int,
         metadata: Optional[Dict] = None,
 
         leader_rank: int = DEFAULT_LEADER_RANK,
@@ -309,8 +327,7 @@ class SplatTrainingState:
         
         Args:
             path: Checkpoint path
-            step: Training step
-            include_optimizers: If True, save optimizer state (recommended for resuming training)
+            step: Training step (explicit from training loop)
             metadata: Optional additional metadata
 
             leader_rank: the rank that will be used to broadcast the model to all other ranks. Defaults to 0.
@@ -321,10 +338,10 @@ class SplatTrainingState:
             return
         if gather_result is None:
             raise RuntimeError(f"Failed to gather state on leader rank {leader_rank}")
-        params, optimizers, step = gather_result
+        params, optimizers = gather_result
 
-        if params is None or optimizers is None or step is None:
-            raise RuntimeError(f"Failed to gather state on leader rank {leader_rank}: params={params}, optimizers={optimizers}, step={step}")
+        if params is None or optimizers is None:
+            raise RuntimeError(f"Failed to gather state on leader rank {leader_rank}: params={params}, optimizers={optimizers}")
         
         data = {
             'step': step,
@@ -645,11 +662,9 @@ class SplatTrainingState:
         world_size: int,
 
         leader_rank: int = DEFAULT_LEADER_RANK,
-    ) -> Tuple[Dict[str, Dict[str, Any]], int] | None:
+    ) -> Dict[str, Dict[str, Any]] | None:
         """
         Gather optimizer states from all ranks to leader rank in cpu.
-        
-        Validates that all ranks have consistent step counts.
         
         Args:
             optimizers: Dict of optimizers from this rank
@@ -663,20 +678,9 @@ class SplatTrainingState:
         if world_size == 1:
             # Single GPU: extract state in custom format
             result = {}
-            expected_step = None
             for name, optimizer in optimizers.items():
                 state_dict = optimizer.state_dict()
                 param_state = list(state_dict['state'].values())[0]
-
-                step = param_state.get('step', 0)
-
-                if expected_step is None:
-                    expected_step = step
-                elif expected_step != step:
-                    raise ValueError(
-                        f"Inconsistent step counts for '{name}': {expected_step} != {step}. "
-                        f"All ranks should have the same step count."
-                    )
                 
                 # NOTE: This assumes using Adam optimizer for now
                 result[name] = {
@@ -685,11 +689,10 @@ class SplatTrainingState:
                     'exp_avg_sq': param_state.get('exp_avg_sq').cpu(),
                     'param_groups': state_dict['param_groups'],
                 }
-            return result, expected_step if expected_step is not None else 0
+            return result
         
         # Gather states from all ranks to leader rank
         gathered_states: Dict[str, Dict[str, Any]] = {}
-        expected_step: int | None = None
         for param_name, optimizer in optimizers.items():
             state_dict = optimizer.state_dict()
             param_state = list(state_dict['state'].values())[0]
@@ -698,25 +701,6 @@ class SplatTrainingState:
             step = param_state.get('step', 0)
             exp_avg = param_state.get('exp_avg')
             exp_avg_sq = param_state.get('exp_avg_sq')
-
-            if expected_step is None:
-                expected_step = step
-            elif expected_step != step:
-                raise ValueError(
-                    f"Inconsistent step counts for '{param_name}': {expected_step} != {step}. "
-                    f"All ranks should have the same step count."
-                )
-            
-            # Validate step consistency across ranks
-            step_list = [None] * world_size
-            dist.all_gather_object(step_list, step)
-            
-            if world_rank == leader_rank:
-                if not all(s == step_list[0] for s in step_list):
-                    raise ValueError(
-                        f"Inconsistent step counts for '{param_name}': {step_list}. "
-                        f"All ranks should have the same step count."
-                    )
             
             # Gather exp_avg and exp_avg_sq tensors
             exp_avg_gathered = gather_tensor(
@@ -738,10 +722,7 @@ class SplatTrainingState:
                 }
 
         if world_rank == leader_rank:
-            if expected_step is None:
-                raise RuntimeError(f"Expected step is not set on leader rank {leader_rank}")
-
-            return gathered_states, expected_step
+            return gathered_states
         else:
             return None
         
@@ -752,7 +733,7 @@ class SplatTrainingState:
         training_state: 'SplatTrainingState',
 
         leader_rank: int = DEFAULT_LEADER_RANK,
-    ) -> Optional[Tuple[Dict[str, torch.Tensor], Dict[str, Dict[str, Any]], int]]:
+    ) -> Optional[Tuple[Dict[str, torch.Tensor], Dict[str, Dict[str, Any]]]]:
         """
         Gather all state from distributed ranks to rank leader rank in cpu.
         
@@ -760,7 +741,7 @@ class SplatTrainingState:
             training_state: Current training state
         
         Returns:
-            Tuple of (params_dict, optimizer_states, num_steps) on rank 0
+            Tuple of (params_dict, optimizer_states) on rank 0
             Returns None for other ranks
 
             leader_rank: the rank that will be used to broadcast the model to all other ranks. Defaults to 0.
@@ -774,17 +755,17 @@ class SplatTrainingState:
         )
         
         # Gather optimizer states
-        gathered_result = cls._gather_optimizer_state_dict(
+        optimizer_states = cls._gather_optimizer_state_dict(
             training_state.optimizers, world_rank, world_size, leader_rank=leader_rank
         )
         
         if world_rank == leader_rank:
             if params_dict is None:
                 raise RuntimeError(f"Failed to gather parameters on leader rank {leader_rank}")
-            if gathered_result is None:
+            if optimizer_states is None:
                 raise RuntimeError(f"Failed to gather optimizer states on leader rank {leader_rank}")
             
-            return params_dict, gathered_result[0], gathered_result[1]
+            return params_dict, optimizer_states
         return None
 
     

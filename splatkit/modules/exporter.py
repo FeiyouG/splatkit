@@ -104,5 +104,5 @@ class SplatExporter(SplatBaseModule[SplatRenderPayload]):
         if self._save_ckpt and step in self._export_steps:
             ckpt_dir = os.path.join(self._output_dir, "ckpt")
             ckpt_path = os.path.join(ckpt_dir, f"{step}.ckpt")
-            training_state.save_ckpt(ckpt_path)
+            training_state.save_ckpt(ckpt_path, step=step)
             logger.info(f"Saved checkpoint to {ckpt_path}", module=self.module_name)
