@@ -259,7 +259,7 @@ class SplatTrainingState:
         else:
             params_state = None
             sh_degree = None
-            step_loaded = None
+            step_loaded = None # type: ignore
             optimizers_state = None
         
         # Distribute step to all ranks

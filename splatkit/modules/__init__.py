@@ -5,6 +5,7 @@ from .frame import SplatRenderPayload, SplatRenderPayloadT
 from .evaluator import SplatEvaluator
 from .exporter import SplatExporter
 from .progress_tracker import SplatProgressTracker
+from .viewer import SplatViewer, SplatViewerTabState
 
 __all__ = [
     "SplatBaseModule",
@@ -15,4 +16,6 @@ __all__ = [
     "SplatEvaluator",
     "SplatExporter",
     "SplatProgressTracker",
+    "SplatViewer",
+    "SplatViewerTabState",
 ]

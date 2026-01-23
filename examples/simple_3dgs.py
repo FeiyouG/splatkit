@@ -6,7 +6,7 @@ from splatkit.trainer import SplatTrainer, SplatTrainerConfig
 from splatkit.data_provider import SplatColmapDataProvider, SplatColmapDataProviderConfig, ColmapDataItem
 from splatkit.renderer import Splat3DGSRenderer, Splat3dgsRenderPayload
 from splatkit.loss_fn import SplatDefaultLossFn
-from splatkit.modules import SplatExporter, SplatProgressTracker, SplatEvaluator
+from splatkit.modules import SplatExporter, SplatProgressTracker, SplatEvaluator, SplatViewer
 from splatkit.densification import SplatDefaultDensification
     
 if __name__ == "__main__":
@@ -43,8 +43,18 @@ if __name__ == "__main__":
         SplatEvaluator(
             output_dir=os.path.join(work_dir, "eval"),
             eval_steps=[trainer_config.max_steps],
-        )
+        ),
+        # Uncomment to enable viewer
+        # SplatViewer(    
+        #     port=8080,
+        #     output_dir=os.path.join(work_dir, "viewer"),
+        #     update_interval=1,
+        #     mode="training",
+        # ),
     ]
+    
+    # Filter out None modules
+    modules = [m for m in modules if m is not None]
 
     trainer = SplatTrainer[ColmapDataItem, Splat3dgsRenderPayload](
         config=trainer_config,
