@@ -36,12 +36,15 @@ class SplatExporter(SplatBaseModule[SplatRenderPayload]):
         output_dir: str,
         export_steps: list[int] = [],
         save_splat: bool = True,
-        save_ckpt: bool = False,
+        save_ckpt: bool = True,
         splat_format: Literal["ply"] = "ply",
     ):
 
         super().__init__()
         self._output_dir = output_dir
+        self._splat_dir = os.path.join(self._output_dir, "splats")
+        self._ckpt_dir = os.path.join(self._output_dir, "ckpts")
+
         self._save_splat = save_splat
         self._save_ckpt = save_ckpt
         self._splat_format = splat_format
@@ -62,14 +65,12 @@ class SplatExporter(SplatBaseModule[SplatRenderPayload]):
         scene_scale: float = 1.0,
     ):
         if self._save_splat:
-            splat_dir = os.path.join(self._output_dir, "splat")
-            os.makedirs(splat_dir, exist_ok=True)
-            logger.info(f"Splat output directory: {splat_dir}", module=self.module_name)
+            os.makedirs(self._splat_dir, exist_ok=True)
+            logger.info(f"Create splat output directory: {self._splat_dir}", module=self.module_name)
 
         if self._save_ckpt:
-            ckpt_dir = os.path.join(self._output_dir, "ckpt")
-            os.makedirs(ckpt_dir, exist_ok=True)
-            logger.info(f"Checkpoint directory: {ckpt_dir}", module=self.module_name)
+            os.makedirs(self._ckpt_dir, exist_ok=True)
+            logger.info(f"Create checkpoint output directory: {self._ckpt_dir}", module=self.module_name)
 
     @override
     def post_step(
@@ -91,8 +92,7 @@ class SplatExporter(SplatBaseModule[SplatRenderPayload]):
             splat_model = training_state.to_splat_model()
             if splat_model is not None:
                 if self._splat_format == "ply":
-                    splat_dir = os.path.join(self._output_dir, "splat")
-                    ply_path = os.path.join(splat_dir, f"{step}.ply")
+                    ply_path = os.path.join(self._splat_dir, f"{step}.ply")
                     splat_model.save_ply(ply_path)
                     logger.info(f"Saved splat model to {ply_path}", module=self.module_name)
                 else: 
@@ -100,7 +100,6 @@ class SplatExporter(SplatBaseModule[SplatRenderPayload]):
             
         # Save checkpoint if enabled and step matches criteria
         if self._save_ckpt and step in self._export_steps:
-            ckpt_dir = os.path.join(self._output_dir, "ckpt")
-            ckpt_path = os.path.join(ckpt_dir, f"{step}.ckpt")
+            ckpt_path = os.path.join(self._ckpt_dir, f"{step}.ckpt")
             training_state.save_ckpt(ckpt_path, step=step)
             logger.info(f"Saved checkpoint to {ckpt_path}", module=self.module_name)

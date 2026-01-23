@@ -136,11 +136,39 @@ class SplatViewer(SplatBaseModule[SplatRenderPayload]):
         # Store renderer reference (needed by render function)
         self._renderer = renderer
         
-        # Initialize viser server
+        # Initialize viser server (capture npm/node output)
         try:
-            self._server = viser.ViserServer(port=self._port, verbose=False)
-            self._server.gui.set_panel_label("splatkit viewer")
-            logger.info(f"Viewer server started on port {self._port}", module=self.module_name)
+            import sys
+            from io import StringIO
+            
+            # Capture stdout/stderr to buffer
+            old_stdout = sys.stdout
+            old_stderr = sys.stderr
+            stdout_buffer = StringIO()
+            stderr_buffer = StringIO()
+            
+            try:
+                sys.stdout = stdout_buffer
+                sys.stderr = stderr_buffer
+                self._server = viser.ViserServer(port=self._port, verbose=False)
+                self._server.gui.set_panel_label("splatkit viewer")
+            except Exception as e:
+                # If error, print captured output for debugging
+                sys.stdout = old_stdout
+                sys.stderr = old_stderr
+                captured_out = stdout_buffer.getvalue()
+                captured_err = stderr_buffer.getvalue()
+                if captured_out:
+                    print(captured_out, end='')
+                if captured_err:
+                    print(captured_err, end='', file=sys.stderr)
+                raise e
+            finally:
+                # Restore stdout/stderr
+                sys.stdout = old_stdout
+                sys.stderr = old_stderr
+            
+            logger.info(f"Viser server initialized successfully on port {self._port}", module=self.module_name)
             
             # Create output directory
             self._output_dir.mkdir(parents=True, exist_ok=True)

@@ -96,6 +96,9 @@ Modules provide additional functionality during training:
 
 - **`SplatProgressTracker`**: Display training progress with tqdm
 - **`SplatExporter`**: Save checkpoints and splat files at specified iterations
+- **`SplatEvaluator`**: Evaluate model on test set with PSNR, SSIM, LPIPS metrics
+- **`SplatTensorboarder`**: Log training and evaluation metrics to TensorBoard (auto-integrates with evaluator)
+- **`SplatViewer`**: Interactive 3D viewer during training
 - **`SplatFrame`**: Base class for custom training hooks
 
 You can create custom modules by extending the base classes in `splatkit.modules`.
