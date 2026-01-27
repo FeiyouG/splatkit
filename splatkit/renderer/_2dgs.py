@@ -14,13 +14,26 @@ from .base import SplatRenderer
 @dataclass(frozen=True)
 class Splat2dgsRenderPayload(SplatRenderPayload):
     """
-    Metadata for 2D Gaussian Splatting rendered images.
+    Render output for 2D Gaussian Splatting (extends SplatRenderPayload).
+    
+    Adds 2DGS-specific outputs like normals, distortion, and median depths.
+    2DGS models surfaces more explicitly than 3DGS, enabling better normal estimation.
     """
-    normals: Tensor  # (..., H, W, 3) - rendered normals
-    normals_from_depth: Tensor  # (..., H, W, 3) - normals derived from depth
-    render_distort: Tensor  # (..., H, W, 1) - distortion map
-    depths_median: Tensor  # (..., H, W, 1) - median depth
-    gradient_2dgs: Tensor  # Gradient for 2DGS densification
+    
+    normals: Tensor
+    """Rendered surface normals from 2D Gaussians, shape (..., H, W, 3)"""
+    
+    normals_from_depth: Tensor
+    """Surface normals derived from depth gradients, shape (..., H, W, 3)"""
+    
+    render_distort: Tensor
+    """Distortion map for regularization, shape (..., H, W, 1)"""
+    
+    depths_median: Tensor
+    """Median depth values, shape (..., H, W, 1)"""
+    
+    gradient_2dgs: Tensor
+    """Gradients for 2DGS-specific densification"""
 
 class Splat2DGSRenderer(SplatRenderer[Splat2dgsRenderPayload]):
     """2D Gaussian Splatting renderer.

@@ -10,10 +10,40 @@ from ..utils.knn import knn
 @dataclass
 class SplatModel:
     """
-    Immutable container for 3D Gaussian Splat parameters.
+    Immutable model representing trained Gaussian Splat parameters.
     
-    All parameters stored as numpy arrays (CPU-side).
-    Use to_training_state() to convert to trainable PyTorch parameters.
+    Used for saving to disk, loading checkpoints, and converting to/from
+    training state.
+    
+    Unlike SplatTrainingState (PyTorch, GPU, mutable), SplatModel is:
+    - NumPy arrays on CPU (lightweight, portable)
+    - Immutable (frozen dataclass)
+    - Self-contained (includes all parameters and SH degree)
+    
+    Attributes:
+        _sh_degree: Maximum spherical harmonics degree
+        _points: Gaussian centers (N, 3) in world space
+        _scales: Gaussian sizes (N, 3) in log-space
+        _quats: Gaussian rotations (N, 4) as quaternions
+        _opacities: Gaussian opacities (N,) in logit-space
+        _sh0: 0th order SH coefficients (N, 1, 3)
+        _shN: Higher order SH coefficients (N, K, 3)
+    
+    Example:
+        >>> # Save trained model
+        >>> model = SplatModel.from_training_state(training_state)
+        >>> model.save_ply("output.ply")
+        >>> 
+        >>> # Load and resume training
+        >>> model = SplatModel.load_ply("checkpoint.ply")
+        >>> training_state = model.to_training_state(
+        ...     learning_rates={...},
+        ...     device="cuda:0"
+        ... )
+    
+    NOTE:
+        - Use property accessors (e.g., model.points) not _points
+        - Create from factory methods, don't construct directly
     """
     
     # Private fields - access via properties only

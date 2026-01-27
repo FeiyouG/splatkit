@@ -13,7 +13,7 @@ from ..logger import SplatLogger
 class Splat2DGSLossFn(
     SplatLossFn[Splat2dgsRenderPayload],
 ):
-    """2DGS loss: L1 + SSIM + normal consistency + distortion loss."""
+    """Simple 2DGS loss: L1 + SSIM + normal consistency + distortion loss."""
     
     def __init__(
         self,

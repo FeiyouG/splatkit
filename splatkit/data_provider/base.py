@@ -10,19 +10,43 @@ from ..modules import SplatRenderPayloadT, SplatBaseModule
 @dataclass(frozen=True)
 class SplatDataItem():
     """
-    Data set item type.
-    """
-    id: int
-    image_name: str
-    camera_model: str
-
-    K: torch.Tensor                # (B, 3, 3)
-    cam_to_world: torch.Tensor     # (B, 4, 4)
-    image: torch.Tensor            # (B, H, W, 3), float32
+    Single training data item containing an image and camera parameters.
     
-    mask: torch.Tensor | None = None    # (B, H, W), bool
-    points: torch.Tensor | None = None      # (B, M, 2)
-    depths: torch.Tensor | None = None      # (B, M,)
+    This is returned by data providers for each training step. Contains all
+    information needed to render and compare against ground truth.
+    
+    Gotchas:
+        - Images are float32 in [0, 1], not uint8 in [0, 255]
+        - Frozen dataclass (immutable after creation)
+        - Use .to(device) to move all tensors to GPU
+    """
+    
+    id: int
+    """Unique identifier for this data item"""
+    
+    image_name: str
+    """Original image filename (for logging/debugging)"""
+    
+    camera_model: str
+    """Camera type ("pinhole", "ortho", "fisheye", or "ftheta")"""
+
+    K: torch.Tensor
+    """Camera intrinsics matrix, shape (B, 3, 3). Contains focal lengths (fx, fy) and principal point (cx, cy)"""
+    
+    cam_to_world: torch.Tensor
+    """Camera-to-world transformation, shape (B, 4, 4). Converts camera space to world space"""
+    
+    image: torch.Tensor
+    """RGB image in [0, 1] range, shape (B, H, W, 3), dtype float32"""
+    
+    mask: torch.Tensor | None = None
+    """Optional binary mask, shape (B, H, W), dtype bool. True = valid pixel, False = ignore (e.g., sky, dynamic objects)"""
+    
+    points: torch.Tensor | None = None
+    """Optional 2D feature points, shape (B, M, 2). For depth supervision or sparse matching"""
+    
+    depths: torch.Tensor | None = None
+    """Optional depth values at points, shape (B, M). Corresponding depths for the 2D points"""
 
     
     def __getitem__(self, key: str) -> Any:
@@ -82,20 +106,59 @@ class SplatDataProvider(
     ABC
 ):
     """
-    Abstract base class for data providers.
+    Base class for loading and serving training data.
+    
+    Data providers handle loading images, cameras, and optional metadata
+    from various formats (COLMAP, NeRF, etc.). They sample training data
+    and provide initialization points for Gaussians.
+    
+    Subclasses must implement:
+        - load_data(): Load all data from disk
+        - next_train_data(): Sample next training item(s)
+        - get_init_point_cloud(): Get initial 3D points for Gaussians
+    
+    Available data providers:
+        - SplatColmapDataProvider: Loads COLMAP sparse reconstruction
+    
+    Example:
+        >>> from splatkit.data_provider import SplatColmapDataProvider, SplatColmapDataProviderConfig
+        >>> config = SplatColmapDataProviderConfig(
+        ...     colmap_dir="data/sparse/0",
+        ...     images_dir="data/images",
+        ... )
+        >>> provider = SplatColmapDataProvider(config)
+        >>> scene_scale = provider.load_data()
+        >>> data_item = provider.next_train_data(step=0)
+    
+    Gotchas:
+        - Call load_data() before next_train_data()
+        - Images returned in [0, 1] range as float32
+        - Scene scale affects densification thresholds
     """
 
     @abstractmethod
     def load_data(self) -> float:
         """
-        Load the data and return the scene scale.
+        Load all data from disk and return scene scale.
+        
+        This is called once at the start of training. Loads images, cameras,
+        and any metadata needed for training. Computes scene scale based on
+        camera positions.
+        
+        Returns:
+            scene_scale: Radius of scene's bounding sphere
+                        Used to normalize densification thresholds
+        
+        Gotchas:
+            - Must be called before next_train_data()
+            - Scene scale affects Gaussian splitting/cloning
         """
         raise NotImplementedError("Subclasses must implement this method")
 
     @abstractmethod
     def next_train_data(self, step: int) -> SplatDataItemT:
         """
-        Return the next training data item.
+        Sample and return the next training data item(s).
 
         Args:
             step: The current step.

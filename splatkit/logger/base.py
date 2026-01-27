@@ -4,14 +4,13 @@ from typing import Literal
 
 class SplatLogger:
     """
-    Logger wrapper for splatkit using Python's built-in logging.
-    
+    Logger wrapper for splatkit using Python's built-in logging.    
     Provides structured logging with module names for better debugging.
     
     Example:
-        logger = SplatLogger(level="INFO")
-        logger.info("Starting training", module="SplatTrainer")
-        # Output: INFO:SplatTrainer:Starting training
+        >>> from splatkit.logger import SplatLogger
+        >>> logger = SplatLogger(level="INFO")
+        >>> logger.info("Starting training", module="SplatTrainer")
     """
     
     def __init__(

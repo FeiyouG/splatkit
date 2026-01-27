@@ -17,10 +17,27 @@ class SplatRenderer(
     Generic[SplatRenderPayloadT], 
     ABC
 ):
-    """Abstract base class for all renderers.
+    """
+    Base class for all Gaussian Splatting renderers.
     
-    Encapsulates rendering configuration and provides a simple render() interface.
-    All configuration parameters are private and set via constructor or setters.
+    Renderers rasterize 3D Gaussians into 2D images by projecting them onto
+    camera planes and alpha-compositing them in depth order.
+    
+    Subclasses must implement:
+        - render(): Core rendering for training (with gradients)
+        - visualize(): Rendering for viewer (without gradients)
+    
+    Example:
+        >>> from splatkit.renderer import Splat3DGSRenderer
+        >>> renderer = Splat3DGSRenderer()
+        >>> renders, payload = renderer.render(
+        ...     splat_state=training_state,
+        ...     cam_to_worlds=cameras,
+        ...     Ks=intrinsics,
+        ...     height=800,
+        ...     width=600,
+        ... )
+
     """
 
     def __init__(self):

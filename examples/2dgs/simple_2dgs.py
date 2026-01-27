@@ -1,4 +1,5 @@
 import os
+import argparse
 from typing import Any
 
 
@@ -10,17 +11,23 @@ from splatkit.modules import SplatExporter, SplatProgressTracker, SplatEvaluator
 from splatkit.densification import SplatDefaultDensification
     
 if __name__ == "__main__":
-    work_dir = "/Users/feiyouguo/Downloads/test/crossbag2/new"
+    parser = argparse.ArgumentParser(description="Train a 2D Gaussian Splatting model")
+    parser.add_argument("--colmap_dir", type=str, required=True, help="Path to COLMAP sparse reconstruction directory")
+    parser.add_argument("--images_dir", type=str, required=True, help="Path to images directory")
+    parser.add_argument("--masks_dir", type=str, default=None, help="Path to masks directory (optional)")
+    parser.add_argument("--output_dir", type=str, default="./output_2dgs", help="Path to output directory (default: ./output_2dgs)")
+    parser.add_argument("--max_steps", type=int, default=30000, help="Maximum number of steps (default: 30000)")
+    args = parser.parse_args()
 
     trainer_config = SplatTrainerConfig(
-        max_steps=30000,
+        max_steps=args.max_steps,
     )
     
     data_provider = SplatColmapDataProvider(
         config = SplatColmapDataProviderConfig(
-            colmap_dir=os.path.join(work_dir, "undistorted/sparse/0"),
-            images_dir=os.path.join(work_dir, "undistorted/images"),
-            masks_dir=os.path.join(work_dir, "undistorted/masks/object_0"),
+            colmap_dir=args.colmap_dir,
+            images_dir=args.images_dir,
+            masks_dir=args.masks_dir,
             factor=1,
             normalize=True,
             load_depth=False,  # 2DGS typically doesn't use depth supervision
@@ -36,49 +43,32 @@ if __name__ == "__main__":
     )
     
     # 2DGS loss function with normal consistency and distortion losses
-    loss_func = Splat2DGSLossFn(
-        ssim_lambda=0.2,
-        normal_lambda=0.05,  # Weight for normal consistency loss
-        normal_start_iter=7000,  # Start normal loss after warmup
-        dist_lambda=0.01,  # Weight for distortion loss
-        dist_start_iter=3000,  # Start distortion loss earlier
-    )
+    loss_func = Splat2DGSLossFn()
     
     # Default densification works for both 3DGS and 2DGS (auto-detects gradient key)
-    densification = SplatDefaultDensification(
-        prune_opa=0.05,
-        grow_grad2d=0.0002,
-        grow_scale3d=0.01,
-        prune_scale3d=0.1,
-        refine_start_iter=500,
-        refine_stop_iter=15000,
-        reset_every=3000,
-        refine_every=100,
-    )
+    densification = SplatDefaultDensification()
 
     modules = [
         SplatProgressTracker(
             update_every=10,  # Update progress bar every step
         ),
         SplatExporter(
-            output_dir=os.path.join(work_dir, "export_2dgs"),
+            output_dir=os.path.join(args.output_dir, "export"),
             export_steps=[trainer_config.max_steps],
         ),
         SplatEvaluator(
-            output_dir=os.path.join(work_dir, "eval_2dgs"),
+            output_dir=os.path.join(args.output_dir, "eval"),
             eval_steps=[trainer_config.max_steps],
         ),
         # Uncomment to enable viewer
+        # Make sure viewer dependency is installed: pip install -e ".[viewer]"
         # SplatViewer(    
         #     port=8080,
-        #     output_dir=os.path.join(work_dir, "viewer_2dgs"),
+        #     output_dir=os.path.join(args.output_dir, "viewer"),
         #     update_interval=1,
         #     mode="training",
         # ),
     ]
-    
-    # Filter out None modules
-    modules = [m for m in modules if m is not None]
 
     trainer = SplatTrainer[ColmapDataItem, Splat2dgsRenderPayload](
         config=trainer_config,

@@ -1,9 +1,3 @@
-"""
-Viewer module for visualizing 3D Gaussian Splatting training progress.
-
-Based on gsplat's viewer implementation with viser and nerfview.
-"""
-
 import time
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal, Sequence, Tuple
@@ -30,9 +24,10 @@ if TYPE_CHECKING:
 class SplatViewerTabState(RenderTabState):
     """Extended render tab state with gsplat-specific controls.
     
-    Note: Only includes viewer-controllable parameters. Renderer configuration
-    (like anti-aliasing, distortion loss, etc.) is fixed at renderer construction
-    and cannot be changed here.
+    NOTE: 
+        Only includes viewer-controllable parameters. 
+        Renderer configuration (like anti-aliasing, distortion loss, etc.) 
+        is fixed at renderer construction and cannot be changed here.
     """
     
     # Non-controllable parameters (stats)
@@ -59,23 +54,22 @@ class SplatViewerTabState(RenderTabState):
 
 class SplatViewer(SplatBaseModule[SplatRenderPayload]):
     """
-    Generic interactive viewer module for training visualization.
-    
-    The viewer delegates all visualization logic to the renderer through the
-    renderer.view() method. Each renderer (3DGS, 2DGS, etc.) implements its own
-    visualization modes and knows how to best visualize its outputs.
-    
-    The viewer provides UI controls for render-time parameters (SH degree, camera model,
-    background, depth normalization, colormaps, etc.) and passes them to the renderer.
-    
-    Integrates viser + nerfview for real-time 3D visualization during training.
+    Interactive real-time viewer for visualizing training progress.
     
     Example:
-        viewer = SplatViewer(
-            port=8080,
-            output_dir="results/viewer",
-            update_interval=1,
-        )
+        >>> from splatkit.modules import SplatViewer
+        >>> viewer = SplatViewer(
+        ...     port=8080,
+        ...     update_interval=5,  # Update every 5 steps
+        ...     mode="training",
+        ... )
+        >>> # Add to trainer's modules list
+        >>> # Then open http://localhost:8080 in browser
+    
+    NOTE:
+        - Viewer only runs on rank 0 in distributed training
+        - High update frequency (interval=1) may slow down training
+        - Rendering happens on GPU; may compete with training for memory
     """
     
     def __init__(
@@ -90,11 +84,13 @@ class SplatViewer(SplatBaseModule[SplatRenderPayload]):
         Initialize the viewer module.
         
         Args:
-            port: Port number for the viser server
-            output_dir: Directory to save viewer outputs (screenshots, etc.)
-            update_interval: Update the viewer every N steps
-            mode: Viewer mode ("training" or "rendering")
-            verbose: Whether to print verbose output from viser server
+            port: Web server port number (default: 8080)
+            output_dir: Directory to save screenshots and exports; if None, nothing will be saved
+            update_interval: Update viewer every N training steps (default: 1)
+            mode: Viewer mode:
+                  - "training": Updates during training, shows live progress
+                  - "rendering": Static viewing, no training updates
+            verbose: Print viser server logs (default: False)
         """
         # Configuration (assigned in __init__)
         self._port = port
@@ -160,6 +156,12 @@ class SplatViewer(SplatBaseModule[SplatRenderPayload]):
         try:
             import sys
             import os
+            import logging
+            
+            # Suppress websockets.server error logs for normal connection closures
+            # These are harmless ConnectionClosedOK exceptions that occur when clients disconnect
+            websockets_logger = logging.getLogger("websockets.server")
+            websockets_logger.setLevel(logging.CRITICAL)  # Only show critical errors, not normal disconnects
             
             # Save original file descriptors
             stdout_fd = sys.stdout.fileno()

@@ -16,11 +16,27 @@ from .config import SplatTrainerConfig
 
 class SplatTrainer(Generic[SplatDataItemT, SplatRenderPayloadT]):
     """
-    Trainer for 3D Gaussian Splatting.
+    Trainer for Gaussian Splatting.
     
-    Automatically detects whether it's running in:
-    - Parent mode: Not in a distributed context → spawns workers via cli()
-    - Worker mode: In a distributed context → runs training
+    Coordinates rendering, loss computation, optimization, and densification.
+    Supports distributed training and custom modules for logging/visualization.
+    
+    Example:
+        >>> from splatkit.trainer import SplatTrainer, SplatTrainerConfig
+        >>> from splatkit.renderer import Splat3DGSRenderer
+        >>> from splatkit.loss_fn import Splat3DGSLossFn
+        >>> from splatkit.densification import SplatDefaultDensification
+        >>> 
+        >>> config = SplatTrainerConfig(max_steps=30000)
+        >>> trainer = SplatTrainer(
+        ...     config=config,
+        ...     renderer=Splat3DGSRenderer(),
+        ...     loss_fn=Splat3DGSLossFn(),
+        ...     data_provider=data_provider,
+        ...     densification=SplatDefaultDensification(),
+        ...     modules=[],  # Add viewer, progress bar, etc.
+        ... )
+        >>> trainer.run()
     """
 
     _config: SplatTrainerConfig
@@ -47,19 +63,26 @@ class SplatTrainer(Generic[SplatDataItemT, SplatRenderPayloadT]):
         world_size: int = 1,
     ):
         """
-        Initialize trainer.
+        Initialize the trainer with all required components.
         
         Args:
-            renderer: Renderer instance
-            loss_fn: Loss function instance
-            data_provider: Data provider instance
-            densification: Densification strategy instance
-            modules: List of additional modules
-            config: Training configuration
-            logger: Logger instance (creates default if None)
-            local_rank: Local GPU rank
-            world_rank: Global rank in distributed training
-            world_size: Total number of processes
+            config: Training configuration (see SplatTrainerConfig)
+            renderer: Renders Gaussians to images (e.g., Splat3DGSRenderer)
+            loss_fn: Computes training loss (e.g., Splat3DGSLossFn)
+            data_provider: Loads training images and cameras (e.g., SplatColmapDataProvider)
+            densification: Strategy for adding/removing Gaussians (e.g., SplatDefaultDensification)
+            modules: Optional list of modules for logging, visualization, etc.
+                     Examples: SplatViewer, SplatProgressTracker, SplatTensorboard
+            logger: Custom logger (creates default INFO-level logger if None)
+            ckpt_path: Path to checkpoint file to resume training (optional)
+            local_rank: GPU index on current machine (for multi-GPU, default: 0)
+            world_rank: Global process rank across all machines (default: 0)
+            world_size: Total number of processes in distributed training (default: 1)
+        
+        NOTE:
+            - Components must be compatible (same render payload type)
+            - For single GPU training, keep local_rank=0, world_rank=0, world_size=1
+            - Modules' hooks are called in the same order as they appear in the list
         """
         self._config = config
         self._renderer = renderer
@@ -115,7 +138,8 @@ class SplatTrainer(Generic[SplatDataItemT, SplatRenderPayloadT]):
         """
         Core training loop implementation.
         
-        Works for both single-GPU and distributed modes.
+        NOTE:
+            - For distributed training, use SplatDistributedTrainer or manage with CLI manually
         """
 
         scene_scale = self._data_provider.load_data()

@@ -17,10 +17,14 @@ class SplatProgressTracker(SplatBaseModule[SplatRenderPayload]):
     """
     Progress tracking module for training visualization.
     
-    Features:
-    - Real-time progress bar with tqdm
-    - Loss and metrics display
-    - Step timing information
+    Example:
+        >>> from splatkit.modules import SplatProgressTracker
+        >>> progress_tracker = SplatProgressTracker(
+        ...     update_every=10,  # Update progress bar every 10 steps
+        ... )
+        >>> # Add to trainer's modules list
+        >>> # Progress bar will be updated every 10 steps
+        >>> # Showing training progress, loss, and metrics
     """
 
     _update_every: int

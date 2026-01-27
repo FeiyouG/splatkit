@@ -22,17 +22,31 @@ from ..logger import SplatLogger
 
 class SplatEvaluator(SplatBaseModule[SplatRenderPayload]):
     """
-    Module for evaluating 3D Gaussian Splatting on validation/test set.
+    Module for evaluating reconstruction quality on validation set.
     
-    Computes PSNR, SSIM, LPIPS metrics and saves results to disk.
+    Renders validation images and computes standard 3D reconstruction metrics:
+    - PSNR (Peak Signal-to-Noise Ratio): Higher is better, measures pixel-level accuracy
+    - SSIM (Structural Similarity): 0-1, measures perceptual similarity
+    - LPIPS (Learned Perceptual Image Patch Similarity): Lower is better, perceptual distance
+    
+    Saves metrics to JSON files and optionally saves comparison images.
     
     Example:
-        evaluator = SplatEvaluator(
-            output_dir="results/eval",
-            eval_steps=[7_000, 30_000],
-            save_images=False,  # Default: False, saves to output_dir/images/{step}.png
-            save_stats=True,    # Default: True, saves to output_dir/stats/{step}.json
-        )
+        >>> from splatkit.modules import SplatEvaluator
+        >>> evaluator = SplatEvaluator(
+        ...     output_dir="results/eval",
+        ...     eval_steps=[7_000, 15_000, 30_000],  # Evaluate at these steps
+        ...     save_images=True,  # Save GT vs Rendered comparisons
+        ...     save_stats=True,   # Save metrics.json
+        ... )
+        >>> # Add to trainer's modules list
+        >>> # Metrics automatically computed and saved at specified steps
+    
+    NOTE:
+        - Evaluation happens on GPU and may slow down training
+        - LPIPS requires downloading pretrained weights on first use
+        - Only runs on rank 0 in distributed training
+        - Set save_images=False for faster evaluation (images can be large)
     """
     
     def __init__(
@@ -43,18 +57,17 @@ class SplatEvaluator(SplatBaseModule[SplatRenderPayload]):
         save_stats: bool = True,
         lpips_net: Literal["alex", "vgg"] = "alex",
         log_to_console: bool = True,
-        ckpt_path: str | None = None,
     ):
         """
-        Initialize evaluator.
+        Initialize the evaluator module.
         
         Args:
-            output_dir: Directory to save results (required).
+            output_dir: Directory to save results (required)
             eval_steps: Steps at which to run evaluation (e.g., [7000, 30000])
-            save_images: Whether to save rendered images (GT | Rendered comparison)
-            save_stats: Whether to save metrics as JSON
-            lpips_net: LPIPS network type ("alex" or "vgg")
-            log_to_console: Whether to print metrics to console
+            save_images: Save rendered vs GT image comparisons (default: False)
+            save_stats: Save metrics to JSON files (default: True)
+            lpips_net: LPIPS network: "alex" (faster) or "vgg" (default: "alex")
+            log_to_console: Print metrics to terminal (default: True)
         """
         self._eval_steps = set(eval_steps)
         self._output_dir = output_dir

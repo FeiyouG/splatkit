@@ -1,0 +1,112 @@
+name: Docs
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  release:
+    types: [created]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      
+      - name: Install dependencies
+        run: |
+          pip install -r docs/requirements.txt
+          pip install torch==2.4.0 --index-url https://download.pytorch.org/whl/cpu
+          # Remove fused-ssim dependency for docs build (it's mocked in conf.py)
+          sed -i '/"fused-ssim",/d' pyproject.toml
+          # Install with all extras so all imports work during docs build
+          BUILD_NO_CUDA=1 pip install -e ".[all]"
+      
+      - name: Get version and subdirectory
+        run: |
+          VERSION=$(python -c "try:
+              from splatkit import __version__
+              print(__version__)
+          except:
+              print('dev')")
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "DOCS_SUBDIR=versions/$VERSION" >> $GITHUB_ENV
+      
+      - name: Override version for main branch
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          echo "DOCS_SUBDIR=main" >> $GITHUB_ENV
+      
+      - name: Build documentation
+        run: |
+          cd docs
+          # Build documentation (allow warnings, they're common in API docs)
+          sphinx-build -b html source ../build/html
+          # Verify the build succeeded
+          if [ ! -f "../build/html/index.html" ]; then
+            echo "Error: index.html was not generated!"
+            exit 1
+          fi
+          # Add .nojekyll to disable Jekyll processing on GitHub Pages
+          touch ../build/html/.nojekyll
+          echo "Build successful! Listing generated files:"
+          ls -la ../build/html/
+      
+      - name: Create root index redirect
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        run: |
+          mkdir -p ./build/root
+          cat > ./build/root/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html>
+          <head>
+              <meta charset="utf-8">
+              <title>Redirecting to splatkit documentation</title>
+              <meta http-equiv="refresh" content="0; URL=./main/index.html">
+              <link rel="canonical" href="./main/index.html">
+          </head>
+          <body>
+              <p>Redirecting to <a href="./main/index.html">splatkit documentation</a>...</p>
+          </body>
+          </html>
+          EOF
+          touch ./build/root/.nojekyll
+          
+      - name: Deploy root redirect
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build/root
+          keep_files: true
+          
+      - name: Verify build output
+        run: |
+          echo "Files generated in ./build/html:"
+          find ./build/html -type f | head -20
+          echo "Total files: $(find ./build/html -type f | wc -l)"
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "✓ Documentation build successful (pull request - skipping deployment)"
+          else
+            echo "✓ Documentation build successful - proceeding to deployment"
+          fi
+          
+      - name: Deploy to GitHub Pages
+        if: github.event_name != 'pull_request'
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build/html
+          destination_dir: ${{ env.DOCS_SUBDIR }}
+          keep_files: true

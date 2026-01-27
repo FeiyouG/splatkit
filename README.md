@@ -1,121 +1,78 @@
-# SplatKit
+# splatkit
 
-A modular framework for 3D Gaussian Splatting training powered by [gsplat](https://github.com/nerfstudio-project/gsplat). SplatKit is designed to make it easy to share, recreate, and extend experiments from research papers.
+A modular toolkit for Gaussian Splatting training, built on top of [gsplat](https://github.com/nerfstudio-project/gsplat).
 
-## What is SplatKit?
+## Why splatkit?
 
-SplatKit provides a composable architecture for training 3D Gaussian Splatting models. Instead of a monolithic training script, SplatKit breaks down the training pipeline into modular components that can be easily swapped, extended, or customized for your research needs.
+**Built on gsplat**</br>
+Standing on the shoulders of giants (and their highly optimized CUDA kernels). SplatKit handles the boilerplate so you can focus on the fun parts.
 
-**Key Features:**
-- 🧩 **Modular Design**: Swap out data providers, renderers, loss functions, and densification strategies
-- 🔬 **Research-Friendly**: Easy to reproduce and share experiments from papers
-- ⚡ **Powered by gsplat**: Built on top of the fast gsplat library
-- 📦 **Batteries Included**: Default implementations for common use cases
+**Reproducibility & Clarity**  </br>
+Clear abstractions and configuration objects make your experiments easier to understand, share, and reproduce.
 
-## How to Use
+**Rapid Experimentation**</br>
+Swap renderers, loss functions, or densification strategies in seconds. Write new modules with minimal boilerplate to test research ideas faster.
 
-### Installation
+**Production Readiness**</br>
+The same modular design ensures consistent, reproducible training for production. Checkpoint management, distributed training, and evaluation metrics included.
+
+## Installation
+
+**Step 1:** Install PyTorch with CUDA support (required, not included):
 
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/splatkit.git
-cd splatkit
-
-# Install dependencies (requires Python >=3.10)
-uv sync
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
 ```
 
-### Quick Start
+**Step 2:** Install splatkit:
 
-See the [`examples/`](examples/) folder for complete examples. Here's a minimal example:
+```bash
+pip install -e ".[all]"  # or use: uv pip install -e ".[all]"
+```
+
+See the [installation guide](docs/source/installation.rst) for more options.
+
+## Quick Example
+
+Train a 3D Gaussian Splatting model:
 
 ```python
-from splatkit.trainer import SplatTrainer
+from splatkit.trainer import SplatTrainer, SplatTrainerConfig
 from splatkit.data_provider import SplatColmapDataProvider, SplatColmapDataProviderConfig
 from splatkit.renderer import Splat3DGSRenderer
-from splatkit.loss_fn import SplatDefaultLossFn
+from splatkit.loss_fn import Splat3DGSLossFn
 from splatkit.densification import SplatDefaultDensification
-from splatkit.modules import SplatExporter, SplatProgressTracker
 
-# Configure data provider
+# Configure training
+config = SplatTrainerConfig(
+    max_steps=30000,
+    output_dir="outputs/my_scene",
+)
+
+# Set up COLMAP data
 data_provider = SplatColmapDataProvider(
     config=SplatColmapDataProviderConfig(
-        colmap_dir="path/to/colmap/sparse/0",
-        images_dir="path/to/images",
-        factor=1,
+        colmap_dir="data/sparse/0",
+        images_dir="data/images",
         normalize=True,
-        train_test_ratio=0.8,
     )
 )
 
-# Set up training components
-renderer = Splat3DGSRenderer()
-loss_func = SplatDefaultLossFn()
-densification = SplatDefaultDensification()
-
-# Add optional modules
-modules = [
-    SplatProgressTracker(update_every=1),
-    SplatExporter(
-        splat_dir="output/splat",
-        ckpt_dir="output/ckpt",
-        splat_save_on=[0, 1000, 5000, 10000],
-    ),
-]
-
-# Create trainer and run
+# Create and run trainer
 trainer = SplatTrainer(
-    renderer=renderer,
-    loss_fn=loss_func,
+    config=config,
     data_provider=data_provider,
-    densification=densification,
-    modules=modules,
+    renderer=Splat3DGSRenderer(),
+    loss_fn=Splat3DGSLossFn(),
+    densification=SplatDefaultDensification(),
 )
 trainer.run()
 ```
 
-## Architecture Overview
+## Documentation
 
-SplatKit is built around these core components:
+📚 **[Full Documentation](docs/)** — Installation, guides, API reference, and customization examples.
 
-### Core Components
-
-- **`SplatTrainer`**: Orchestrates the training loop
-- **`DataProvider`**: Handles data loading and preprocessing
-  - `SplatColmapDataProvider`: Load scenes from COLMAP format
-- **`Renderer`**: Renders gaussians to images
-  - `Splat3DGSRenderer`: Standard 3D Gaussian Splatting renderer
-- **`LossFn`**: Computes training loss
-  - `SplatDefaultLossFn`: Default loss function (L1 + SSIM)
-- **`Densification`**: Manages gaussian densification strategy
-  - `SplatDefaultDensification`: Standard densification and pruning
-
-### Optional Modules
-
-Modules provide additional functionality during training:
-
-- **`SplatProgressTracker`**: Display training progress with tqdm
-- **`SplatExporter`**: Save checkpoints and splat files at specified iterations
-- **`SplatEvaluator`**: Evaluate model on test set with PSNR, SSIM, LPIPS metrics
-- **`SplatTensorboarder`**: Log training and evaluation metrics to TensorBoard (auto-integrates with evaluator)
-- **`SplatViewer`**: Interactive 3D viewer during training
-- **`SplatFrame`**: Base class for custom training hooks
-
-You can create custom modules by extending the base classes in `splatkit.modules`.
-
-## Project Structure
-
-```
-splatkit/
-├── data_provider/     # Data loading and preprocessing
-├── densification/     # Gaussian densification strategies
-├── loss_fn/          # Loss function implementations
-├── modules/          # Training modules and hooks
-├── renderer/         # Rendering implementations
-├── splat/            # Splat model and training state
-├── trainer/          # Training orchestration
-└── utils/            # Utility functions
-
-examples/             # Example scripts
-└── simple_3dgs.py    # Basic 3DGS training example
-```
+Check out `examples/` folder for more:
+- `examples/3dgs/simple_3dgs.py` — 3D Gaussian Splatting
+- `examples/2dgs/simple_2dgs.py` — 2D Gaussian Splatting

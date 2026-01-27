@@ -13,9 +13,13 @@ from .base import SplatRenderer
 @dataclass(frozen=True)
 class Splat3dgsRenderPayload(SplatRenderPayload):
     """
-    Metadata for 3D Gaussian Splatting rendered images.
+    Render output for 3D Gaussian Splatting (extends SplatRenderPayload).
+    
+    Adds 3DGS-specific outputs like conics (Gaussian covariance in 2D).
     """
-    conics: Tensor # (..., H, W, 1)
+    
+    conics: Tensor
+    """2D Gaussian covariance matrices, shape (..., H, W, 3). Upper triangular: [a, b, c] represents [[a, b], [b, c]]"""
 
 class Splat3DGSRenderer(SplatRenderer[Splat3dgsRenderPayload]):
     """

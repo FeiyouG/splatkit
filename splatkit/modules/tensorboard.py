@@ -18,22 +18,18 @@ class SplatTensorboard(SplatBaseModule[SplatRenderPayload]):
     
     Logs training metrics, memory usage, and optionally images during training.
     
-    Features:
-    - Training metrics: loss, num_GS, memory
-    - Optional image logging for visual inspection
-    - Learning rate tracking
-    - Memory profiling
-    - Optional auto-start TensorBoard server
-    
     Example:
-        tensorboard = SplatTensorboard(
-            log_dir="results/garden/tb",
-            log_interval=100,       # Log metrics every 100 steps
-            log_images=False,       # Don't log images by default
-            log_lr=True,            # Log learning rates
-            enable_server=True,     # Auto-start TensorBoard server
-            port=6060,              # Access at http://localhost:6060
-        )
+        >>> from splatkit.modules import SplatTensorboard
+        >>> tensorboard = SplatTensorboard(
+        ...     output_dir="results/garden/tb",
+        ...     log_interval=100,       # Log metrics every 100 steps
+        ...     log_images=False,       # Don't log images by default
+        ...     log_lr=True,            # Log learning rates
+        ...     enable_server=True,     # Auto-start TensorBoard server
+        ...     port=6060,              # Access at http://localhost:6060
+        ... )
+        >>> # Add to trainer's modules list
+        >>> # Then open http://localhost:6006 in browser
     """
     
     def __init__(

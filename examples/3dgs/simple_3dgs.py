@@ -1,4 +1,5 @@
 import os
+import argparse
 from typing import Any
 
 
@@ -10,17 +11,23 @@ from splatkit.modules import SplatExporter, SplatProgressTracker, SplatEvaluator
 from splatkit.densification import SplatDefaultDensification
     
 if __name__ == "__main__":
-    work_dir = "/Users/feiyouguo/Downloads/test/crossbag2/new"
+    parser = argparse.ArgumentParser(description="Train a 3D Gaussian Splatting model")
+    parser.add_argument("--colmap_dir", type=str, required=True, help="Path to COLMAP sparse reconstruction directory")
+    parser.add_argument("--images_dir", type=str, required=True, help="Path to images directory")
+    parser.add_argument("--masks_dir", type=str, default=None, help="Path to masks directory (optional)")
+    parser.add_argument("--output_dir", type=str, default="./output_3dgs", help="Path to output directory (default: ./output_3dgs)")
+    parser.add_argument("--max_steps", type=int, default=30000, help="Maximum number of steps (default: 30000)")
+    args = parser.parse_args()
 
     trainer_config = SplatTrainerConfig(
-        max_steps=30000,
+        max_steps=args.max_steps,
     )
     
     data_provider = SplatColmapDataProvider(
         config = SplatColmapDataProviderConfig(
-            colmap_dir=os.path.join(work_dir, "undistorted/sparse/0"),
-            images_dir=os.path.join(work_dir, "undistorted/images"),
-            masks_dir=os.path.join(work_dir, "undistorted/masks/object_0"),
+            colmap_dir=args.colmap_dir,
+            images_dir=args.images_dir,
+            masks_dir=args.masks_dir,
             factor=1,
             normalize=True,
             load_depth=True,
@@ -48,24 +55,22 @@ if __name__ == "__main__":
             update_every=10,  # Update progress bar every step
         ),
         SplatExporter(
-            output_dir=os.path.join(work_dir, "export"),
+            output_dir=os.path.join(args.output_dir, "export"),
             export_steps=[trainer_config.max_steps],
         ),
         SplatEvaluator(
-            output_dir=os.path.join(work_dir, "eval"),
+            output_dir=os.path.join(args.output_dir, "eval"),
             eval_steps=[trainer_config.max_steps],
         ),
         # Uncomment to enable viewer
+        # Make sure viewer dependency is installed: pip install -e ".[viewer]"
         # SplatViewer(    
         #     port=8080,
-        #     output_dir=os.path.join(work_dir, "viewer"),
+        #     output_dir=os.path.join(args.output_dir, "viewer"),
         #     update_interval=1,
         #     mode="training",
         # ),
     ]
-    
-    # Filter out None modules
-    modules = [m for m in modules if m is not None]
 
     trainer = SplatTrainer[ColmapDataItem, Splat3dgsRenderPayload](
         config=trainer_config,

@@ -14,31 +14,57 @@ from ..utils.distributed import distribute_metadata, distribute_tensor, gather_t
 @dataclass
 class SplatTrainingState:
     """
-    Mutable training state for 3D Gaussian Splatting
-
-    ### Invariant:
-    - Each rank owns params[rank::world_size]
-    - Optimizer steps are synchronized
-    - Only rank 0 may serialize state (save/load checkpoints, convert to/from splat model, etc.)
-
-    ### Distributed Training Strategy:
-
-    Parameters are distributed across ranks using a "striped" distribution pattern.
-    For N Gaussians and K ranks:
-    - Rank 0 owns Gaussians [0, K, 2K, 3K, ...]
-    - Rank 1 owns Gaussians [1, K+1, 2K+1, 3K+1, ...]
-    - Rank r owns Gaussians [r, r+K, r+2K, r+3K, ...]
-    - ...
-
-    This ensures balanced distribution and simplifies gather/scatter operations.
-
-    Example with 10 Gaussians and 3 ranks:
-    - Rank 0: [0, 3, 6, 9]
-    - Rank 1: [1, 4, 7]
-    - Rank 2: [2, 5, 8]
-
-    ### Batching:
-    - Support batching by specifying a batch size in factory methods
+    Training state containing Gaussian parameters and optimizers.
+    
+    Stores all trainable parameters (positions, scales, rotations, opacities, colors)
+    and their corresponding optimizers. Handles distributed training by striping
+    Gaussians across GPUs.
+    
+    Attributes:
+        params: ParameterDict with keys:
+            - means: Gaussian centers (N, 3)
+            - scales: Gaussian sizes (N, 3) in log-space
+            - quats: Gaussian rotations (N, 4) as quaternions
+            - opacities: Gaussian transparencies (N, 1) in logit-space
+            - sh0: 0th order SH coefficients (N, 1, 3)
+            - shN: Higher order SH coefficients (N, K, 3) where K depends on sh_degree
+        optimizers: Dict mapping param names to their Adam optimizers
+        sh_degree: Current spherical harmonics degree (increases during training)
+        device: Device string (e.g., "cuda:0")
+        world_rank: Current process rank (0 for single GPU)
+        world_size: Total number of processes (1 for single GPU)
+    
+    Distributed Training:
+        Gaussians are distributed across GPUs using a striped pattern:
+        - Rank 0 owns indices [0, K, 2K, 3K, ...] where K = world_size
+        - Rank 1 owns indices [1, K+1, 2K+1, ...]
+        - etc.
+        
+        Example with 10 Gaussians, 3 GPUs:
+        - GPU 0: [0, 3, 6, 9]
+        - GPU 1: [1, 4, 7]
+        - GPU 2: [2, 5, 8]
+    
+    Example:
+        >>> # Create from point cloud
+        >>> state = SplatTrainingState.from_pointcloud(
+        ...     points=xyz,
+        ...     colors=rgb,
+        ...     learning_rates={"means": 1.6e-4, ...},
+        ...     sh_degree=3,
+        ...     device="cuda:0",
+        ... )
+        >>> 
+        >>> # Get current colors (evaluates SH)
+        >>> colors = state.colors(sh_degree=3)
+        >>> 
+        >>> # Save/load checkpoints (only on rank 0)
+        >>> if state.world_rank == 0:
+        ...     state.save_ckpt("checkpoint.pth")
+    
+    NOTE:
+        - Scales and opacities stored in log/logit space for numerical stability
+        - Use colors() method to evaluate SH
     """
 
     REQUIRED_PARAMS = frozenset([
