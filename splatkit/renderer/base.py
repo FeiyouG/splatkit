@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Generic, Literal, Sequence, Tuple, Type
 
+import numpy as np
 from torch import Tensor
 
 from ..modules import SplatRenderPayloadT
@@ -9,6 +10,7 @@ from ..modules.base import SplatBaseModule
 
 if TYPE_CHECKING:
     from ..logger import SplatLogger
+    from nerfview import CameraState
 
 class SplatRenderer(
     SplatBaseModule[SplatRenderPayloadT], 
@@ -77,5 +79,77 @@ class SplatRenderer(
                 - radii: 2D radii
                 - means2d: Projected 2D positions
                 - ... other intermediate results
+        """
+        pass
+
+    def get_visualization_options(self) -> Tuple[str, ...]:
+        """
+        Return available visualization options for this renderer.
+        
+        These are display modes for the interactive viewer, separate from
+        training render modes. Each renderer defines what visualization
+        modes make sense for its outputs.
+        
+        Returns:
+            Tuple of visualization mode names (e.g., "rgb", "depth", "normal", "alpha")
+        """
+        return (
+            "rgb",
+            "alpha",
+        )
+    
+    @abstractmethod
+    def visualize(
+        self,
+        splat_state: SplatTrainingState,
+        camera_state: "CameraState",
+        width: int,
+        height: int,
+        visualization_mode: str = "rgb",
+        sh_degree: int | None = None,
+        backgrounds: Tensor | None = None,
+        camera_model: Literal["pinhole", "ortho", "fisheye", "ftheta"] = "pinhole",
+        # Visualization-specific parameters
+        normalize_nearfar: bool = False,
+        near_plane: float = 1e-2,
+        far_plane: float = 1e2,
+        inverse: bool = False,
+        colormap: str = "turbo",
+    ) -> Tuple[np.ndarray, int]:
+        """
+        Generate visualization for interactive viewer (VISUALIZATION ONLY).
+        
+        This method is separate from render() which is used for training.
+        It handles viewer-specific processing like depth normalization,
+        colormap application, and format conversion for display.
+        
+        IMPORTANT: Implementations should use @torch.no_grad() decorator since
+        visualization never needs gradients.
+        
+        Key Differences from render():
+        - No gradients (use @torch.no_grad() decorator)
+        - Returns numpy array instead of tensors
+        - Applies human-readable colormaps
+        - Single RGB output instead of multi-channel tensors
+        - Used by viewer only, not training loop
+        
+        Args:
+            splat_state: SplatTrainingState containing gaussian parameters
+            camera_state: Camera state from viewer
+            width: Image width
+            height: Image height
+            visualization_mode: Visualization option (from get_visualization_options())
+            sh_degree: SH degree to use
+            backgrounds: Background color
+            camera_model: Camera model
+            normalize_nearfar: Normalize depth with near/far planes
+            near_plane: Near plane for depth normalization
+            far_plane: Far plane for depth normalization
+            inverse: Invert depth/alpha values
+            colormap: Colormap name for depth/alpha visualization
+        
+        Returns:
+            output: RGB image [H, W, 3] in range [0, 1] as numpy array
+            rendered_gaussians: Number of gaussians rendered (visible)
         """
         pass

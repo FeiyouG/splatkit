@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from typing import Literal, Sequence, Tuple
+import numpy as np
 import torch
 from torch import Tensor
 
@@ -205,3 +206,104 @@ class Splat3DGSRenderer(SplatRenderer[Splat3dgsRenderPayload]):
     def set_absgrad(self, absgrad: bool):
         """Enable or disable absolute gradient computation."""
         self._absgrad = absgrad
+    
+    # Visualization methods
+    def get_visualization_options(self) -> Tuple[str, ...]:
+        """Return available visualization options for 3DGS renderer."""
+        return ("rgb", "depth(accumulated)", "depth(expected)", "alpha")
+    
+    @torch.no_grad()
+    def visualize(
+        self,
+        splat_state: SplatTrainingState,
+        camera_state,  # CameraState from nerfview
+        width: int,
+        height: int,
+        visualization_mode: str = "rgb",
+        sh_degree: int | None = None,
+        backgrounds: Tensor | None = None,
+        camera_model: Literal["pinhole", "ortho", "fisheye", "ftheta"] = "pinhole",
+        normalize_nearfar: bool = False,
+        near_plane: float = 1e-2,
+        far_plane: float = 1e2,
+        inverse: bool = False,
+        colormap: str = "turbo",
+    ) -> Tuple[np.ndarray, int]:
+        """
+        Generate 3DGS visualization for interactive viewer.
+        
+        Supports 3DGS-specific visualization modes including accumulated
+        and expected depth rendering.
+        """
+        from nerfview import apply_float_colormap
+        
+        # Get camera parameters
+        c2w = torch.from_numpy(camera_state.c2w).float().to(splat_state.device).unsqueeze(0)
+        K = torch.from_numpy(camera_state.get_K((width, height))).float().to(splat_state.device).unsqueeze(0)
+        
+        # Render with all data
+        renders, payload = self.render(
+            splat_state=splat_state,
+            cam_to_worlds=c2w,
+            Ks=K,
+            width=width,
+            height=height,
+            sh_degree=sh_degree,
+            render_mode="RGB+ED",  # Get all depth variants
+            backgrounds=backgrounds,
+            camera_model=camera_model,
+        )
+        
+        # Calculate stats
+        rendered_gaussians = int((payload.radii > 0).sum().item())
+        
+        # Process based on visualization mode
+        if visualization_mode == "rgb":
+            output = renders[0, ..., :3].clamp(0, 1).cpu().numpy()
+            
+        elif visualization_mode == "depth(expected)" and payload.depths_expected is not None:
+            depth = payload.depths_expected[0, ..., 0]
+            output = self._process_depth(depth, normalize_nearfar, near_plane, far_plane, inverse, colormap)
+            
+        elif visualization_mode == "depth(accumulated)" and payload.depths_accumulated is not None:
+            depth = payload.depths_accumulated[0, ..., 0]
+            output = self._process_depth(depth, normalize_nearfar, near_plane, far_plane, inverse, colormap)
+            
+        elif visualization_mode == "alpha":
+            alpha = payload.alphas[0, ..., 0]
+            if inverse:
+                alpha = 1 - alpha
+            output = apply_float_colormap(alpha.unsqueeze(-1), colormap).cpu().numpy()  # type: ignore
+            
+        else:
+            # Fallback to RGB
+            output = renders[0, ..., :3].clamp(0, 1).cpu().numpy()
+        
+        return output, rendered_gaussians
+    
+    def _process_depth(
+        self,
+        depth: Tensor,
+        normalize_nearfar: bool,
+        near_plane: float,
+        far_plane: float,
+        inverse: bool,
+        colormap: str,
+    ) -> np.ndarray:
+        """Process depth for visualization."""
+        from nerfview import apply_float_colormap
+        
+        # Normalize depth
+        if normalize_nearfar:
+            depth_norm = (depth - near_plane) / (far_plane - near_plane + 1e-10)
+        else:
+            depth_min = depth.min()
+            depth_max = depth.max()
+            depth_norm = (depth - depth_min) / (depth_max - depth_min + 1e-10)
+        
+        depth_norm = depth_norm.clamp(0, 1)
+        
+        if inverse:
+            depth_norm = 1 - depth_norm
+        
+        return apply_float_colormap(depth_norm.unsqueeze(-1), colormap).cpu().numpy()  # type: ignore

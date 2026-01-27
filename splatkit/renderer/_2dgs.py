@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 import math
 from typing import Literal, Sequence, Tuple
+import numpy as np
 import torch
 from torch import Tensor
 
@@ -138,6 +139,10 @@ class Splat2DGSRenderer(SplatRenderer[Splat2dgsRenderPayload]):
 
         if camera_model is None:
             camera_model = self._camera_model
+
+        disloss = self._distloss
+        if render_mode in ["RGB"]:
+            disloss = False
         
         # Call gsplat's 2DGS rasterization
 
@@ -170,7 +175,7 @@ class Splat2DGSRenderer(SplatRenderer[Splat2dgsRenderPayload]):
             sparse_grad=self._sparse_grad,
             absgrad=self._absgrad,
             packed=False,  # Never pack
-            distloss=self._distloss,
+            distloss=disloss,
             depth_mode="expected",
         )
 
@@ -225,4 +230,112 @@ class Splat2DGSRenderer(SplatRenderer[Splat2dgsRenderPayload]):
     def set_distloss(self, distloss: bool):
         """Enable or disable distortion loss computation."""
         self._distloss = distloss
+    
+    # Visualization methods
+    def get_visualization_options(self) -> Tuple[str, ...]:
+        """Return available visualization options for 2DGS renderer."""
+        return ("rgb", "depth(median)", "normal", "distortion", "alpha")
+    
+    @torch.no_grad()
+    def visualize(
+        self,
+        splat_state: SplatTrainingState,
+        camera_state,  # CameraState from nerfview
+        width: int,
+        height: int,
+        visualization_mode: str = "rgb",
+        sh_degree: int | None = None,
+        backgrounds: Tensor | None = None,
+        camera_model: Literal["pinhole", "ortho", "fisheye", "ftheta"] = "pinhole",
+        normalize_nearfar: bool = False,
+        near_plane: float = 1e-2,
+        far_plane: float = 1e2,
+        inverse: bool = False,
+        colormap: str = "turbo",
+    ) -> Tuple[np.ndarray, int]:
+        """
+        Generate 2DGS visualization for interactive viewer.
+        
+        Supports 2DGS-specific visualization modes including surface normals,
+        median depth, and distortion maps.
+        """
+        from nerfview import apply_float_colormap
+        
+        # Get camera parameters
+        c2w = torch.from_numpy(camera_state.c2w).float().to(splat_state.device).unsqueeze(0)
+        K = torch.from_numpy(camera_state.get_K((width, height))).float().to(splat_state.device).unsqueeze(0)
+        
+        # Render with all data
+        renders, payload = self.render(
+            splat_state=splat_state,
+            cam_to_worlds=c2w,
+            Ks=K,
+            width=width,
+            height=height,
+            sh_degree=sh_degree,
+            render_mode="RGB+ED",  # Get all data
+            backgrounds=backgrounds,
+            camera_model=camera_model,
+        )
+        
+        # Calculate stats
+        rendered_gaussians = int((payload.radii > 0).sum().item())
+        
+        # Process based on visualization mode
+        if visualization_mode == "rgb":
+            output = renders[0, ..., :3].clamp(0, 1).cpu().numpy()
+            
+        elif visualization_mode == "depth(median)":
+            depth = payload.depths_median[0, ..., 0]
+            output = self._process_depth(depth, normalize_nearfar, near_plane, far_plane, inverse, colormap)
+            
+        elif visualization_mode == "normal":
+            normals = payload.normals[0]
+            normals = normals * 0.5 + 0.5  # Normalize to [0, 1]
+            output = normals.cpu().numpy()
+            
+        elif visualization_mode == "distortion":
+            distort = payload.render_distort[0, ..., 0]
+            if inverse:
+                distort = 1 - distort
+            output = apply_float_colormap(distort.unsqueeze(-1), colormap).cpu().numpy()  # type: ignore
+            
+        elif visualization_mode == "alpha":
+            alpha = payload.alphas[0, ..., 0]
+            if inverse:
+                alpha = 1 - alpha
+            output = apply_float_colormap(alpha.unsqueeze(-1), colormap).cpu().numpy()  # type: ignore
+            
+        else:
+            # Fallback to RGB
+            output = renders[0, ..., :3].clamp(0, 1).cpu().numpy()
+        
+        return output, rendered_gaussians
+    
+    def _process_depth(
+        self,
+        depth: Tensor,
+        normalize_nearfar: bool,
+        near_plane: float,
+        far_plane: float,
+        inverse: bool,
+        colormap: str,
+    ) -> np.ndarray:
+        """Process depth for visualization."""
+        from nerfview import apply_float_colormap
+        
+        # Normalize depth
+        if normalize_nearfar:
+            depth_norm = (depth - near_plane) / (far_plane - near_plane + 1e-10)
+        else:
+            depth_min = depth.min()
+            depth_max = depth.max()
+            depth_norm = (depth - depth_min) / (depth_max - depth_min + 1e-10)
+        
+        depth_norm = depth_norm.clamp(0, 1)
+        
+        if inverse:
+            depth_norm = 1 - depth_norm
+        
+        return apply_float_colormap(depth_norm.unsqueeze(-1), colormap).cpu().numpy()  # type: ignore
 

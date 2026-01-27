@@ -13,7 +13,6 @@ import torch
 import viser
 from nerfview import CameraState, RenderTabState, Viewer
 
-
 from nerfview._renderer import InterruptRenderException
 
 from .base import SplatBaseModule
@@ -29,37 +28,47 @@ if TYPE_CHECKING:
 
 
 class SplatViewerTabState(RenderTabState):
-    """Extended render tab state with gsplat-specific controls."""
+    """Extended render tab state with gsplat-specific controls.
+    
+    Note: Only includes viewer-controllable parameters. Renderer configuration
+    (like anti-aliasing, distortion loss, etc.) is fixed at renderer construction
+    and cannot be changed here.
+    """
     
     # Non-controllable parameters (stats)
     total_gs_count: int = 0
     rendered_gs_count: int = 0
     
-    # Controllable parameters
+    # Controllable viewer parameters
     max_sh_degree: int = 3
     near_plane: float = 1e-2
     far_plane: float = 1e2
     radius_clip: float = 0.0
     eps2d: float = 0.3
     backgrounds: Tuple[int, int, int] = (0, 0, 0)  # RGB values 0-255
-    render_mode: Literal[
-        "rgb", "depth(accumulated)", "depth(expected)", "alpha"
-    ] = "rgb"
+    render_mode: str = "rgb"  # Dynamic based on detected payload capabilities
     normalize_nearfar: bool = False
     inverse: bool = False
     colormap: Literal[
         "turbo", "viridis", "magma", "inferno", "cividis", "gray"
     ] = "turbo"
-    rasterize_mode: Literal["classic", "antialiased"] = "classic"
+    
+    # Camera model (only used if renderer's render() method accepts it)
     camera_model: Literal["pinhole", "ortho", "fisheye"] = "pinhole"
 
 
 class SplatViewer(SplatBaseModule[SplatRenderPayload]):
     """
-    Interactive viewer module for training visualization.
+    Generic interactive viewer module for training visualization.
+    
+    The viewer delegates all visualization logic to the renderer through the
+    renderer.view() method. Each renderer (3DGS, 2DGS, etc.) implements its own
+    visualization modes and knows how to best visualize its outputs.
+    
+    The viewer provides UI controls for render-time parameters (SH degree, camera model,
+    background, depth normalization, colormaps, etc.) and passes them to the renderer.
     
     Integrates viser + nerfview for real-time 3D visualization during training.
-    Provides controls for SH degree, rendering modes, depth visualization, etc.
     
     Example:
         viewer = SplatViewer(
@@ -75,6 +84,7 @@ class SplatViewer(SplatBaseModule[SplatRenderPayload]):
         output_dir: str | None = None,
         update_interval: int = 1,
         mode: Literal["training", "rendering"] = "training",
+        verbose: bool = False,
     ):
         """
         Initialize the viewer module.
@@ -84,6 +94,7 @@ class SplatViewer(SplatBaseModule[SplatRenderPayload]):
             output_dir: Directory to save viewer outputs (screenshots, etc.)
             update_interval: Update the viewer every N steps
             mode: Viewer mode ("training" or "rendering")
+            verbose: Whether to print verbose output from viser server
         """
         # Configuration (assigned in __init__)
         self._port = port
@@ -101,8 +112,13 @@ class SplatViewer(SplatBaseModule[SplatRenderPayload]):
         self._renderer: SplatRenderer[SplatRenderPayload] | None = None
         self._training_state: SplatTrainingState | None = None
         
+        # Available render modes (populated in on_setup from renderer)
+        self._available_render_modes: tuple[str, ...] = ("rgb", "depth(accumulated)", "depth(expected)", "alpha")
+        
         # Timing for rays per second calculation
         self._step_start_time: float | None = None
+
+        self._verbose = verbose
         
     @property
     def module_name(self) -> str:
@@ -136,37 +152,45 @@ class SplatViewer(SplatBaseModule[SplatRenderPayload]):
         # Store renderer reference (needed by render function)
         self._renderer = renderer
         
-        # Initialize viser server (capture npm/node output)
+        # Get available visualization options from renderer
+        self._available_render_modes = renderer.get_visualization_options()
+        logger.info(f"Setting up viewer with available visualization modes: {', '.join(self._available_render_modes)}", module=self.module_name)
+        
+        # Initialize viser server (silence npm/node output)
         try:
             import sys
-            from io import StringIO
+            import os
             
-            # Capture stdout/stderr to buffer
-            old_stdout = sys.stdout
-            old_stderr = sys.stderr
-            stdout_buffer = StringIO()
-            stderr_buffer = StringIO()
+            # Save original file descriptors
+            stdout_fd = sys.stdout.fileno()
+            stderr_fd = sys.stderr.fileno()
+            
+            # Duplicate original file descriptors for later restoration
+            stdout_dup = os.dup(stdout_fd)
+            stderr_dup = os.dup(stderr_fd)
             
             try:
-                sys.stdout = stdout_buffer
-                sys.stderr = stderr_buffer
+                if not self._verbose:
+                    logger.info("Initializing viser server with npm/node output silenced", module=self.module_name)
+                    # Redirect stdout and stderr to devnull
+                    devnull_fd = os.open(os.devnull, os.O_WRONLY)
+                    os.dup2(devnull_fd, stdout_fd)
+                    os.dup2(devnull_fd, stderr_fd)
+                    os.close(devnull_fd)
+                else:
+                    logger.info("Initializing viser server with npm/node output enabled", module=self.module_name)
+                
+                # Initialize viser server (npm/node output now silenced)
                 self._server = viser.ViserServer(port=self._port, verbose=False)
                 self._server.gui.set_panel_label("splatkit viewer")
-            except Exception as e:
-                # If error, print captured output for debugging
-                sys.stdout = old_stdout
-                sys.stderr = old_stderr
-                captured_out = stdout_buffer.getvalue()
-                captured_err = stderr_buffer.getvalue()
-                if captured_out:
-                    print(captured_out, end='')
-                if captured_err:
-                    print(captured_err, end='', file=sys.stderr)
-                raise e
+                
             finally:
-                # Restore stdout/stderr
-                sys.stdout = old_stdout
-                sys.stderr = old_stderr
+                if not self._verbose:
+                    # Restore original file descriptors
+                    os.dup2(stdout_dup, stdout_fd)
+                    os.dup2(stderr_dup, stderr_fd)
+                    os.close(stdout_dup)
+                    os.close(stderr_dup)
             
             logger.info(f"Viser server initialized successfully on port {self._port}", module=self.module_name)
             
@@ -311,25 +335,34 @@ class SplatViewer(SplatBaseModule[SplatRenderPayload]):
                 if self._viewer:
                     self._viewer.rerender(_)
             
-            # Render mode
+            # Render mode (dynamic based on detected capabilities)
             render_mode_dropdown = server.gui.add_dropdown(
                 "Render Mode",
-                ("rgb", "depth(accumulated)", "depth(expected)", "alpha"),
-                initial_value=tab_state.render_mode,
+                self._available_render_modes,
+                initial_value=tab_state.render_mode if tab_state.render_mode in self._available_render_modes else "rgb",
                 hint="Render mode to use.",
             )
             
             @render_mode_dropdown.on_update
             def _(_) -> None:
-                if "depth" in render_mode_dropdown.value:
+                mode = render_mode_dropdown.value
+                
+                # Default all to disabled
+                normalize_nearfar_checkbox.disabled = True
+                inverse_checkbox.disabled = True
+                colormap_dropdown.disabled = True
+                
+                # Enable controls based on render mode
+                if "depth" in mode or mode == "distortion":
                     normalize_nearfar_checkbox.disabled = False
                     inverse_checkbox.disabled = False
                     colormap_dropdown.disabled = False
-                else:
-                    normalize_nearfar_checkbox.disabled = True
-                    inverse_checkbox.disabled = True
-                    colormap_dropdown.disabled = True
-                tab_state.render_mode = render_mode_dropdown.value
+                elif mode == "alpha":
+                    inverse_checkbox.disabled = False
+                    colormap_dropdown.disabled = False
+                # normal mode and rgb mode keep all disabled
+                
+                tab_state.render_mode = mode
                 if self._viewer:
                     self._viewer.rerender(_)
             
@@ -374,21 +407,7 @@ class SplatViewer(SplatBaseModule[SplatRenderPayload]):
                 if self._viewer:
                     self._viewer.rerender(_)
             
-            # Rasterization mode
-            rasterize_mode_dropdown = server.gui.add_dropdown(
-                "Anti-Aliasing",
-                ("classic", "antialiased"),
-                initial_value=tab_state.rasterize_mode,
-                hint="Rasterization mode.",
-            )
-            
-            @rasterize_mode_dropdown.on_update
-            def _(_) -> None:
-                tab_state.rasterize_mode = rasterize_mode_dropdown.value
-                if self._viewer:
-                    self._viewer.rerender(_)
-            
-            # Camera model
+            # Camera model control (all renderers support this parameter)
             camera_model_dropdown = server.gui.add_dropdown(
                 "Camera Model",
                 ("pinhole", "ortho", "fisheye"),
@@ -529,105 +548,36 @@ class SplatViewer(SplatBaseModule[SplatRenderPayload]):
         width = tab_state.viewer_width
         height = tab_state.viewer_height
         
-        # Get camera parameters
-        c2w = camera_state.c2w  # [4, 4]
-        K = camera_state.get_K((width, height))  # [3, 3]
-        
-        # Convert to torch tensors
-        device = self._training_state.device
-        c2w = torch.from_numpy(c2w).float().to(device).unsqueeze(0)  # [1, 4, 4]
-        K = torch.from_numpy(K).float().to(device).unsqueeze(0)  # [1, 3, 3]
-        
-        # Map render mode to gsplat render mode
-        RENDER_MODE_MAP: dict[str, Literal["RGB", "D", "ED"]] = {
-            "rgb": "RGB",
-            "depth(accumulated)": "D",
-            "depth(expected)": "ED",
-            "alpha": "RGB",  # Render RGB and extract alpha later
-        }
-        render_mode = RENDER_MODE_MAP.get(tab_state.render_mode, "RGB")
-        
         # Get rendering parameters
         sh_degree = min(tab_state.max_sh_degree, self._training_state.sh_degree)
         
         # Get background color (convert from RGB 0-255 to 0-1)
+        device = self._training_state.device
         backgrounds = torch.tensor(
             [[c / 255.0 for c in tab_state.backgrounds]], device=device, dtype=torch.float32
         )
         
-        # Render
+        # Delegate to renderer's visualize method
         try:
-            renders, info = self._renderer.render(
+            output, rendered_gaussians = self._renderer.visualize(
                 splat_state=self._training_state,
-                cam_to_worlds=c2w,
-                Ks=K,
+                camera_state=camera_state,
                 width=width,
                 height=height,
+                visualization_mode=tab_state.render_mode,
                 sh_degree=sh_degree,
-                render_mode=render_mode,
                 backgrounds=backgrounds,
                 camera_model=tab_state.camera_model,
+                normalize_nearfar=tab_state.normalize_nearfar,
+                near_plane=tab_state.near_plane,
+                far_plane=tab_state.far_plane,
+                inverse=tab_state.inverse,
+                colormap=tab_state.colormap,
             )
             
             # Update stats
             tab_state.total_gs_count = len(self._training_state.params["means"])
-            if hasattr(info, 'radii') and info.radii is not None:
-                tab_state.rendered_gs_count = int((info.radii > 0).sum().item())
-            
-            # Process output based on render mode
-            if tab_state.render_mode == "rgb":
-                # RGB rendering
-                output = renders[0, ..., :3].clamp(0, 1).cpu().numpy()
-                
-            elif tab_state.render_mode in ["depth(accumulated)", "depth(expected)"]:
-                # Depth rendering
-                depth = renders[0, ..., 0]
-                
-                # Normalize depth
-                if tab_state.normalize_nearfar:
-                    depth_norm = (depth - tab_state.near_plane) / (
-                        tab_state.far_plane - tab_state.near_plane + 1e-10
-                    )
-                else:
-                    depth_min = depth.min()
-                    depth_max = depth.max()
-                    depth_norm = (depth - depth_min) / (depth_max - depth_min + 1e-10)
-                
-                depth_norm = depth_norm.clamp(0, 1)
-                
-                # Apply inverse if requested
-                if tab_state.inverse:
-                    depth_norm = 1 - depth_norm
-                
-                # Apply colormap
-                from nerfview import apply_float_colormap
-                output = apply_float_colormap(
-                    depth_norm.unsqueeze(-1),
-                    tab_state.colormap  # type: ignore
-                ).cpu().numpy()
-                
-            elif tab_state.render_mode == "alpha":
-                # Alpha rendering - extract from info
-                if hasattr(info, 'alphas') and info.alphas is not None:
-                    alpha = info.alphas[0, ..., 0]
-                else:
-                    # Fallback: compute from rendered colors
-                    alpha = renders[0, ..., :3].mean(dim=-1)
-                
-                # Apply inverse if requested
-                if tab_state.inverse:
-                    alpha = 1 - alpha
-                
-                # Apply colormap
-                from nerfview import apply_float_colormap
-                output = apply_float_colormap(
-                    alpha.unsqueeze(-1),
-                    tab_state.colormap  # type: ignore
-                ).cpu().numpy()
-                
-            else:
-                # Unknown mode: return RGB
-                output = renders[0, ..., :3].clamp(0, 1).cpu().numpy()
+            tab_state.rendered_gs_count = rendered_gaussians
             
             return output
         
