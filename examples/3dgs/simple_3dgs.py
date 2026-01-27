@@ -5,7 +5,7 @@ from typing import Any
 from splatkit.trainer import SplatTrainer, SplatTrainerConfig
 from splatkit.data_provider import SplatColmapDataProvider, SplatColmapDataProviderConfig, ColmapDataItem
 from splatkit.renderer import Splat3DGSRenderer, Splat3dgsRenderPayload
-from splatkit.loss_fn import SplatDefaultLossFn
+from splatkit.loss_fn import Splat3DGSLossFn
 from splatkit.modules import SplatExporter, SplatProgressTracker, SplatEvaluator, SplatViewer
 from splatkit.densification import SplatDefaultDensification
     
@@ -29,8 +29,19 @@ if __name__ == "__main__":
     )
 
     renderer = Splat3DGSRenderer()
-    loss_func = SplatDefaultLossFn()
-    densification = SplatDefaultDensification()
+    loss_func = Splat3DGSLossFn()
+    
+    # Default densification works for both 3DGS and 2DGS (auto-detects gradient key)
+    densification = SplatDefaultDensification(
+        prune_opa=0.005,  # Default 3DGS setting
+        grow_grad2d=0.0002,
+        grow_scale3d=0.01,
+        prune_scale3d=0.1,
+        refine_start_iter=500,
+        refine_stop_iter=15000,
+        reset_every=3000,
+        refine_every=100,
+    )
 
     modules = [
         SplatProgressTracker(

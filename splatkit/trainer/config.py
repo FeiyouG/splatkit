@@ -19,7 +19,7 @@ class SplatTrainerConfig:
     result_dir: str = "results/default"
     
     strategy: DefaultStrategy | MCMCStrategy = field(
-        default_factory=lambda: DefaultStrategy(verbose=True)
+        default_factory=lambda: DefaultStrategy(verbose=False)
     )
     
     sh_degree: int = 3

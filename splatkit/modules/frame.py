@@ -15,6 +15,11 @@ class SplatRenderPayload:
     n_batches: int
     width: int
     height: int
+    means2d: Tensor # (..., H, W, 2)
+
+    gaussian_ids: Tensor | None # Visible gaussian indices for densification
+    depths_expected: Tensor | None # (..., H, W, 1) - expected depths; will be None if render_mode is not "RGB+D" or "RGB+ED"
+    depths_accumulated: Tensor | None # (..., H, W, 1) - accumulated depths; will be None if render_mode is not "D" or "RGB+D"
 
     def __getitem__(self, key: str) -> Any:
         if not hasattr(self, key):

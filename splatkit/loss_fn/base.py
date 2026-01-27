@@ -53,6 +53,8 @@ class SplatLossFn(
     def _opacity_reg(self, opacities: torch.Tensor, opacity_reg: float = 0.0) -> torch.Tensor:
         """
         Compute opacity regularization.
+        
+        Encourages less opaque gaussians
         """
         if opacity_reg > 0:
             return opacity_reg * torch.sigmoid(opacities).mean()
@@ -62,6 +64,7 @@ class SplatLossFn(
     def _scale_reg(self, scales: torch.Tensor, scale_reg: float = 0.0) -> torch.Tensor:
         """
         Compute scale regularization.
+        Encourages smaller gaussians
         """
         if scale_reg > 0:
             return scale_reg * torch.exp(scales).mean()

@@ -1,28 +1,31 @@
 from dataclasses import dataclass
+import math
 from typing import Literal, Sequence, Tuple
 import torch
 from torch import Tensor
 
-from gsplat.rendering import rasterization
+from gsplat.rendering import rasterization_2dgs, rasterization_2dgs_inria_wrapper
 
 from ..modules import SplatBaseModule, SplatRenderPayload
 from ..splat.training_state import SplatTrainingState
 from .base import SplatRenderer
 
 @dataclass(frozen=True)
-class Splat3dgsRenderPayload(SplatRenderPayload):
+class Splat2dgsRenderPayload(SplatRenderPayload):
     """
-    Metadata for 3D Gaussian Splatting rendered images.
+    Metadata for 2D Gaussian Splatting rendered images.
     """
-    conics: Tensor # (..., H, W, 1)
+    normals: Tensor  # (..., H, W, 3) - rendered normals
+    normals_from_depth: Tensor  # (..., H, W, 3) - normals derived from depth
+    render_distort: Tensor  # (..., H, W, 1) - distortion map
+    depths_median: Tensor  # (..., H, W, 1) - median depth
+    gradient_2dgs: Tensor  # Gradient for 2DGS densification
 
-class Splat3DGSRenderer(SplatRenderer[Splat3dgsRenderPayload]):
-    """
-    3D Gaussian Splatting renderer.
-
-    NOTE:
-            In 3DGS, depth images are volumetric (no true surface).
-            depths_expected represents expected ray depth.
+class Splat2DGSRenderer(SplatRenderer[Splat2dgsRenderPayload]):
+    """2D Gaussian Splatting renderer.
+    
+    Uses gsplat's rasterization_2dgs or rasterization_2dgs_inria_wrapper
+    for rendering 2D Gaussian splats with surface normals.
     """
 
     _camera_model: Literal["pinhole", "ortho", "fisheye", "ftheta"]
@@ -31,10 +34,10 @@ class Splat3DGSRenderer(SplatRenderer[Splat3dgsRenderPayload]):
     _tile_size: int
     _sparse_grad: bool
     _radius_clip: float
-    _antialiased: bool
     _eps2d: float
     _absgrad: bool
     _channel_chunk: int
+    _distloss: bool
     
     def __init__(
         self,
@@ -49,28 +52,30 @@ class Splat3DGSRenderer(SplatRenderer[Splat3dgsRenderPayload]):
         radius_clip: float = 0.0,
         
         # Quality settings
-        antialiased: bool = False,
         eps2d: float = 0.3,
         
         # Advanced features
         absgrad: bool = False,
         channel_chunk: int = 32,
+        
+        # 2DGS specific
+        distloss: bool = True,
     ):
         """
-        Initialize renderer with fixed configuration.
+        Initialize 2DGS renderer with fixed configuration.
         
         Args:
             camera_model: Camera projection model
             near_plane: Near clipping plane distance
             far_plane: Far clipping plane distance
-            packed: Use packed mode (memory efficient) but tradeoff for speed
             tile_size: Tile size for rasterization (typically 16)
             sparse_grad: Use sparse gradients (experimental)
             radius_clip: Skip gaussians with 2D radius <= this
-            antialiased: Use Mip-Splatting antialiasing
             eps2d: Minimum 2D covariance eigenvalue, added to prevent projected GS to be too small
-            absgrad: Compute absolute gradients (for AbsGS). If true then can be access from render_meta["means2d"].absgrad
+            absgrad: Compute absolute gradients (for AbsGS)
             channel_chunk: Render in chunks if channels > this
+            model_type: "2dgs" or "2dgs-inria" implementation
+            distloss: Enable distortion loss computation
         """
         
         # Store all as private attributes
@@ -80,10 +85,10 @@ class Splat3DGSRenderer(SplatRenderer[Splat3dgsRenderPayload]):
         self._tile_size = tile_size
         self._sparse_grad = sparse_grad
         self._radius_clip = radius_clip
-        self._antialiased = antialiased
         self._eps2d = eps2d
         self._absgrad = absgrad
         self._channel_chunk = channel_chunk
+        self._distloss = distloss
     
     def render(
         self,
@@ -94,28 +99,30 @@ class Splat3DGSRenderer(SplatRenderer[Splat3dgsRenderPayload]):
         width: int,
         camera_model: Literal["pinhole", "ortho", "fisheye", "ftheta"] | None = None,
         backgrounds: Tensor | None = None,
-        render_mode: Literal["RGB", "D", "ED", "RGB+D", "RGB+ED"] = "RGB",
+        render_mode: Literal["RGB", "D", "ED", "RGB+D", "RGB+ED"] = "RGB+ED",
         sh_degree: int | None = None,
         world_rank: int = 0,
         world_size: int = 1,
-    ) -> Tuple[Tensor, Splat3dgsRenderPayload]:
+    ) -> Tuple[Tensor, Splat2dgsRenderPayload]:
         """
-        Render splats from camera viewpoints.
+        Render 2D Gaussian splats from camera viewpoints.
         
         Args:
             splat_state: SplatTrainingState with gaussian parameters
-            datasetItem: DataSetItem containing camera intrinsics, camera-to-world matrices, image, mask, points, depths
-            sh_degree: SH degree to use (None = use splat_state.sh_degree)
-            render_mode: What to render ("RGB", "D", "ED", "RGB+D", "RGB+ED")
+            cam_to_worlds: Camera-to-world matrices [B, 4, 4]
+            Ks: Camera intrinsics [B, 3, 3]
+            height: Image height
+            width: Image width
+            camera_model: Camera projection model
             backgrounds: Background colors [B, C] (None = black)
-            masks: Optional masks [B, H, W] to zero out regions
+            render_mode: What to render ("RGB", "D", "ED", "RGB+D", "RGB+ED")
+            sh_degree: SH degree to use (None = use splat_state.sh_degree)
             world_rank: World rank
             world_size: World size
-            **kwargs: Additional args (distortion coeffs, rolling shutter, etc.)
         
         Returns:
             renders: Rendered images [B, H, W, C]
-            render_meta: Dict with alphas and intermediate results
+            render_payload: Splat2dgsRenderPayload with all outputs
         """
         # Extract gaussian parameters from SplatTrainingState
         means = splat_state.params["means"]
@@ -123,8 +130,7 @@ class Splat3DGSRenderer(SplatRenderer[Splat3dgsRenderPayload]):
         scales = torch.exp(splat_state.params["scales"])
         opacities = torch.sigmoid(splat_state.params["opacities"])
         colors = splat_state.colors  # Property handles SH vs features
-
-        distributed = world_size > 1
+        viewmats = torch.linalg.inv(cam_to_worlds)
         
         # Use splat_state's sh_degree if not specified
         if sh_degree is None:
@@ -133,14 +139,23 @@ class Splat3DGSRenderer(SplatRenderer[Splat3dgsRenderPayload]):
         if camera_model is None:
             camera_model = self._camera_model
         
-        # Call gsplat's rasterization with private config
-        render_colors, alphas, info = rasterization(
+        # Call gsplat's 2DGS rasterization
+
+        (
+            render_colors,
+            render_alphas,
+            render_normals,
+            normals_from_depth,
+            render_distort,
+            render_median,
+            info,
+        ) = rasterization_2dgs(
             means=means,
             quats=quats,
             scales=scales,
             opacities=opacities,
             colors=colors,
-            viewmats=torch.linalg.inv(cam_to_worlds),
+            viewmats=viewmats,
             Ks=Ks,
             width=width,
             height=height,
@@ -154,13 +169,17 @@ class Splat3DGSRenderer(SplatRenderer[Splat3dgsRenderPayload]):
             render_mode=render_mode,
             sparse_grad=self._sparse_grad,
             absgrad=self._absgrad,
-            rasterize_mode="antialiased" if self._antialiased else "classic",
-            channel_chunk=self._channel_chunk,
-            distributed=distributed,
-            camera_model=camera_model,
-            packed=False, # Never pack
+            packed=False,  # Never pack
+            distloss=self._distloss,
+            depth_mode="expected",
         )
 
+        batch_dims = means.shape[:-2]
+        num_batch_dims = len(batch_dims)
+        B = math.prod(batch_dims)
+        N = means.shape[-2]
+        C = viewmats.shape[-3]
+        
         expected_depths = None
         accumulated_depths = None
         if render_mode in ["D", "RGB+D"]:
@@ -171,33 +190,30 @@ class Splat3DGSRenderer(SplatRenderer[Splat3dgsRenderPayload]):
         if render_mode in ["RGB+D", "RGB+ED"]:
             render_colors = render_colors[..., :-1]
             
-            
         
-        # Build render_meta with alphas included
-        outputs = Splat3dgsRenderPayload(
+        # Build render payload
+        outputs = Splat2dgsRenderPayload(
             renders=render_colors,
-            alphas=alphas,
-            n_cameras=info["n_cameras"],
-            n_batches=info["n_batches"],
+            alphas=render_alphas,
+            n_cameras=C,
+            n_batches=B,
             radii=info["radii"],
-            means2d=info["means2d"],
             depths=info["depths"],
             depths_expected=expected_depths,
             depths_accumulated=accumulated_depths,
-            conics=info["conics"],
+            depths_median=render_median,
             width=info["width"],
             height=info["height"],
+            normals=render_normals,
+            normals_from_depth=normals_from_depth,
+            render_distort=render_distort,
+            gradient_2dgs=info["gradient_2dgs"],
+            means2d=info["means2d"],
             gaussian_ids=info.get("gaussian_ids", None),
         )
         return render_colors, outputs
-
-
     
     # Setters for commonly adjusted parameters
-    def set_antialiased(self, antialiased: bool):
-        """Enable or disable antialiasing."""
-        self._antialiased = antialiased
-    
     def set_radius_clip(self, radius_clip: float):
         """Set radius clipping threshold."""
         self._radius_clip = radius_clip
@@ -205,3 +221,8 @@ class Splat3DGSRenderer(SplatRenderer[Splat3dgsRenderPayload]):
     def set_absgrad(self, absgrad: bool):
         """Enable or disable absolute gradient computation."""
         self._absgrad = absgrad
+    
+    def set_distloss(self, distloss: bool):
+        """Enable or disable distortion loss computation."""
+        self._distloss = distloss
+

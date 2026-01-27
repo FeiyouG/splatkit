@@ -4,7 +4,7 @@ from ..modules import SplatRenderPayload, SplatRenderPayload
 from ..utils.batched import normalize_batch_tensors
 from .base import SplatLossFn
 
-class SplatDefaultLossFn(
+class Splat3DGSLossFn(
     SplatLossFn[SplatRenderPayload],
 ):
     """Simple 3DGS loss: L1 + SSIM + regularization."""
@@ -17,7 +17,7 @@ class SplatDefaultLossFn(
         scale_reg: float = 0.0,
     ):
         """
-        Initialize the SplatDefaultLossFn.
+        Initialize the Splat3DGSLossFn.
         
         Args:
             ssim_lambda: Weight for SSIM loss
