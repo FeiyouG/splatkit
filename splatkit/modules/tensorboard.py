@@ -107,8 +107,7 @@ class SplatTensorboard(SplatBaseModule[SplatRenderPayload]):
             comment=self._comment,
         )
         
-        logger.info(f"Initialized tensorboard writer at: {log_path}", module=self.module_name)
-        logger.info(f"Logging every {self._log_interval} steps", module=self.module_name)
+        logger.info(f"Successfully set up tensorboard writer at: {log_path}, logging every {self._log_interval} steps", module=self.module_name)
         
         # Start TensorBoard server if enabled
         if self._enable_server and world_rank == 0:
@@ -215,7 +214,6 @@ class SplatTensorboard(SplatBaseModule[SplatRenderPayload]):
             )
             
             logger.info(f"TensorBoard server started at: http://localhost:{self._port}", module=self.module_name)
-            logger.info(f"TensorBoard will auto-refresh as training progresses", module=self.module_name)
             
         except Exception as e:
             logger.warning(

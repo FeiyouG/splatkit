@@ -6,6 +6,7 @@ import torch
 
 from ..splat import SplatModel
 from ..modules import SplatRenderPayloadT, SplatBaseModule
+from ..logger import SplatLogger
 
 @dataclass(frozen=True)
 class SplatDataItem():
@@ -113,7 +114,7 @@ class SplatDataProvider(
     and provide initialization points for Gaussians.
     
     Subclasses must implement:
-        - load_data(): Load all data from disk
+        - load_data(logger: "SplatLogger") -> float: Load all data from disk
         - next_train_data(): Sample next training item(s)
         - get_init_point_cloud(): Get initial 3D points for Gaussians
     
@@ -127,7 +128,7 @@ class SplatDataProvider(
         ...     images_dir="data/images",
         ... )
         >>> provider = SplatColmapDataProvider(config)
-        >>> scene_scale = provider.load_data()
+        >>> scene_scale = provider.load_data(logger)
         >>> data_item = provider.next_train_data(step=0)
     
     Gotchas:
@@ -137,7 +138,7 @@ class SplatDataProvider(
     """
 
     @abstractmethod
-    def load_data(self) -> float:
+    def load_data(self, logger: SplatLogger) -> float:
         """
         Load all data from disk and return scene scale.
         

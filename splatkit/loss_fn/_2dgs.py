@@ -1,4 +1,4 @@
-from typing import Generic, TYPE_CHECKING
+from typing import Generic, TYPE_CHECKING, Sequence
 from typing_extensions import override
 
 from ..utils.batched import normalize_batch_tensors
@@ -9,6 +9,8 @@ import torch.nn.functional as F
 
 from ..renderer._2dgs import Splat2dgsRenderPayload
 from ..logger import SplatLogger
+from ..modules import SplatRenderPayloadT
+from ..modules.base import SplatBaseModule
 
 class Splat2DGSLossFn(
     SplatLossFn[Splat2dgsRenderPayload],
@@ -48,7 +50,7 @@ class Splat2DGSLossFn(
         self.dist_lambda = dist_lambda
         self.dist_start_iter = dist_start_iter
         self._current_step = 0
-    
+
     @override
     def pre_compute_loss(
         self,

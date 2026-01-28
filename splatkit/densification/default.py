@@ -94,9 +94,6 @@ class SplatDefaultDensification(
         world_size: int = 1,
         scene_scale: float = 1.0,
     ):
-        """
-        Setup hook. Gradient key will be auto-detected on first render.
-        """
         # Don't set key_for_gradient yet - will be detected automatically
         self._default_strategy = DefaultStrategy(
             verbose=self._verbose,

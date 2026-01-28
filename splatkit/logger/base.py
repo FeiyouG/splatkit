@@ -1,8 +1,12 @@
 import logging
 import sys
-from typing import Literal
+from typing import Literal, Sequence
+from ..modules import SplatRenderPayloadT
+from ..modules.base import SplatBaseModule
 
-class SplatLogger:
+class SplatLogger(
+    SplatBaseModule[SplatRenderPayloadT],
+):
     """
     Logger wrapper for splatkit using Python's built-in logging.    
     Provides structured logging with module names for better debugging.
@@ -43,25 +47,60 @@ class SplatLogger:
             file_handler.setLevel(getattr(logging, level))
             file_handler.setFormatter(StructuredFormatter(format))
             self._logger.addHandler(file_handler)
+        
+        self._world_rank = 0,
+        self._world_size = 1
+    
+    def on_setup(
+        self,
+        logger: "SplatLogger",
+        renderer: SplatBaseModule[SplatRenderPayloadT],
+        data_provider: SplatBaseModule[SplatRenderPayloadT],
+        loss_fn: SplatBaseModule[SplatRenderPayloadT],
+        densification: SplatBaseModule[SplatRenderPayloadT],
+        modules: Sequence[SplatBaseModule[SplatRenderPayloadT]], 
+        max_steps: int,
+        world_rank: int = 0,
+        world_size: int = 1,
+        scene_scale: float = 1.0,
+    ):
+        self._world_rank = world_rank
+        self._world_size = world_size
+        self.info(f"Successfully set up logger; will log messages only on rank 0", module=self.module_name)
     
     def debug(self, msg: str, module: str = "splatkit", **kwargs):
-        """Log debug message."""
+        """Log debug message only on rank 0."""
+        if self._world_rank != 0:
+            return
+        
         self._logger.debug(msg, extra={"module_name": module, **kwargs})
     
     def info(self, msg: str, module: str = "splatkit", **kwargs):
-        """Log info message."""
+        """Log info message only on rank 0."""
+        if self._world_rank != 0:
+            return
+        
         self._logger.info(msg, extra={"module_name": module, **kwargs})
     
     def warning(self, msg: str, module: str = "splatkit", **kwargs):
-        """Log warning message."""
+        """Log warning message only on rank 0."""
+        if self._world_rank != 0:
+            return
+        
         self._logger.warning(msg, extra={"module_name": module, **kwargs})
     
     def error(self, msg: str, module: str = "splatkit", **kwargs):
-        """Log error message."""
+        """Log error message only on rank 0."""
+        if self._world_rank != 0:
+            return
+        
         self._logger.error(msg, extra={"module_name": module, **kwargs})
     
     def critical(self, msg: str, module: str = "splatkit", **kwargs):
-        """Log critical message."""
+        """Log critical message only on rank 0."""
+        if self._world_rank != 0:
+            return
+        
         self._logger.critical(msg, extra={"module_name": module, **kwargs})
 
 
@@ -74,4 +113,3 @@ class StructuredFormatter(logging.Formatter):
             record.module_name = "splatkit"
         
         return super().format(record)
-

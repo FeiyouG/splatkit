@@ -46,6 +46,7 @@ class SplatColmapDataset(Dataset[ColmapDataItem]):
         self,
         config: SplatColmapDataProviderConfig,
     ):
+
         self._colmap_dir = config.colmap_dir
         self._images_dir = config.images_dir
         self._factor = config.factor

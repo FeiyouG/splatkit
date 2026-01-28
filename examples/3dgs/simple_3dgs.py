@@ -7,7 +7,7 @@ from splatkit.trainer import SplatTrainer, SplatTrainerConfig
 from splatkit.data_provider import SplatColmapDataProvider, SplatColmapDataProviderConfig, ColmapDataItem
 from splatkit.renderer import Splat3DGSRenderer, Splat3dgsRenderPayload
 from splatkit.loss_fn import Splat3DGSLossFn
-from splatkit.modules import SplatExporter, SplatProgressTracker, SplatEvaluator, SplatViewer
+from splatkit.modules import SplatExporter, SplatProgressor, SplatEvaluator, SplatViewer
 from splatkit.densification import SplatDefaultDensification
     
 if __name__ == "__main__":
@@ -51,7 +51,7 @@ if __name__ == "__main__":
     )
 
     modules = [
-        SplatProgressTracker(
+        SplatProgressor(
             update_every=10,  # Update progress bar every step
         ),
         SplatExporter(
