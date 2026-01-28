@@ -1,5 +1,7 @@
 from typing import Generic
 
+from splatkit.logger import SplatLogger
+
 from ..modules import SplatRenderPayload, SplatRenderPayload
 from ..utils.batched import normalize_batch_tensors
 from .base import SplatLossFn
@@ -29,7 +31,7 @@ class Splat3DGSLossFn(
         self.opacity_reg = opacity_reg
         self.scale_reg = scale_reg
     
-    def compute_loss(self, renders, targets, training_state, rend_out, masks=None):
+    def compute_loss(self, logger: SplatLogger, renders, targets, training_state, rend_out, masks=None):
         """
         Compute loss.
         """
@@ -42,13 +44,13 @@ class Splat3DGSLossFn(
             renders, targets, alphas, masks = normalize_batch_tensors(renders, targets, rend_out.alphas, masks, spatial_ndim=3)
             renders = renders * masks
             targets = targets * masks
-            photometric_loss = self._photometric_loss(renders, targets, self.ssim_lambda)
+            photometric_loss = self._photometric_loss(logger, renders, targets, self.ssim_lambda)
 
             bg_mask = ~masks
             bg_loss = self.bg_lambda * (alphas * bg_mask).mean()
         else:
             renders, targets = normalize_batch_tensors(renders, targets, spatial_ndim=3)
-            photometric_loss = self._photometric_loss(renders, targets, self.ssim_lambda)
+            photometric_loss = self._photometric_loss(logger, renders, targets, self.ssim_lambda)
 
         # Regularization
         opa_loss = self._opacity_reg(training_state.params["opacities"], self.opacity_reg)

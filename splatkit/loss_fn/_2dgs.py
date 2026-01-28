@@ -66,7 +66,7 @@ class Splat2DGSLossFn(
         """Update the current step for scheduled losses."""
         self._current_step = step
     
-    def compute_loss(self, renders, targets, training_state, rend_out, masks=None):
+    def compute_loss(self, logger: SplatLogger, renders, targets, training_state, rend_out, masks=None):
         """
         Compute loss including normal consistency and distortion regularization.
         
@@ -93,13 +93,13 @@ class Splat2DGSLossFn(
             )
             renders = renders * masks
             targets = targets * masks
-            photometric_loss = self._photometric_loss(renders, targets, self.ssim_lambda)
+            photometric_loss = self._photometric_loss(logger, renders, targets, self.ssim_lambda)
 
             bg_mask = ~masks
             bg_loss = self.bg_lambda * (alphas * bg_mask).mean()
         else:
             renders, targets = normalize_batch_tensors(renders, targets, spatial_ndim=3)
-            photometric_loss = self._photometric_loss(renders, targets, self.ssim_lambda)
+            photometric_loss = self._photometric_loss(logger, renders, targets, self.ssim_lambda)
 
         # Regularization
         opa_loss = self._opacity_reg(training_state.params["opacities"], self.opacity_reg)

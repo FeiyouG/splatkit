@@ -2,20 +2,6 @@
 
 A modular toolkit for Gaussian Splatting training, built on top of [gsplat](https://github.com/nerfstudio-project/gsplat).
 
-## Why splatkit?
-
-**Built on gsplat**</br>
-Standing on the shoulders of giants (and their highly optimized CUDA kernels). SplatKit handles the boilerplate so you can focus on the fun parts.
-
-**Reproducibility & Clarity**  </br>
-Clear abstractions and configuration objects make your experiments easier to understand, share, and reproduce.
-
-**Rapid Experimentation**</br>
-Swap renderers, loss functions, or densification strategies in seconds. Write new modules with minimal boilerplate to test research ideas faster.
-
-**Production Readiness**</br>
-The same modular design ensures consistent, reproducible training for production. Checkpoint management, distributed training, and evaluation metrics included.
-
 ## Installation
 
 **Step 1:** Install PyTorch with CUDA support (required, not included):
@@ -27,7 +13,21 @@ pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
 **Step 2:** Install splatkit:
 
 ```bash
-pip install -e ".[all]"  # or use: uv pip install -e ".[all]"
+# From PyPI (once published)
+pip install splatkit[all]
+# or using uv
+uv add splatkit --extra all
+
+# For development (from source)
+git clone https://github.com/veristic/splatkit.git
+cd splatkit
+pip install -e ".[all]"  # or: uv pip install -e ".[all]"
+```
+
+**Optional:** For fused SSIM support (improves training quality):
+
+```bash
+pip install git+https://github.com/rahul-goel/fused-ssim@98126b7781f9e563234c92d2bf08ee0994f4f175
 ```
 
 See the [installation guide](docs/source/installation.rst) for more options.

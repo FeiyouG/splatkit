@@ -251,6 +251,7 @@ class SplatTrainer(Generic[SplatDataItemT, SplatRenderPayloadT]):
 
             # STEP 4: Backward propagate loss
             loss = self._loss_fn.compute_loss(
+                logger=self._logger,
                 renders=renders,
                 targets=target_frames,
                 training_state=splat_training_state,

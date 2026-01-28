@@ -1,10 +1,13 @@
 from abc import ABC, abstractmethod
+from math import exp
 import torch
 from typing import Dict, Any, Tuple, Generic
 import torch.nn.functional as F
 
 from ..splat.training_state import SplatTrainingState
+from ..logger import SplatLogger
 from ..modules import SplatRenderPayloadT, SplatBaseModule
+from torch.autograd import Variable
 
 class SplatLossFn(
     SplatBaseModule[SplatRenderPayloadT],
@@ -31,6 +34,7 @@ class SplatLossFn(
     
     @abstractmethod
     def compute_loss(self,
+        logger: SplatLogger,
         renders: torch.Tensor, # (..., H, W, 3)
         targets: torch.Tensor, # (..., H, W, 3)
         training_state: SplatTrainingState,
@@ -41,6 +45,7 @@ class SplatLossFn(
         Compute the training loss.
         
         Args:
+            logger: Logger for logging
             renders: Rendered RGB images, shape (..., H, W, 3), values in [0, 1]
                     (must have same shape as targets)
             targets: Ground truth RGB images, shape (..., H, W, 3), values in [0, 1]
@@ -58,7 +63,7 @@ class SplatLossFn(
         """
         pass
 
-    def _photometric_loss(self, renders: torch.Tensor, targets: torch.Tensor, ssim_lambda: float = 0.2) -> torch.Tensor:
+    def _photometric_loss(self, logger: SplatLogger, renders: torch.Tensor, targets: torch.Tensor, ssim_lambda: float = 0.2) -> torch.Tensor:
         """
         Compute photometric loss (L1 + SSIM).
         
@@ -74,12 +79,17 @@ class SplatLossFn(
         Returns:
             Scalar photometric loss
         """
-        from fused_ssim import fused_ssim
+        try:
+            from fused_ssim import fused_ssim
+            ssim_loss = 1.0 - fused_ssim(
+                renders.permute(0, 3, 1, 2), targets.permute(0, 3, 1, 2), padding="valid"
+            )
+        except ImportError:
+            logger.warning("fused-ssim is not installed, using ssim instead")
+            ssim_loss = self._ssim(renders, targets)
 
         l1_loss = F.l1_loss(renders, targets)
-        ssim_loss = 1.0 - fused_ssim(
-            renders.permute(0, 3, 1, 2), targets.permute(0, 3, 1, 2), padding="valid"
-        )
+        
         return l1_loss * (1 - ssim_lambda) + ssim_loss * ssim_lambda
 
     def _opacity_reg(self, opacities: torch.Tensor, opacity_reg: float = 0.0) -> torch.Tensor:
@@ -119,3 +129,54 @@ class SplatLossFn(
             return scale_reg * torch.exp(scales).mean()
         else:
             return scales.new_zeros(())
+    
+    def _ssim(self, img1: torch.Tensor, img2: torch.Tensor, window_size: int = 11, size_average: bool = True) -> torch.Tensor:
+        channel = img1.size(-3)
+        window = self._create_window(window_size, channel)
+
+        if img1.is_cuda:
+            window = window.cuda(img1.get_device())
+        window = window.type_as(img1)
+
+        mu1 = F.conv2d(img1, window, padding=window_size // 2, groups=channel)
+        mu2 = F.conv2d(img2, window, padding=window_size // 2, groups=channel)
+
+        mu1_sq = mu1.pow(2)
+        mu2_sq = mu2.pow(2)
+        mu1_mu2 = mu1 * mu2
+
+        sigma1_sq = F.conv2d(img1 * img1, window, padding=window_size // 2, groups=channel) - mu1_sq
+        sigma2_sq = F.conv2d(img2 * img2, window, padding=window_size // 2, groups=channel) - mu2_sq
+        sigma12 = F.conv2d(img1 * img2, window, padding=window_size // 2, groups=channel) - mu1_mu2
+
+        C1 = 0.01 ** 2
+        C2 = 0.03 ** 2
+
+        ssim_map = ((2 * mu1_mu2 + C1) * (2 * sigma12 + C2)) / ((mu1_sq + mu2_sq + C1) * (sigma1_sq + sigma2_sq + C2))
+
+        if size_average:
+            return ssim_map.mean()
+        else:
+            return ssim_map.mean(1).mean(1).mean(1)
+        
+
+    def _gaussian(self, window_size: int, sigma: float) -> torch.Tensor:
+        gauss = torch.Tensor([exp(-(x - window_size // 2) ** 2 / float(2 * sigma ** 2)) for x in range(window_size)])
+        return gauss / gauss.sum()
+
+
+    def _smooth_loss(self, disp: torch.Tensor, img: torch.Tensor) -> torch.Tensor:
+        grad_disp_x = torch.abs(disp[:,1:-1, :-2] + disp[:,1:-1,2:] - 2 * disp[:,1:-1,1:-1])
+        grad_disp_y = torch.abs(disp[:,:-2, 1:-1] + disp[:,2:,1:-1] - 2 * disp[:,1:-1,1:-1])
+        grad_img_x = torch.mean(torch.abs(img[:, 1:-1, :-2] - img[:, 1:-1, 2:]), 0, keepdim=True) * 0.5
+        grad_img_y = torch.mean(torch.abs(img[:, :-2, 1:-1] - img[:, 2:, 1:-1]), 0, keepdim=True) * 0.5
+        grad_disp_x *= torch.exp(-grad_img_x)
+        grad_disp_y *= torch.exp(-grad_img_y)
+        return grad_disp_x.mean() + grad_disp_y.mean()
+
+
+    def _create_window(self, window_size: int, channel: int) -> torch.Tensor:
+        _1D_window = self._gaussian(window_size, 1.5).unsqueeze(1)
+        _2D_window = _1D_window.mm(_1D_window.t()).float().unsqueeze(0).unsqueeze(0)
+        window = Variable(_2D_window.expand(channel, 1, window_size, window_size).contiguous())
+        return window

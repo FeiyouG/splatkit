@@ -41,7 +41,21 @@ or use one of these examples:
    # Or PyTorch with CUDA 11.8
    pip install torch torchvision --index-url https://download.pytorch.org/whl/cu118
 
-**Step 2: Install splatkit**
+**Step 2: Install fused-ssim (Optional but Recommended)**
+
+For improved training performance with optimized SSIM computation:
+
+.. code-block:: bash
+
+   pip install git+https://github.com/rahul-goel/fused-ssim@98126b7781f9e563234c92d2bf08ee0994f4f175
+
+.. note::
+   **fused-ssim** provides a CUDA-accelerated SSIM loss implementation that significantly 
+   improves training speed and quality. While optional, it is **highly recommended** for 
+   optimal performance. If not installed, a fallback PyTorch-based SSIM implementation 
+   will be used automatically, though it may be slower.
+
+**Step 3: Install splatkit**
 
 Clone the repository and install the core package:
 
@@ -73,6 +87,9 @@ If you want to use splatkit as a dependency in your own project, you can add it 
    # First, ensure PyTorch with CUDA is installed
    uv pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
    
+   # Install fused-ssim for better training performance (recommended)
+   pip install git+https://github.com/rahul-goel/fused-ssim@98126b7781f9e563234c92d2bf08ee0994f4f175
+   
    # Add splatkit to your project
    uv add git+https://github.com/YOUR_USERNAME/splatkit.git
    
@@ -85,6 +102,25 @@ Optional Dependencies
 ---------------------
 
 Install with specific features based on your needs. Use either **pip** or **uv**:
+
+Fused SSIM (Highly Recommended)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For significantly faster training with optimized SSIM computation:
+
+.. code-block:: bash
+
+   pip install git+https://github.com/rahul-goel/fused-ssim@98126b7781f9e563234c92d2bf08ee0994f4f175
+
+.. tip::
+   This is technically optional, but **highly recommended** for production use. The fused SSIM 
+   implementation provides:
+   
+   - **Faster training**: CUDA-optimized SSIM computation
+   - **Better quality**: More accurate structural similarity measurements
+   - **Lower memory usage**: Efficient GPU memory utilization
+   
+   Without it, a fallback PyTorch-based SSIM implementation will be used automatically.
 
 Real-time Viewer
 ~~~~~~~~~~~~~~~~
@@ -175,3 +211,50 @@ To verify the installation:
    print(splatkit.__version__)
 
 You should see the version number printed without any errors.
+
+To check if fused-ssim is installed:
+
+.. code-block:: python
+
+   try:
+       from fused_ssim import fused_ssim
+       print("✓ fused-ssim is installed (recommended)")
+   except ImportError:
+       print("✗ fused-ssim not found. Install for better performance:")
+       print("  pip install git+https://github.com/rahul-goel/fused-ssim@98126b7...")
+
+Troubleshooting
+---------------
+
+**Missing fused-ssim warning during training**
+
+If you see a warning like:
+
+.. code-block:: text
+
+   WARNING: fused-ssim is not installed, using ssim instead
+
+This is normal - a fallback SSIM implementation will be used. For better performance, install fused-ssim:
+
+.. code-block:: bash
+
+   pip install git+https://github.com/rahul-goel/fused-ssim@98126b7781f9e563234c92d2bf08ee0994f4f175
+
+**CUDA out of memory errors**
+
+If you encounter CUDA out of memory errors:
+
+- Reduce batch size in your data provider configuration
+- Use smaller image resolutions for training
+- Ensure no other processes are using GPU memory
+
+**PyTorch/CUDA version mismatch**
+
+Ensure your PyTorch installation matches your CUDA version:
+
+.. code-block:: python
+
+   import torch
+   print(f"PyTorch: {torch.__version__}")
+   print(f"CUDA available: {torch.cuda.is_available()}")
+   print(f"CUDA version: {torch.version.cuda}")
