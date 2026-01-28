@@ -223,6 +223,7 @@
 <li class="toctree-l1"><a class="reference internal" href="customization/renderers.html">Custom Renderers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="customization/loss_functions.html">Custom Loss Functions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="customization/data_providers.html">Custom Data Providers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="customization/densification.html">Custom Densification</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
@@ -231,6 +232,7 @@
 <li class="toctree-l1"><a class="reference internal" href="api/loss_fn.html">Loss Functions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/data_provider.html">Data Provider</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/splat.html">Model and Training State</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/densification.html">Densification</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="api/modules/index.html">Built-in Modules</a><input aria-label="Toggle navigation of Built-in Modules" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="api/modules/base.html">Base Module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/modules/viewer.html">Viewer Module</a></li>
@@ -306,6 +308,10 @@
 </li>
           <li><a href="api/_autosummary/splatkit.data_provider.html#splatkit.data_provider.SplatDataItem.__init__">(splatkit.data_provider.SplatDataItem method)</a>
 </li>
+          <li><a href="api/densification.html#splatkit.densification.default.SplatDefaultDensification.__init__">(splatkit.densification.default.SplatDefaultDensification method)</a>
+</li>
+          <li><a href="api/densification.html#splatkit.densification.mcmc.SplatMCMCDensification.__init__">(splatkit.densification.mcmc.SplatMCMCDensification method)</a>
+</li>
           <li><a href="api/loss_fn.html#splatkit.loss_fn._2dgs.Splat2DGSLossFn.__init__">(splatkit.loss_fn._2dgs.Splat2DGSLossFn method)</a>
 </li>
           <li><a href="api/loss_fn.html#splatkit.loss_fn._3dgs.Splat3DGSLossFn.__init__">(splatkit.loss_fn._3dgs.Splat3DGSLossFn method)</a>
@@ -322,15 +328,13 @@
 </li>
           <li><a href="api/_autosummary/splatkit.modules.frame.html#splatkit.modules.frame.SplatRenderPayload.__init__">(splatkit.modules.frame.SplatRenderPayload method)</a>
 </li>
-          <li><a href="api/_autosummary/splatkit.modules.progress_tracker.html#splatkit.modules.progress_tracker.SplatProgressTracker.__init__">(splatkit.modules.progress_tracker.SplatProgressTracker method)</a>, <a href="api/modules/progress_tracker.html#splatkit.modules.progress_tracker.SplatProgressTracker.__init__">[1]</a>
-</li>
           <li><a href="api/_autosummary/splatkit.modules.html#splatkit.modules.SplatEvaluator.__init__">(splatkit.modules.SplatEvaluator method)</a>
 </li>
           <li><a href="api/_autosummary/splatkit.modules.html#splatkit.modules.SplatExporter.__init__">(splatkit.modules.SplatExporter method)</a>
 </li>
           <li><a href="api/_autosummary/splatkit.modules.html#splatkit.modules.SplatModuleComposite.__init__">(splatkit.modules.SplatModuleComposite method)</a>
 </li>
-          <li><a href="api/_autosummary/splatkit.modules.html#splatkit.modules.SplatProgressTracker.__init__">(splatkit.modules.SplatProgressTracker method)</a>
+          <li><a href="api/_autosummary/splatkit.modules.html#splatkit.modules.SplatProgressor.__init__">(splatkit.modules.SplatProgressor method)</a>
 </li>
           <li><a href="api/_autosummary/splatkit.modules.html#splatkit.modules.SplatRenderPayload.__init__">(splatkit.modules.SplatRenderPayload method)</a>
 </li>
@@ -575,6 +579,14 @@
 
         <ul>
           <li><a href="api/_autosummary/splatkit.splat.training_state.html#splatkit.splat.training_state.SplatTrainingState.DEFAULT_LEADER_RANK">(splatkit.splat.training_state.SplatTrainingState attribute)</a>, <a href="api/splat.html#splatkit.splat.training_state.SplatTrainingState.DEFAULT_LEADER_RANK">[1]</a>
+</li>
+        </ul></li>
+        <li><a href="api/densification.html#splatkit.densification.base.SplatDensification.densify">densify() (splatkit.densification.base.SplatDensification method)</a>
+
+        <ul>
+          <li><a href="api/densification.html#splatkit.densification.default.SplatDefaultDensification.densify">(splatkit.densification.default.SplatDefaultDensification method)</a>
+</li>
+          <li><a href="api/densification.html#splatkit.densification.mcmc.SplatMCMCDensification.densify">(splatkit.densification.mcmc.SplatMCMCDensification method)</a>
 </li>
         </ul></li>
         <li><a href="api/_autosummary/splatkit.data_provider.base.html#splatkit.data_provider.base.SplatDataItem.depths">depths (splatkit.data_provider.base.SplatDataItem attribute)</a>
@@ -987,8 +999,6 @@
 </li>
           <li><a href="api/_autosummary/splatkit.modules.frame.html#module-splatkit.modules.frame">splatkit.modules.frame</a>
 </li>
-          <li><a href="api/_autosummary/splatkit.modules.progress_tracker.html#module-splatkit.modules.progress_tracker">splatkit.modules.progress_tracker</a>
-</li>
           <li><a href="api/_autosummary/splatkit.modules.tensorboard.html#module-splatkit.modules.tensorboard">splatkit.modules.tensorboard</a>
 </li>
           <li><a href="api/_autosummary/splatkit.modules.viewer.html#module-splatkit.modules.viewer">splatkit.modules.viewer</a>
@@ -1022,6 +1032,10 @@
           <li><a href="api/_autosummary/splatkit.modules.html#splatkit.modules.SplatViewer.module_name">(splatkit.modules.SplatViewer property)</a>
 </li>
           <li><a href="api/_autosummary/splatkit.modules.viewer.html#splatkit.modules.viewer.SplatViewer.module_name">(splatkit.modules.viewer.SplatViewer property)</a>, <a href="api/modules/viewer.html#splatkit.modules.viewer.SplatViewer.module_name">[1]</a>
+</li>
+          <li><a href="api/_autosummary/splatkit.trainer.html#splatkit.trainer.SplatTrainer.module_name">(splatkit.trainer.SplatTrainer property)</a>
+</li>
+          <li><a href="api/_autosummary/splatkit.trainer.trainer.html#splatkit.trainer.trainer.SplatTrainer.module_name">(splatkit.trainer.trainer.SplatTrainer property)</a>, <a href="api/trainer.html#splatkit.trainer.trainer.SplatTrainer.module_name">[1]</a>
 </li>
         </ul></li>
     </ul></td>
@@ -1131,13 +1145,11 @@
         <ul>
           <li><a href="api/_autosummary/splatkit.modules.composite.html#splatkit.modules.composite.SplatModuleComposite.on_cleanup">(splatkit.modules.composite.SplatModuleComposite method)</a>
 </li>
-          <li><a href="api/_autosummary/splatkit.modules.progress_tracker.html#splatkit.modules.progress_tracker.SplatProgressTracker.on_cleanup">(splatkit.modules.progress_tracker.SplatProgressTracker method)</a>, <a href="api/modules/progress_tracker.html#splatkit.modules.progress_tracker.SplatProgressTracker.on_cleanup">[1]</a>
-</li>
           <li><a href="api/_autosummary/splatkit.modules.html#splatkit.modules.SplatBaseModule.on_cleanup">(splatkit.modules.SplatBaseModule method)</a>
 </li>
           <li><a href="api/_autosummary/splatkit.modules.html#splatkit.modules.SplatModuleComposite.on_cleanup">(splatkit.modules.SplatModuleComposite method)</a>
 </li>
-          <li><a href="api/_autosummary/splatkit.modules.html#splatkit.modules.SplatProgressTracker.on_cleanup">(splatkit.modules.SplatProgressTracker method)</a>
+          <li><a href="api/_autosummary/splatkit.modules.html#splatkit.modules.SplatProgressor.on_cleanup">(splatkit.modules.SplatProgressor method)</a>
 </li>
           <li><a href="api/_autosummary/splatkit.modules.html#splatkit.modules.SplatTensorboard.on_cleanup">(splatkit.modules.SplatTensorboard method)</a>
 </li>
@@ -1165,6 +1177,10 @@
 </li>
           <li><a href="api/_autosummary/splatkit.data_provider.html#splatkit.data_provider.SplatColmapDataProvider.on_setup">(splatkit.data_provider.SplatColmapDataProvider method)</a>
 </li>
+          <li><a href="api/densification.html#splatkit.densification.default.SplatDefaultDensification.on_setup">(splatkit.densification.default.SplatDefaultDensification method)</a>
+</li>
+          <li><a href="api/densification.html#splatkit.densification.mcmc.SplatMCMCDensification.on_setup">(splatkit.densification.mcmc.SplatMCMCDensification method)</a>
+</li>
           <li><a href="api/_autosummary/splatkit.modules.base.html#splatkit.modules.base.SplatBaseModule.on_setup">(splatkit.modules.base.SplatBaseModule method)</a>, <a href="api/modules/base.html#splatkit.modules.base.SplatBaseModule.on_setup">[1]</a>
 </li>
           <li><a href="api/_autosummary/splatkit.modules.composite.html#splatkit.modules.composite.SplatModuleComposite.on_setup">(splatkit.modules.composite.SplatModuleComposite method)</a>
@@ -1172,8 +1188,6 @@
           <li><a href="api/_autosummary/splatkit.modules.evaluator.html#splatkit.modules.evaluator.SplatEvaluator.on_setup">(splatkit.modules.evaluator.SplatEvaluator method)</a>, <a href="api/modules/evaluator.html#splatkit.modules.evaluator.SplatEvaluator.on_setup">[1]</a>
 </li>
           <li><a href="api/_autosummary/splatkit.modules.exporter.html#splatkit.modules.exporter.SplatExporter.on_setup">(splatkit.modules.exporter.SplatExporter method)</a>, <a href="api/modules/exporter.html#splatkit.modules.exporter.SplatExporter.on_setup">[1]</a>
-</li>
-          <li><a href="api/_autosummary/splatkit.modules.progress_tracker.html#splatkit.modules.progress_tracker.SplatProgressTracker.on_setup">(splatkit.modules.progress_tracker.SplatProgressTracker method)</a>, <a href="api/modules/progress_tracker.html#splatkit.modules.progress_tracker.SplatProgressTracker.on_setup">[1]</a>
 </li>
           <li><a href="api/_autosummary/splatkit.modules.html#splatkit.modules.SplatBaseModule.on_setup">(splatkit.modules.SplatBaseModule method)</a>
 </li>
@@ -1183,7 +1197,7 @@
 </li>
           <li><a href="api/_autosummary/splatkit.modules.html#splatkit.modules.SplatModuleComposite.on_setup">(splatkit.modules.SplatModuleComposite method)</a>
 </li>
-          <li><a href="api/_autosummary/splatkit.modules.html#splatkit.modules.SplatProgressTracker.on_setup">(splatkit.modules.SplatProgressTracker method)</a>
+          <li><a href="api/_autosummary/splatkit.modules.html#splatkit.modules.SplatProgressor.on_setup">(splatkit.modules.SplatProgressor method)</a>
 </li>
           <li><a href="api/_autosummary/splatkit.modules.html#splatkit.modules.SplatTensorboard.on_setup">(splatkit.modules.SplatTensorboard method)</a>
 </li>
@@ -1245,13 +1259,11 @@
         <ul>
           <li><a href="api/_autosummary/splatkit.modules.composite.html#splatkit.modules.composite.SplatModuleComposite.post_compute_loss">(splatkit.modules.composite.SplatModuleComposite method)</a>
 </li>
-          <li><a href="api/_autosummary/splatkit.modules.progress_tracker.html#splatkit.modules.progress_tracker.SplatProgressTracker.post_compute_loss">(splatkit.modules.progress_tracker.SplatProgressTracker method)</a>, <a href="api/modules/progress_tracker.html#splatkit.modules.progress_tracker.SplatProgressTracker.post_compute_loss">[1]</a>
-</li>
           <li><a href="api/_autosummary/splatkit.modules.html#splatkit.modules.SplatBaseModule.post_compute_loss">(splatkit.modules.SplatBaseModule method)</a>
 </li>
           <li><a href="api/_autosummary/splatkit.modules.html#splatkit.modules.SplatModuleComposite.post_compute_loss">(splatkit.modules.SplatModuleComposite method)</a>
 </li>
-          <li><a href="api/_autosummary/splatkit.modules.html#splatkit.modules.SplatProgressTracker.post_compute_loss">(splatkit.modules.SplatProgressTracker method)</a>
+          <li><a href="api/_autosummary/splatkit.modules.html#splatkit.modules.SplatProgressor.post_compute_loss">(splatkit.modules.SplatProgressor method)</a>
 </li>
           <li><a href="api/_autosummary/splatkit.modules.html#splatkit.modules.SplatTensorboard.post_compute_loss">(splatkit.modules.SplatTensorboard method)</a>
 </li>
@@ -1267,8 +1279,6 @@
 </li>
           <li><a href="api/_autosummary/splatkit.modules.exporter.html#splatkit.modules.exporter.SplatExporter.post_step">(splatkit.modules.exporter.SplatExporter method)</a>, <a href="api/modules/exporter.html#splatkit.modules.exporter.SplatExporter.post_step">[1]</a>
 </li>
-          <li><a href="api/_autosummary/splatkit.modules.progress_tracker.html#splatkit.modules.progress_tracker.SplatProgressTracker.post_step">(splatkit.modules.progress_tracker.SplatProgressTracker method)</a>, <a href="api/modules/progress_tracker.html#splatkit.modules.progress_tracker.SplatProgressTracker.post_step">[1]</a>
-</li>
           <li><a href="api/_autosummary/splatkit.modules.html#splatkit.modules.SplatBaseModule.post_step">(splatkit.modules.SplatBaseModule method)</a>
 </li>
           <li><a href="api/_autosummary/splatkit.modules.html#splatkit.modules.SplatEvaluator.post_step">(splatkit.modules.SplatEvaluator method)</a>
@@ -1277,7 +1287,7 @@
 </li>
           <li><a href="api/_autosummary/splatkit.modules.html#splatkit.modules.SplatModuleComposite.post_step">(splatkit.modules.SplatModuleComposite method)</a>
 </li>
-          <li><a href="api/_autosummary/splatkit.modules.html#splatkit.modules.SplatProgressTracker.post_step">(splatkit.modules.SplatProgressTracker method)</a>
+          <li><a href="api/_autosummary/splatkit.modules.html#splatkit.modules.SplatProgressor.post_step">(splatkit.modules.SplatProgressor method)</a>
 </li>
           <li><a href="api/_autosummary/splatkit.modules.html#splatkit.modules.SplatTensorboard.post_step">(splatkit.modules.SplatTensorboard method)</a>
 </li>
@@ -1290,9 +1300,11 @@
         </ul></li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
-        <li><a href="api/loss_fn.html#splatkit.loss_fn._2dgs.Splat2DGSLossFn.pre_compute_loss">pre_compute_loss() (splatkit.loss_fn._2dgs.Splat2DGSLossFn method)</a>
+        <li><a href="api/densification.html#splatkit.densification.default.SplatDefaultDensification.pre_compute_loss">pre_compute_loss() (splatkit.densification.default.SplatDefaultDensification method)</a>
 
         <ul>
+          <li><a href="api/loss_fn.html#splatkit.loss_fn._2dgs.Splat2DGSLossFn.pre_compute_loss">(splatkit.loss_fn._2dgs.Splat2DGSLossFn method)</a>
+</li>
           <li><a href="api/_autosummary/splatkit.loss_fn.html#splatkit.loss_fn.Splat2DGSLossFn.pre_compute_loss">(splatkit.loss_fn.Splat2DGSLossFn method)</a>
 </li>
           <li><a href="api/_autosummary/splatkit.modules.base.html#splatkit.modules.base.SplatBaseModule.pre_compute_loss">(splatkit.modules.base.SplatBaseModule method)</a>, <a href="api/modules/base.html#splatkit.modules.base.SplatBaseModule.pre_compute_loss">[1]</a>
@@ -1578,6 +1590,10 @@
           <li><a href="api/_autosummary/splatkit.data_provider.base.html#splatkit.data_provider.base.SplatDataProvider">(class in splatkit.data_provider.base)</a>, <a href="api/data_provider.html#splatkit.data_provider.base.SplatDataProvider">[1]</a>
 </li>
         </ul></li>
+        <li><a href="api/densification.html#splatkit.densification.default.SplatDefaultDensification">SplatDefaultDensification (class in splatkit.densification.default)</a>
+</li>
+        <li><a href="api/densification.html#splatkit.densification.base.SplatDensification">SplatDensification (class in splatkit.densification.base)</a>
+</li>
         <li><a href="api/_autosummary/splatkit.trainer.html#splatkit.trainer.SplatDistributedTrainer">SplatDistributedTrainer (class in splatkit.trainer)</a>
 
         <ul>
@@ -1617,6 +1633,8 @@
           <li><a href="api/_autosummary/splatkit.data_provider.colmap.html#module-splatkit.data_provider.colmap">module</a>
 </li>
         </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li>
     splatkit.data_provider.colmap.config
 
@@ -1624,8 +1642,6 @@
           <li><a href="api/_autosummary/splatkit.data_provider.colmap.config.html#module-splatkit.data_provider.colmap.config">module</a>
 </li>
         </ul></li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li>
     splatkit.data_provider.colmap.dataset
 
@@ -1701,13 +1717,6 @@
 
         <ul>
           <li><a href="api/_autosummary/splatkit.modules.frame.html#module-splatkit.modules.frame">module</a>
-</li>
-        </ul></li>
-        <li>
-    splatkit.modules.progress_tracker
-
-        <ul>
-          <li><a href="api/_autosummary/splatkit.modules.progress_tracker.html#module-splatkit.modules.progress_tracker">module</a>
 </li>
         </ul></li>
         <li>
@@ -1793,6 +1802,8 @@
           <li><a href="api/_autosummary/splatkit.loss_fn.base.html#splatkit.loss_fn.base.SplatLossFn">(class in splatkit.loss_fn.base)</a>, <a href="api/loss_fn.html#splatkit.loss_fn.base.SplatLossFn">[1]</a>
 </li>
         </ul></li>
+        <li><a href="api/densification.html#splatkit.densification.mcmc.SplatMCMCDensification">SplatMCMCDensification (class in splatkit.densification.mcmc)</a>
+</li>
         <li><a href="api/_autosummary/splatkit.splat.html#splatkit.splat.SplatModel">SplatModel (class in splatkit.splat)</a>
 
         <ul>
@@ -1805,12 +1816,8 @@
           <li><a href="api/_autosummary/splatkit.modules.composite.html#splatkit.modules.composite.SplatModuleComposite">(class in splatkit.modules.composite)</a>
 </li>
         </ul></li>
-        <li><a href="api/_autosummary/splatkit.modules.html#splatkit.modules.SplatProgressTracker">SplatProgressTracker (class in splatkit.modules)</a>
-
-        <ul>
-          <li><a href="api/_autosummary/splatkit.modules.progress_tracker.html#splatkit.modules.progress_tracker.SplatProgressTracker">(class in splatkit.modules.progress_tracker)</a>, <a href="api/modules/progress_tracker.html#splatkit.modules.progress_tracker.SplatProgressTracker">[1]</a>
+        <li><a href="api/_autosummary/splatkit.modules.html#splatkit.modules.SplatProgressor">SplatProgressor (class in splatkit.modules)</a>
 </li>
-        </ul></li>
         <li><a href="api/_autosummary/splatkit.renderer.html#splatkit.renderer.SplatRenderer">SplatRenderer (class in splatkit.renderer)</a>
 
         <ul>

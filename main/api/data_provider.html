@@ -225,6 +225,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../customization/renderers.html">Custom Renderers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../customization/loss_functions.html">Custom Loss Functions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../customization/data_providers.html">Custom Data Providers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../customization/densification.html">Custom Densification</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul class="current">
@@ -233,6 +234,7 @@
 <li class="toctree-l1"><a class="reference internal" href="loss_fn.html">Loss Functions</a></li>
 <li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Data Provider</a></li>
 <li class="toctree-l1"><a class="reference internal" href="splat.html">Model and Training State</a></li>
+<li class="toctree-l1"><a class="reference internal" href="densification.html">Densification</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="modules/index.html">Built-in Modules</a><input aria-label="Toggle navigation of Built-in Modules" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="modules/base.html">Base Module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="modules/viewer.html">Viewer Module</a></li>
@@ -298,7 +300,7 @@ from various formats (COLMAP, NeRF, etc.). They sample training data
 and provide initialization points for Gaussians.</p>
 <dl class="simple">
 <dt>Subclasses must implement:</dt><dd><ul class="simple">
-<li><p>load_data(): Load all data from disk</p></li>
+<li><p>load_data(logger: “SplatLogger”) -&gt; float: Load all data from disk</p></li>
 <li><p>next_train_data(): Sample next training item(s)</p></li>
 <li><p>get_init_point_cloud(): Get initial 3D points for Gaussians</p></li>
 </ul>
@@ -315,7 +317,7 @@ and provide initialization points for Gaussians.</p>
 <span class="gp">... </span>    <span class="n">images_dir</span><span class="o">=</span><span class="s2">&quot;data/images&quot;</span><span class="p">,</span>
 <span class="gp">... </span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">provider</span> <span class="o">=</span> <span class="n">SplatColmapDataProvider</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">scene_scale</span> <span class="o">=</span> <span class="n">provider</span><span class="o">.</span><span class="n">load_data</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">scene_scale</span> <span class="o">=</span> <span class="n">provider</span><span class="o">.</span><span class="n">load_data</span><span class="p">(</span><span class="n">logger</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">data_item</span> <span class="o">=</span> <span class="n">provider</span><span class="o">.</span><span class="n">next_train_data</span><span class="p">(</span><span class="n">step</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -329,7 +331,7 @@ and provide initialization points for Gaussians.</p>
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="splatkit.data_provider.base.SplatDataProvider.load_data">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">load_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/splatkit/data_provider/base.html#SplatDataProvider.load_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.data_provider.base.SplatDataProvider.load_data" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">load_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logger</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/splatkit/data_provider/base.html#SplatDataProvider.load_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.data_provider.base.SplatDataProvider.load_data" title="Link to this definition">¶</a></dt>
 <dd><p>Load all data from disk and return scene scale.</p>
 <p>This is called once at the start of training. Loads images, cameras,
 and any metadata needed for training. Computes scene scale based on
@@ -469,7 +471,7 @@ camera positions.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="splatkit.data_provider.colmap.provider.SplatColmapDataProvider.load_data">
-<span class="sig-name descname"><span class="pre">load_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/splatkit/data_provider/colmap/provider.html#SplatColmapDataProvider.load_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.data_provider.colmap.provider.SplatColmapDataProvider.load_data" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">load_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logger</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/splatkit/data_provider/colmap/provider.html#SplatColmapDataProvider.load_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.data_provider.colmap.provider.SplatColmapDataProvider.load_data" title="Link to this definition">¶</a></dt>
 <dd><p>Load all data from disk and return scene scale.</p>
 <p>This is called once at the start of training. Loads images, cameras,
 and any metadata needed for training. Computes scene scale based on

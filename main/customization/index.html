@@ -225,6 +225,7 @@
 <li class="toctree-l1"><a class="reference internal" href="renderers.html">Custom Renderers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="loss_functions.html">Custom Loss Functions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="data_providers.html">Custom Data Providers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="densification.html">Custom Densification</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
@@ -233,6 +234,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../api/loss_fn.html">Loss Functions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api/data_provider.html">Data Provider</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api/splat.html">Model and Training State</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/densification.html">Densification</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../api/modules/index.html">Built-in Modules</a><input aria-label="Toggle navigation of Built-in Modules" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../api/modules/base.html">Base Module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../api/modules/viewer.html">Viewer Module</a></li>
@@ -313,6 +315,17 @@
 <li class="toctree-l2"><a class="reference internal" href="loss_functions.html#see-also">See Also</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="densification.html">Custom Densification</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="densification.html#creating-a-custom-densification-strategy">Creating a Custom Densification Strategy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="densification.html#key-components">Key Components</a></li>
+<li class="toctree-l2"><a class="reference internal" href="densification.html#advanced-using-gsplat-s-strategy">Advanced: Using gsplat’s Strategy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="densification.html#distributed-training-considerations">Distributed Training Considerations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="densification.html#using-your-densification-strategy">Using Your Densification Strategy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="densification.html#best-practices">Best Practices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="densification.html#advanced-custom-refinement-criteria">Advanced: Custom Refinement Criteria</a></li>
+<li class="toctree-l2"><a class="reference internal" href="densification.html#see-also">See Also</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="data_providers.html">Custom Data Providers</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="data_providers.html#creating-a-custom-data-provider">Creating a Custom Data Provider</a></li>
 <li class="toctree-l2"><a class="reference internal" href="data_providers.html#using-your-data-provider">Using Your Data Provider</a></li>
@@ -330,6 +343,7 @@
 <li><p><strong>Modules</strong>: Add hooks into the training loop for logging, visualization, checkpointing, etc.</p></li>
 <li><p><strong>Renderers</strong>: Implement new Gaussian splatting techniques or rendering algorithms</p></li>
 <li><p><strong>Loss Functions</strong>: Design custom training objectives with novel regularization terms</p></li>
+<li><p><strong>Densification Strategies</strong>: Control how Gaussians are adaptively refined during training</p></li>
 <li><p><strong>Data Providers</strong>: Load data from new formats or implement custom data augmentation</p></li>
 </ul>
 <p>All custom components inherit from base classes and implement specific abstract methods.
@@ -341,6 +355,7 @@ The architecture ensures your custom components work seamlessly with the rest of
 <li><p><a class="reference internal" href="modules.html"><span class="doc">Custom Modules</span></a> - Most common customization, great for adding functionality to training</p></li>
 <li><p><a class="reference internal" href="renderers.html"><span class="doc">Custom Renderers</span></a> - For implementing new splatting algorithms</p></li>
 <li><p><a class="reference internal" href="loss_functions.html"><span class="doc">Custom Loss Functions</span></a> - For custom training objectives</p></li>
+<li><p><a class="reference internal" href="densification.html"><span class="doc">Custom Densification</span></a> - For custom Gaussian refinement strategies</p></li>
 <li><p><a class="reference internal" href="data_providers.html"><span class="doc">Custom Data Providers</span></a> - For loading data from new sources</p></li>
 </ul>
 </section>
@@ -351,6 +366,7 @@ The architecture ensures your custom components work seamlessly with the rest of
 <li><p>Want to add logging, visualization, or evaluation? → Create a <strong>Module</strong></p></li>
 <li><p>Want to change how Gaussians are rasterized? → Create a <strong>Renderer</strong></p></li>
 <li><p>Want to modify the training objective? → Create a <strong>Loss Function</strong></p></li>
+<li><p>Want to control Gaussian splitting/pruning? → Create a <strong>Densification Strategy</strong></p></li>
 <li><p>Want to load data from a new format? → Create a <strong>Data Provider</strong></p></li>
 </ul>
 </section>

@@ -224,6 +224,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../customization/renderers.html">Custom Renderers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../customization/loss_functions.html">Custom Loss Functions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../customization/data_providers.html">Custom Data Providers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../customization/densification.html">Custom Densification</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
@@ -232,6 +233,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../api/loss_fn.html">Loss Functions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/data_provider.html">Data Provider</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/splat.html">Model and Training State</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/densification.html">Densification</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../api/modules/index.html">Built-in Modules</a><input aria-label="Toggle navigation of Built-in Modules" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/modules/base.html">Base Module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/modules/viewer.html">Viewer Module</a></li>
@@ -297,7 +299,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     
     <span class="n">conics</span><span class="p">:</span> <span class="n">Tensor</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;2D Gaussian covariance matrices, shape (..., H, W, 3). Upper triangular: [a, b, c] represents [[a, b], [b, c]]&quot;&quot;&quot;</span></div>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;2D Gaussian covariance matrices, shape (..., C, N, 3) where C=cameras, N=gaussians. Upper triangular: [a, b, c] represents [[a, b], [b, c]]&quot;&quot;&quot;</span></div>
 
 
 <div class="viewcode-block" id="Splat3DGSRenderer">
@@ -560,7 +562,9 @@
         <span class="p">)</span>
         
         <span class="c1"># Calculate stats</span>
-        <span class="n">rendered_gaussians</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">payload</span><span class="o">.</span><span class="n">radii</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+        <span class="c1"># radii shape: [1, 1, N, 2] where N=gaussians, 2=x/y (single camera in viewer)</span>
+        <span class="c1"># Check if both x and y radii &gt; 0 for each gaussian</span>
+        <span class="n">rendered_gaussians</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">payload</span><span class="o">.</span><span class="n">radii</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
         
         <span class="c1"># Process based on visualization mode</span>
         <span class="k">if</span> <span class="n">visualization_mode</span> <span class="o">==</span> <span class="s2">&quot;rgb&quot;</span><span class="p">:</span>

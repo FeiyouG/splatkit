@@ -196,7 +196,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
         <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
       </label>
     </div>
@@ -225,6 +225,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../customization/renderers.html">Custom Renderers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../customization/loss_functions.html">Custom Loss Functions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../customization/data_providers.html">Custom Data Providers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../customization/densification.html">Custom Densification</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
@@ -233,6 +234,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../loss_fn.html">Loss Functions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../data_provider.html">Data Provider</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../splat.html">Model and Training State</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../densification.html">Densification</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../modules/index.html">Built-in Modules</a><input aria-label="Toggle navigation of Built-in Modules" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../modules/base.html">Base Module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../modules/viewer.html">Viewer Module</a></li>
@@ -279,84 +281,13 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
             <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          <section id="module-splatkit.modules.progress_tracker">
-<span id="splatkit-modules-progress-tracker"></span><h1>splatkit.modules.progress_tracker<a class="headerlink" href="#module-splatkit.modules.progress_tracker" title="Link to this heading">¶</a></h1>
-<p class="rubric">Classes</p>
-<div class="table-wrapper autosummary longtable docutils container">
-<table class="autosummary longtable docutils align-default">
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="../modules/progress_tracker.html#splatkit.modules.progress_tracker.SplatProgressTracker" title="splatkit.modules.progress_tracker.SplatProgressTracker"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SplatProgressTracker</span></code></a>([update_every])</p></td>
-<td><p>Progress tracking module for training visualization.</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-<dl class="py class">
-<dt class="sig sig-object py" id="splatkit.modules.progress_tracker.SplatProgressTracker">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">splatkit.modules.progress_tracker.</span></span><span class="sig-name descname"><span class="pre">SplatProgressTracker</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">update_every</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/splatkit/modules/progress_tracker.html#SplatProgressTracker"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.modules.progress_tracker.SplatProgressTracker" title="Link to this definition">¶</a></dt>
-<dd><p>Progress tracking module for training visualization.</p>
-<p class="rubric">Example</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">splatkit.modules</span><span class="w"> </span><span class="kn">import</span> <span class="n">SplatProgressTracker</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">progress_tracker</span> <span class="o">=</span> <span class="n">SplatProgressTracker</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">update_every</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>  <span class="c1"># Update progress bar every 10 steps</span>
-<span class="gp">... </span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Add to trainer&#39;s modules list</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Progress bar will be updated every 10 steps</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Showing training progress, loss, and metrics</span>
-</pre></div>
-</div>
-<dl class="field-list simple">
-</dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="splatkit.modules.progress_tracker.SplatProgressTracker.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">update_every</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/splatkit/modules/progress_tracker.html#SplatProgressTracker.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.modules.progress_tracker.SplatProgressTracker.__init__" title="Link to this definition">¶</a></dt>
-<dd><p>Initialize progress tracker.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>update_every</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Update progress bar every N steps (default: 1)</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="splatkit.modules.progress_tracker.SplatProgressTracker.on_setup">
-<span class="sig-name descname"><span class="pre">on_setup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logger</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">renderer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_provider</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss_fn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">densification</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modules</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_rank</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scene_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/splatkit/modules/progress_tracker.html#SplatProgressTracker.on_setup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.modules.progress_tracker.SplatProgressTracker.on_setup" title="Link to this definition">¶</a></dt>
-<dd><p>Setup progress tracker.</p>
-<dl class="field-list simple">
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="splatkit.modules.progress_tracker.SplatProgressTracker.post_step">
-<span class="sig-name descname"><span class="pre">post_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logger</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rendered_frames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_frames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">training_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rend_out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">masks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_rank</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/splatkit/modules/progress_tracker.html#SplatProgressTracker.post_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.modules.progress_tracker.SplatProgressTracker.post_step" title="Link to this definition">¶</a></dt>
-<dd><p>Update progress bar after each training step.</p>
-<dl class="field-list simple">
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="splatkit.modules.progress_tracker.SplatProgressTracker.post_compute_loss">
-<span class="sig-name descname"><span class="pre">post_compute_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logger</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">training_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">masks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_rank</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/splatkit/modules/progress_tracker.html#SplatProgressTracker.post_compute_loss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.modules.progress_tracker.SplatProgressTracker.post_compute_loss" title="Link to this definition">¶</a></dt>
-<dd><p>Hook before loss backward - can access loss from training_state if needed.</p>
-<dl class="field-list simple">
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="splatkit.modules.progress_tracker.SplatProgressTracker.on_cleanup">
-<span class="sig-name descname"><span class="pre">on_cleanup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logger</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_rank</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/splatkit/modules/progress_tracker.html#SplatProgressTracker.on_cleanup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.modules.progress_tracker.SplatProgressTracker.on_cleanup" title="Link to this definition">¶</a></dt>
-<dd><p>Close progress bar after training.</p>
-<dl class="field-list simple">
-</dl>
-</dd></dl>
-
-</dd></dl>
-
+          <section id="splatkit-modules-progress-tracker">
+<h1>splatkit.modules.progress_tracker<a class="headerlink" href="#splatkit-modules-progress-tracker" title="Link to this heading">¶</a></h1>
 </section>
 
         </article>
@@ -391,34 +322,8 @@
         
       </footer>
     </div>
-    <aside class="toc-drawer">
+    <aside class="toc-drawer no-toc">
       
-      
-      <div class="toc-sticky toc-scroll">
-        <div class="toc-title-container">
-          <span class="toc-title">
-            On this page
-          </span>
-        </div>
-        <div class="toc-tree-container">
-          <div class="toc-tree">
-            <ul>
-<li><a class="reference internal" href="#">splatkit.modules.progress_tracker</a><ul>
-<li><a class="reference internal" href="#splatkit.modules.progress_tracker.SplatProgressTracker"><code class="docutils literal notranslate"><span class="pre">SplatProgressTracker</span></code></a><ul>
-<li><a class="reference internal" href="#splatkit.modules.progress_tracker.SplatProgressTracker.__init__"><code class="docutils literal notranslate"><span class="pre">SplatProgressTracker.__init__()</span></code></a></li>
-<li><a class="reference internal" href="#splatkit.modules.progress_tracker.SplatProgressTracker.on_setup"><code class="docutils literal notranslate"><span class="pre">SplatProgressTracker.on_setup()</span></code></a></li>
-<li><a class="reference internal" href="#splatkit.modules.progress_tracker.SplatProgressTracker.post_step"><code class="docutils literal notranslate"><span class="pre">SplatProgressTracker.post_step()</span></code></a></li>
-<li><a class="reference internal" href="#splatkit.modules.progress_tracker.SplatProgressTracker.post_compute_loss"><code class="docutils literal notranslate"><span class="pre">SplatProgressTracker.post_compute_loss()</span></code></a></li>
-<li><a class="reference internal" href="#splatkit.modules.progress_tracker.SplatProgressTracker.on_cleanup"><code class="docutils literal notranslate"><span class="pre">SplatProgressTracker.on_cleanup()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-
-          </div>
-        </div>
-      </div>
       
       
     </aside>

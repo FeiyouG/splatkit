@@ -224,6 +224,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../customization/renderers.html">Custom Renderers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../customization/loss_functions.html">Custom Loss Functions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../customization/data_providers.html">Custom Data Providers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../customization/densification.html">Custom Densification</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
@@ -232,6 +233,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../api/loss_fn.html">Loss Functions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/data_provider.html">Data Provider</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/splat.html">Model and Training State</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/densification.html">Densification</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../api/modules/index.html">Built-in Modules</a><input aria-label="Toggle navigation of Built-in Modules" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/modules/base.html">Base Module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/modules/viewer.html">Viewer Module</a></li>
@@ -285,15 +287,15 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Metadata for rendered images.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">renders</span><span class="p">:</span> <span class="n">Tensor</span>  <span class="c1"># (..., H, W, 3)</span>
-    <span class="n">alphas</span><span class="p">:</span> <span class="n">Tensor</span>  <span class="c1"># (..., H, W, 1)</span>
-    <span class="n">radii</span><span class="p">:</span> <span class="n">Tensor</span>  <span class="c1"># (..., H, W, 1)</span>
-    <span class="n">depths</span><span class="p">:</span> <span class="n">Tensor</span> <span class="c1"># (..., H, W, 1)</span>
+    <span class="n">renders</span><span class="p">:</span> <span class="n">Tensor</span>  <span class="c1"># (..., H, W, 3) - rendered images</span>
+    <span class="n">alphas</span><span class="p">:</span> <span class="n">Tensor</span>  <span class="c1"># (..., H, W, 1) - rendered alpha</span>
+    <span class="n">depths</span><span class="p">:</span> <span class="n">Tensor</span> <span class="c1"># (..., C, N) - per-gaussian depths (C=cameras, N=gaussians)</span>
+    <span class="n">radii</span><span class="p">:</span> <span class="n">Tensor</span>  <span class="c1"># (..., C, N, 2) - per-gaussian radii in x/y (C=cameras, N=gaussians)</span>
     <span class="n">n_cameras</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">n_batches</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">width</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">height</span><span class="p">:</span> <span class="nb">int</span>
-    <span class="n">means2d</span><span class="p">:</span> <span class="n">Tensor</span> <span class="c1"># (..., H, W, 2)</span>
+    <span class="n">means2d</span><span class="p">:</span> <span class="n">Tensor</span> <span class="c1"># (..., C, N, 2) - per-gaussian 2D means (C=cameras, N=gaussians)</span>
 
     <span class="n">gaussian_ids</span><span class="p">:</span> <span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="c1"># Visible gaussian indices for densification</span>
     <span class="n">depths_expected</span><span class="p">:</span> <span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="c1"># (..., H, W, 1) - expected depths; will be None if render_mode is not &quot;RGB+D&quot; or &quot;RGB+ED&quot;</span>

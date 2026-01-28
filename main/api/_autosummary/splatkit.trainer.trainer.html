@@ -225,6 +225,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../customization/renderers.html">Custom Renderers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../customization/loss_functions.html">Custom Loss Functions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../customization/data_providers.html">Custom Data Providers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../customization/densification.html">Custom Densification</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
@@ -233,6 +234,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../loss_fn.html">Loss Functions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../data_provider.html">Data Provider</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../splat.html">Model and Training State</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../densification.html">Densification</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../modules/index.html">Built-in Modules</a><input aria-label="Toggle navigation of Built-in Modules" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../modules/base.html">Base Module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../modules/viewer.html">Viewer Module</a></li>
@@ -333,7 +335,7 @@ Supports distributed training and custom modules for logging/visualization.</p>
 <li><p><strong>renderer</strong> (<a class="reference internal" href="../renderer.html#splatkit.renderer.base.SplatRenderer" title="splatkit.renderer.base.SplatRenderer"><em>SplatRenderer</em></a><em>[</em><em>SplatRenderPayloadT</em><em>]</em>) – Renders Gaussians to images (e.g., Splat3DGSRenderer)</p></li>
 <li><p><strong>loss_fn</strong> (<a class="reference internal" href="../loss_fn.html#splatkit.loss_fn.base.SplatLossFn" title="splatkit.loss_fn.base.SplatLossFn"><em>SplatLossFn</em></a><em>[</em><em>SplatRenderPayloadT</em><em>]</em>) – Computes training loss (e.g., Splat3DGSLossFn)</p></li>
 <li><p><strong>data_provider</strong> (<a class="reference internal" href="../data_provider.html#splatkit.data_provider.base.SplatDataProvider" title="splatkit.data_provider.base.SplatDataProvider"><em>SplatDataProvider</em></a><em>[</em><em>SplatRenderPayloadT</em><em>, </em><em>SplatDataItemT</em><em>]</em>) – Loads training images and cameras (e.g., SplatColmapDataProvider)</p></li>
-<li><p><strong>densification</strong> (<em>SplatDensification</em><em>[</em><em>SplatRenderPayloadT</em><em>]</em>) – Strategy for adding/removing Gaussians (e.g., SplatDefaultDensification)</p></li>
+<li><p><strong>densification</strong> (<a class="reference internal" href="../densification.html#splatkit.densification.base.SplatDensification" title="splatkit.densification.base.SplatDensification"><em>SplatDensification</em></a><em>[</em><em>SplatRenderPayloadT</em><em>]</em>) – Strategy for adding/removing Gaussians (e.g., SplatDefaultDensification)</p></li>
 <li><p><strong>modules</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.14)"><em>Sequence</em></a><em>[</em><a class="reference internal" href="../modules/base.html#splatkit.modules.base.SplatBaseModule" title="splatkit.modules.base.SplatBaseModule"><em>SplatBaseModule</em></a><em>[</em><em>SplatRenderPayloadT</em><em>]</em><em>]</em>) – Optional list of modules for logging, visualization, etc.
 Examples: SplatViewer, SplatProgressTracker, SplatTensorboard</p></li>
 <li><p><strong>logger</strong> (<em>SplatLogger</em><em> | </em><em>None</em>) – Custom logger (creates default INFO-level logger if None)</p></li>
@@ -365,6 +367,11 @@ Examples: SplatViewer, SplatProgressTracker, SplatTensorboard</p></li>
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">__class_getitem__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">generic_type</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/splatkit/trainer/trainer.html#SplatTrainer.__class_getitem__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.trainer.trainer.SplatTrainer.__class_getitem__" title="Link to this definition">¶</a></dt>
 <dd><p>Class getitem hook to store the concrete generic types.</p>
 </dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="splatkit.trainer.trainer.SplatTrainer.module_name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">module_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></em><a class="headerlink" href="#splatkit.trainer.trainer.SplatTrainer.module_name" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="splatkit.trainer.trainer.SplatTrainer.run">
@@ -433,6 +440,7 @@ Examples: SplatViewer, SplatProgressTracker, SplatTensorboard</p></li>
 <li><a class="reference internal" href="#splatkit.trainer.trainer.SplatTrainer.__init__"><code class="docutils literal notranslate"><span class="pre">SplatTrainer.__init__()</span></code></a></li>
 <li><a class="reference internal" href="#splatkit.trainer.trainer.SplatTrainer.__post_init__"><code class="docutils literal notranslate"><span class="pre">SplatTrainer.__post_init__()</span></code></a></li>
 <li><a class="reference internal" href="#splatkit.trainer.trainer.SplatTrainer.__class_getitem__"><code class="docutils literal notranslate"><span class="pre">SplatTrainer.__class_getitem__()</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.trainer.trainer.SplatTrainer.module_name"><code class="docutils literal notranslate"><span class="pre">SplatTrainer.module_name</span></code></a></li>
 <li><a class="reference internal" href="#splatkit.trainer.trainer.SplatTrainer.run"><code class="docutils literal notranslate"><span class="pre">SplatTrainer.run()</span></code></a></li>
 </ul>
 </li>

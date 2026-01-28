@@ -225,6 +225,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../customization/renderers.html">Custom Renderers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../customization/loss_functions.html">Custom Loss Functions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../customization/data_providers.html">Custom Data Providers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../customization/densification.html">Custom Densification</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
@@ -233,6 +234,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../loss_fn.html">Loss Functions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../data_provider.html">Data Provider</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../splat.html">Model and Training State</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../densification.html">Densification</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../modules/index.html">Built-in Modules</a><input aria-label="Toggle navigation of Built-in Modules" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../modules/base.html">Base Module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../modules/viewer.html">Viewer Module</a></li>
@@ -290,7 +292,7 @@
 <div class="table-wrapper autosummary longtable docutils container">
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#splatkit.modules.frame.SplatRenderPayload" title="splatkit.modules.frame.SplatRenderPayload"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SplatRenderPayload</span></code></a>(renders, alphas, radii, ...)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#splatkit.modules.frame.SplatRenderPayload" title="splatkit.modules.frame.SplatRenderPayload"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SplatRenderPayload</span></code></a>(renders, alphas, depths, ...)</p></td>
 <td><p>Metadata for rendered images.</p></td>
 </tr>
 </tbody>
@@ -298,7 +300,7 @@
 </div>
 <dl class="py class">
 <dt class="sig sig-object py" id="splatkit.modules.frame.SplatRenderPayload">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">splatkit.modules.frame.</span></span><span class="sig-name descname"><span class="pre">SplatRenderPayload</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">renders</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alphas</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radii</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">depths</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_cameras</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_batches</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">means2d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gaussian_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">depths_expected</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">depths_accumulated</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/splatkit/modules/frame.html#SplatRenderPayload"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.modules.frame.SplatRenderPayload" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">splatkit.modules.frame.</span></span><span class="sig-name descname"><span class="pre">SplatRenderPayload</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">renders</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alphas</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">depths</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radii</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_cameras</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_batches</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">means2d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gaussian_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">depths_expected</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">depths_accumulated</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/splatkit/modules/frame.html#SplatRenderPayload"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.modules.frame.SplatRenderPayload" title="Link to this definition">¶</a></dt>
 <dd><p>Metadata for rendered images.</p>
 <dl class="field-list simple">
 </dl>
@@ -313,13 +315,13 @@
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="splatkit.modules.frame.SplatRenderPayload.radii">
-<span class="sig-name descname"><span class="pre">radii</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.10)"><span class="pre">Tensor</span></a></em><a class="headerlink" href="#splatkit.modules.frame.SplatRenderPayload.radii" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="splatkit.modules.frame.SplatRenderPayload.depths">
+<span class="sig-name descname"><span class="pre">depths</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.10)"><span class="pre">Tensor</span></a></em><a class="headerlink" href="#splatkit.modules.frame.SplatRenderPayload.depths" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="splatkit.modules.frame.SplatRenderPayload.depths">
-<span class="sig-name descname"><span class="pre">depths</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.10)"><span class="pre">Tensor</span></a></em><a class="headerlink" href="#splatkit.modules.frame.SplatRenderPayload.depths" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="splatkit.modules.frame.SplatRenderPayload.radii">
+<span class="sig-name descname"><span class="pre">radii</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.10)"><span class="pre">Tensor</span></a></em><a class="headerlink" href="#splatkit.modules.frame.SplatRenderPayload.radii" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -392,7 +394,7 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="splatkit.modules.frame.SplatRenderPayload.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">renders</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alphas</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radii</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">depths</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_cameras</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_batches</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">means2d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gaussian_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">depths_expected</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">depths_accumulated</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#splatkit.modules.frame.SplatRenderPayload.__init__" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">renders</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alphas</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">depths</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radii</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_cameras</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_batches</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">means2d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gaussian_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">depths_expected</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">depths_accumulated</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#splatkit.modules.frame.SplatRenderPayload.__init__" title="Link to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 </dl>
 </dd></dl>
@@ -449,8 +451,8 @@
 <li><a class="reference internal" href="#splatkit.modules.frame.SplatRenderPayload"><code class="docutils literal notranslate"><span class="pre">SplatRenderPayload</span></code></a><ul>
 <li><a class="reference internal" href="#splatkit.modules.frame.SplatRenderPayload.renders"><code class="docutils literal notranslate"><span class="pre">SplatRenderPayload.renders</span></code></a></li>
 <li><a class="reference internal" href="#splatkit.modules.frame.SplatRenderPayload.alphas"><code class="docutils literal notranslate"><span class="pre">SplatRenderPayload.alphas</span></code></a></li>
-<li><a class="reference internal" href="#splatkit.modules.frame.SplatRenderPayload.radii"><code class="docutils literal notranslate"><span class="pre">SplatRenderPayload.radii</span></code></a></li>
 <li><a class="reference internal" href="#splatkit.modules.frame.SplatRenderPayload.depths"><code class="docutils literal notranslate"><span class="pre">SplatRenderPayload.depths</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.frame.SplatRenderPayload.radii"><code class="docutils literal notranslate"><span class="pre">SplatRenderPayload.radii</span></code></a></li>
 <li><a class="reference internal" href="#splatkit.modules.frame.SplatRenderPayload.n_cameras"><code class="docutils literal notranslate"><span class="pre">SplatRenderPayload.n_cameras</span></code></a></li>
 <li><a class="reference internal" href="#splatkit.modules.frame.SplatRenderPayload.n_batches"><code class="docutils literal notranslate"><span class="pre">SplatRenderPayload.n_batches</span></code></a></li>
 <li><a class="reference internal" href="#splatkit.modules.frame.SplatRenderPayload.width"><code class="docutils literal notranslate"><span class="pre">SplatRenderPayload.width</span></code></a></li>

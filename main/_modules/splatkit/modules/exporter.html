@@ -224,6 +224,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../customization/renderers.html">Custom Renderers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../customization/loss_functions.html">Custom Loss Functions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../customization/data_providers.html">Custom Data Providers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../customization/densification.html">Custom Densification</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
@@ -232,6 +233,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../api/loss_fn.html">Loss Functions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/data_provider.html">Data Provider</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/splat.html">Model and Training State</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/densification.html">Densification</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../api/modules/index.html">Built-in Modules</a><input aria-label="Toggle navigation of Built-in Modules" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/modules/base.html">Base Module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/modules/viewer.html">Viewer Module</a></li>
@@ -367,11 +369,13 @@
     <span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_save_splat</span><span class="p">:</span>
             <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_splat_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Create splat output directory: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_splat_dir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">module_name</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Splats will be saved to: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_splat_dir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">module_name</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_save_ckpt</span><span class="p">:</span>
             <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ckpt_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Create checkpoint output directory: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_ckpt_dir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">module_name</span><span class="p">)</span></div>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Checkpoints will be saved to: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_ckpt_dir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">module_name</span><span class="p">)</span>
+        
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Successfully set up exporter. Will export at steps: </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_export_steps</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">module_name</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="SplatExporter.post_step">

@@ -225,6 +225,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../customization/renderers.html">Custom Renderers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../customization/loss_functions.html">Custom Loss Functions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../customization/data_providers.html">Custom Data Providers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../customization/densification.html">Custom Densification</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
@@ -233,6 +234,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../loss_fn.html">Loss Functions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../data_provider.html">Data Provider</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../splat.html">Model and Training State</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../densification.html">Densification</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../modules/index.html">Built-in Modules</a><input aria-label="Toggle navigation of Built-in Modules" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../modules/base.html">Base Module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../modules/viewer.html">Viewer Module</a></li>
@@ -320,7 +322,7 @@ Use this to initialize the module.</p>
 <li><p><strong>renderer</strong> (<a class="reference internal" href="splatkit.renderer.html#splatkit.renderer.SplatRenderer" title="splatkit.renderer.SplatRenderer"><em>SplatRenderer</em></a><em>[</em><em>SplatRenderPayloadT</em><em>]</em>) – The renderer instance</p></li>
 <li><p><strong>data_provider</strong> (<a class="reference internal" href="splatkit.data_provider.html#splatkit.data_provider.SplatDataProvider" title="splatkit.data_provider.SplatDataProvider"><em>SplatDataProvider</em></a><em>[</em><em>SplatRenderPayloadT</em><em>, </em><em>Any</em><em>]</em>) – The data provider instance</p></li>
 <li><p><strong>loss_fn</strong> (<a class="reference internal" href="splatkit.loss_fn.html#splatkit.loss_fn.SplatLossFn" title="splatkit.loss_fn.SplatLossFn"><em>SplatLossFn</em></a><em>[</em><em>SplatRenderPayloadT</em><em>]</em>) – The loss function instance</p></li>
-<li><p><strong>densification</strong> (<em>SplatDensification</em><em>[</em><em>SplatRenderPayloadT</em><em>]</em>) – The densification strategy instance</p></li>
+<li><p><strong>densification</strong> (<a class="reference internal" href="../densification.html#splatkit.densification.base.SplatDensification" title="splatkit.densification.base.SplatDensification"><em>SplatDensification</em></a><em>[</em><em>SplatRenderPayloadT</em><em>]</em>) – The densification strategy instance</p></li>
 <li><p><strong>modules</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.14)"><em>Sequence</em></a><em>[</em><a class="reference internal" href="../modules/base.html#splatkit.modules.base.SplatBaseModule" title="splatkit.modules.base.SplatBaseModule"><em>SplatBaseModule</em></a><em>[</em><em>SplatRenderPayloadT</em><em>]</em><em>]</em>) – List of all modules (including this one)</p></li>
 <li><p><strong>max_steps</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Maximum number of training steps</p></li>
 <li><p><strong>world_rank</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – The current world rank</p></li>

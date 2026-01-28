@@ -224,6 +224,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../customization/renderers.html">Custom Renderers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../customization/loss_functions.html">Custom Loss Functions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../customization/data_providers.html">Custom Data Providers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../customization/densification.html">Custom Densification</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
@@ -232,6 +233,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../api/loss_fn.html">Loss Functions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/data_provider.html">Data Provider</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/splat.html">Model and Training State</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/densification.html">Densification</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../api/modules/index.html">Built-in Modules</a><input aria-label="Toggle navigation of Built-in Modules" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/modules/base.html">Base Module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/modules/viewer.html">Viewer Module</a></li>
@@ -282,6 +284,7 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">..splat</span><span class="w"> </span><span class="kn">import</span> <span class="n">SplatModel</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..modules</span><span class="w"> </span><span class="kn">import</span> <span class="n">SplatRenderPayloadT</span><span class="p">,</span> <span class="n">SplatBaseModule</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..logger</span><span class="w"> </span><span class="kn">import</span> <span class="n">SplatLogger</span>
 
 <div class="viewcode-block" id="SplatDataItem">
 <a class="viewcode-back" href="../../../api/_autosummary/splatkit.data_provider.base.html#splatkit.data_provider.SplatDataItem">[docs]</a>
@@ -400,7 +403,7 @@
 <span class="sd">    and provide initialization points for Gaussians.</span>
 <span class="sd">    </span>
 <span class="sd">    Subclasses must implement:</span>
-<span class="sd">        - load_data(): Load all data from disk</span>
+<span class="sd">        - load_data(logger: &quot;SplatLogger&quot;) -&gt; float: Load all data from disk</span>
 <span class="sd">        - next_train_data(): Sample next training item(s)</span>
 <span class="sd">        - get_init_point_cloud(): Get initial 3D points for Gaussians</span>
 <span class="sd">    </span>
@@ -414,7 +417,7 @@
 <span class="sd">        ...     images_dir=&quot;data/images&quot;,</span>
 <span class="sd">        ... )</span>
 <span class="sd">        &gt;&gt;&gt; provider = SplatColmapDataProvider(config)</span>
-<span class="sd">        &gt;&gt;&gt; scene_scale = provider.load_data()</span>
+<span class="sd">        &gt;&gt;&gt; scene_scale = provider.load_data(logger)</span>
 <span class="sd">        &gt;&gt;&gt; data_item = provider.next_train_data(step=0)</span>
 <span class="sd">    </span>
 <span class="sd">    Gotchas:</span>
@@ -426,7 +429,7 @@
 <div class="viewcode-block" id="SplatDataProvider.load_data">
 <a class="viewcode-back" href="../../../api/data_provider.html#splatkit.data_provider.SplatDataProvider.load_data">[docs]</a>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">load_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logger</span><span class="p">:</span> <span class="n">SplatLogger</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Load all data from disk and return scene scale.</span>
 <span class="sd">        </span>

@@ -224,6 +224,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../customization/renderers.html">Custom Renderers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../customization/loss_functions.html">Custom Loss Functions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../customization/data_providers.html">Custom Data Providers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../customization/densification.html">Custom Densification</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
@@ -232,6 +233,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../api/loss_fn.html">Loss Functions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../api/data_provider.html">Data Provider</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../api/splat.html">Model and Training State</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/densification.html">Densification</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../../api/modules/index.html">Built-in Modules</a><input aria-label="Toggle navigation of Built-in Modules" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../../api/modules/base.html">Base Module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../api/modules/viewer.html">Viewer Module</a></li>
@@ -338,13 +340,14 @@
 <div class="viewcode-block" id="SplatColmapDataProvider.load_data">
 <a class="viewcode-back" href="../../../../api/data_provider.html#splatkit.data_provider.SplatColmapDataProvider.load_data">[docs]</a>
     <span class="nd">@override</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">load_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> 
+    <span class="k">def</span><span class="w"> </span><span class="nf">load_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logger</span><span class="p">:</span> <span class="s2">&quot;SplatLogger&quot;</span><span class="p">):</span> 
         <span class="bp">self</span><span class="o">.</span><span class="n">_colmap_dataset</span> <span class="o">=</span> <span class="n">SplatColmapDataset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="p">)</span>
 
         <span class="n">stride</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">train_test_ratio</span> <span class="o">*</span> <span class="mi">10</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_train_dataset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_colmap_dataset</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="k">lambda</span> <span class="n">i</span><span class="p">,</span> <span class="n">_</span><span class="p">:</span> <span class="n">i</span> <span class="o">%</span> <span class="n">stride</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_test_dataset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_colmap_dataset</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="k">lambda</span> <span class="n">i</span><span class="p">,</span> <span class="n">_</span><span class="p">:</span> <span class="n">i</span> <span class="o">%</span> <span class="n">stride</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
 
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Successfully loaded data: config=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">module_name</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_colmap_dataset</span><span class="o">.</span><span class="n">scene_scale</span></div>
 
 
@@ -364,9 +367,6 @@
         <span class="n">world_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
         <span class="n">scene_scale</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
     <span class="p">):</span> 
-       
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Train set: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_train_dataset</span><span class="p">)</span><span class="si">}</span><span class="s2"> images, Test set: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_test_dataset</span><span class="p">)</span><span class="si">}</span><span class="s2"> images&quot;</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">module_name</span><span class="p">)</span>
-
         <span class="bp">self</span><span class="o">.</span><span class="n">_train_data_loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">[</span><span class="n">ColmapDataItem</span><span class="p">](</span>
             <span class="n">dataset</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_train_dataset</span><span class="p">,</span>
             <span class="n">batch_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span>
@@ -381,7 +381,10 @@
             <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="n">num_workers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">num_workers</span><span class="p">,</span>
             <span class="n">collate_fn</span><span class="o">=</span><span class="n">ColmapDataItem</span><span class="o">.</span><span class="n">from_batch</span><span class="p">,</span>
-        <span class="p">)</span></div>
+        <span class="p">)</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Successfully setup data provider: Train set: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_train_dataset</span><span class="p">)</span><span class="si">}</span><span class="s2"> images, Test set: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_test_dataset</span><span class="p">)</span><span class="si">}</span><span class="s2"> images&quot;</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">module_name</span><span class="p">)</span></div>
+
 
     
 <div class="viewcode-block" id="SplatColmapDataProvider.get_test_data_size">

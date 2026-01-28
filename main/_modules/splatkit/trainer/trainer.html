@@ -224,6 +224,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../customization/renderers.html">Custom Renderers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../customization/loss_functions.html">Custom Loss Functions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../customization/data_providers.html">Custom Data Providers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../customization/densification.html">Custom Densification</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
@@ -232,6 +233,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../api/loss_fn.html">Loss Functions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/data_provider.html">Data Provider</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/splat.html">Model and Training State</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/densification.html">Densification</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../api/modules/index.html">Built-in Modules</a><input aria-label="Toggle navigation of Built-in Modules" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/modules/base.html">Base Module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/modules/viewer.html">Viewer Module</a></li>
@@ -419,8 +421,11 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Starting single GPU training&quot;</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="s2">&quot;SplatTrainer&quot;</span><span class="p">)</span>
             <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_world_size</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Starting multi-GPU training: world_size=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_world_size</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="s2">&quot;SplatTrainer&quot;</span><span class="p">)</span>
+            
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">module_name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;SplatTrainer&quot;</span>
 
-    
 <div class="viewcode-block" id="SplatTrainer.run">
 <a class="viewcode-back" href="../../../api/trainer.html#splatkit.trainer.SplatTrainer.run">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">leader_rank</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">):</span>
@@ -431,7 +436,7 @@
 <span class="sd">            - For distributed training, use SplatDistributedTrainer or manage with CLI manually</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="n">scene_scale</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_provider</span><span class="o">.</span><span class="n">load_data</span><span class="p">()</span>
+        <span class="n">scene_scale</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_provider</span><span class="o">.</span><span class="n">load_data</span><span class="p">(</span><span class="n">logger</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="p">)</span>
 
         <span class="n">all_modules</span> <span class="o">=</span> <span class="n">SplatModuleComposite</span><span class="p">[</span><span class="n">SplatRenderPayloadT</span><span class="p">](</span><span class="bp">self</span><span class="o">.</span><span class="n">_renderer</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_loss_fn</span><span class="p">,</span>
@@ -453,6 +458,7 @@
             <span class="n">world_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_world_size</span><span class="p">,</span>
             <span class="n">scene_scale</span><span class="o">=</span><span class="n">scene_scale</span><span class="p">,</span>
         <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Successfully set up all modules&quot;</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">module_name</span><span class="p">)</span>
 
         <span class="c1"># Load checkpoint or initialize from scratch</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ckpt_path</span><span class="p">:</span>
@@ -486,6 +492,7 @@
             <span class="p">)</span>
             <span class="k">del</span> <span class="n">splat_model</span>
             <span class="n">start_step</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Successfully initialized splat training state from data provider&quot;</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">module_name</span><span class="p">)</span>
 
         <span class="n">schedulers</span> <span class="o">=</span> <span class="p">[</span>
             <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">lr_scheduler</span><span class="o">.</span><span class="n">ExponentialLR</span><span class="p">(</span>
@@ -495,6 +502,7 @@
         <span class="p">]</span>
         
         <span class="c1"># NOTE: step is 1-indexed</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Starting training loop from step </span><span class="si">{</span><span class="n">start_step</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">max_steps</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">module_name</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">start_step</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">max_steps</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
 
             <span class="c1"># STEP 1: Getting training data</span>
@@ -596,12 +604,14 @@
                 <span class="n">rend_out</span><span class="o">=</span><span class="n">rend_out</span><span class="p">,</span>
             <span class="p">)</span>
         
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Training loop completed&quot;</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">module_name</span><span class="p">)</span>
         <span class="c1"># Cleanup resources</span>
         <span class="n">all_modules</span><span class="o">.</span><span class="n">on_cleanup</span><span class="p">(</span>
             <span class="n">logger</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="p">,</span>
             <span class="n">world_rank</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_world_rank</span><span class="p">,</span>
             <span class="n">world_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_world_size</span><span class="p">,</span>
-        <span class="p">)</span></div>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Successfully cleaned up all modules&quot;</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">module_name</span><span class="p">)</span></div>
 </div>
 
 </pre></div>

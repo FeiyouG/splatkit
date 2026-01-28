@@ -224,6 +224,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../customization/renderers.html">Custom Renderers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../customization/loss_functions.html">Custom Loss Functions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../customization/data_providers.html">Custom Data Providers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../customization/densification.html">Custom Densification</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
@@ -232,6 +233,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../api/loss_fn.html">Loss Functions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/data_provider.html">Data Provider</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/splat.html">Model and Training State</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/densification.html">Densification</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../api/modules/index.html">Built-in Modules</a><input aria-label="Toggle navigation of Built-in Modules" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/modules/base.html">Base Module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/modules/viewer.html">Viewer Module</a></li>
@@ -274,7 +276,7 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for splatkit.loss_fn._2dgs</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Generic</span><span class="p">,</span> <span class="n">TYPE_CHECKING</span>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Generic</span><span class="p">,</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Sequence</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing_extensions</span><span class="w"> </span><span class="kn">import</span> <span class="n">override</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">..utils.batched</span><span class="w"> </span><span class="kn">import</span> <span class="n">normalize_batch_tensors</span>
@@ -285,6 +287,8 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">..renderer._2dgs</span><span class="w"> </span><span class="kn">import</span> <span class="n">Splat2dgsRenderPayload</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..logger</span><span class="w"> </span><span class="kn">import</span> <span class="n">SplatLogger</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..modules</span><span class="w"> </span><span class="kn">import</span> <span class="n">SplatRenderPayloadT</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..modules.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">SplatBaseModule</span>
 
 <div class="viewcode-block" id="Splat2DGSLossFn">
 <a class="viewcode-back" href="../../../api/loss_fn.html#splatkit.loss_fn.Splat2DGSLossFn">[docs]</a>
@@ -329,7 +333,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">dist_start_iter</span> <span class="o">=</span> <span class="n">dist_start_iter</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_current_step</span> <span class="o">=</span> <span class="mi">0</span></div>
 
-    
+
 <div class="viewcode-block" id="Splat2DGSLossFn.pre_compute_loss">
 <a class="viewcode-back" href="../../../api/loss_fn.html#splatkit.loss_fn.Splat2DGSLossFn.pre_compute_loss">[docs]</a>
     <span class="nd">@override</span>
