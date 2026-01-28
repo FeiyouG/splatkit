@@ -56,9 +56,6 @@ Next Steps
    installation
    quickstart
 
-Customization
-=============
-
 .. toctree::
    :maxdepth: 2
    :caption: Customization
@@ -68,9 +65,6 @@ Customization
    customization/renderers
    customization/loss_functions
    customization/data_providers
-
-API Reference
-=============
 
 .. toctree::
    :maxdepth: 2
@@ -84,14 +78,6 @@ API Reference
    api/splat
    api/modules/index
 
-
-Indices and Tables
-==================
-
 .. toctree::
    :maxdepth: 2
    :hidden:
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
