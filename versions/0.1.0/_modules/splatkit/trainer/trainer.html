@@ -1,0 +1,653 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../../../">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../genindex.html"><link rel="search" title="Search" href="../../../search.html">
+
+    <!-- Generated with Sphinx 8.1.3 and Furo 2025.12.19 -->
+        <title>splatkit.trainer.trainer - Splatkit Documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d111a655" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=8dab3a3b" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f2f2f2;
+  --color-code-foreground: #1e1e1e;
+  --color-brand-primary: #2563eb;
+  --color-brand-content: #2563eb;
+  --font-stack: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  --font-stack--monospace: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+  --font-size--normal: 17px;
+  --font-size--small: 15px;
+  --font-size--small--2: 14px;
+  --font-size--small--3: 13px;
+  --font-size--small--4: 12px;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  --color-brand-primary: #60a5fa;
+  --color-brand-content: #60a5fa;
+  --font-size--normal: 17px;
+  --font-size--small: 15px;
+  --font-size--small--2: 14px;
+  --font-size--small--3: 13px;
+  --font-size--small--4: 12px;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  --color-brand-primary: #60a5fa;
+  --color-brand-content: #60a5fa;
+  --font-size--normal: 17px;
+  --font-size--small: 15px;
+  --font-size--small--2: 14px;
+  --font-size--small--3: 13px;
+  --font-size--small--4: 12px;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../../../index.html"><div class="brand">Splatkit Documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../../../index.html">
+  
+  <span class="sidebar-brand-text">Splatkit Documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../../../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../quickstart.html">Quick Start</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Customization</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../customization/modules.html">Custom Modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../customization/renderers.html">Custom Renderers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../customization/loss_functions.html">Custom Loss Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../customization/data_providers.html">Custom Data Providers</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/trainer.html">Trainer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/renderer.html">Renderer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/loss_fn.html">Loss Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/data_provider.html">Data Provider</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/splat.html">Model and Training State</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../api/modules/index.html">Built-in Modules</a><input aria-label="Toggle navigation of Built-in Modules" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/modules/base.html">Base Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/modules/viewer.html">Viewer Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/modules/progress_tracker.html">Progress Tracker Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/modules/tensorboard.html">TensorBoard Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/modules/evaluator.html">Evaluator Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/modules/exporter.html">Exporter Module</a></li>
+</ul>
+</li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <h1>Source code for splatkit.trainer.trainer</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Generic</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">get_args</span><span class="p">,</span> <span class="n">get_origin</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">..modules</span><span class="w"> </span><span class="kn">import</span> <span class="n">SplatModuleComposite</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">..data_provider</span><span class="w"> </span><span class="kn">import</span> <span class="n">SplatDataItemT</span><span class="p">,</span> <span class="n">SplatDataProvider</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..densification</span><span class="w"> </span><span class="kn">import</span> <span class="n">SplatDensification</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..logger</span><span class="w"> </span><span class="kn">import</span> <span class="n">SplatLogger</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..loss_fn</span><span class="w"> </span><span class="kn">import</span> <span class="n">SplatLossFn</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..modules</span><span class="w"> </span><span class="kn">import</span> <span class="n">SplatRenderPayloadT</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..modules.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">SplatBaseModule</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..renderer</span><span class="w"> </span><span class="kn">import</span> <span class="n">SplatRenderer</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..splat</span><span class="w"> </span><span class="kn">import</span> <span class="n">SplatTrainingState</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">SplatTrainerConfig</span>
+
+<div class="viewcode-block" id="SplatTrainer">
+<a class="viewcode-back" href="../../../api/trainer.html#splatkit.trainer.SplatTrainer">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SplatTrainer</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">SplatDataItemT</span><span class="p">,</span> <span class="n">SplatRenderPayloadT</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Trainer for Gaussian Splatting.</span>
+<span class="sd">    </span>
+<span class="sd">    Coordinates rendering, loss computation, optimization, and densification.</span>
+<span class="sd">    Supports distributed training and custom modules for logging/visualization.</span>
+<span class="sd">    </span>
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; from splatkit.trainer import SplatTrainer, SplatTrainerConfig</span>
+<span class="sd">        &gt;&gt;&gt; from splatkit.renderer import Splat3DGSRenderer</span>
+<span class="sd">        &gt;&gt;&gt; from splatkit.loss_fn import Splat3DGSLossFn</span>
+<span class="sd">        &gt;&gt;&gt; from splatkit.densification import SplatDefaultDensification</span>
+<span class="sd">        &gt;&gt;&gt; </span>
+<span class="sd">        &gt;&gt;&gt; config = SplatTrainerConfig(max_steps=30000)</span>
+<span class="sd">        &gt;&gt;&gt; trainer = SplatTrainer(</span>
+<span class="sd">        ...     config=config,</span>
+<span class="sd">        ...     renderer=Splat3DGSRenderer(),</span>
+<span class="sd">        ...     loss_fn=Splat3DGSLossFn(),</span>
+<span class="sd">        ...     data_provider=data_provider,</span>
+<span class="sd">        ...     densification=SplatDefaultDensification(),</span>
+<span class="sd">        ...     modules=[],  # Add viewer, progress bar, etc.</span>
+<span class="sd">        ... )</span>
+<span class="sd">        &gt;&gt;&gt; trainer.run()</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">_config</span><span class="p">:</span> <span class="n">SplatTrainerConfig</span>
+    <span class="n">_logger</span><span class="p">:</span> <span class="n">SplatLogger</span>
+
+    <span class="c1"># Distributed training variables</span>
+    <span class="n">_local_rank</span><span class="p">:</span> <span class="nb">int</span> 
+    <span class="n">_world_rank</span><span class="p">:</span> <span class="nb">int</span> 
+    <span class="n">_world_size</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">_device</span><span class="p">:</span> <span class="nb">str</span>
+
+<div class="viewcode-block" id="SplatTrainer.__init__">
+<a class="viewcode-back" href="../../../api/trainer.html#splatkit.trainer.SplatTrainer.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">config</span><span class="p">:</span> <span class="n">SplatTrainerConfig</span><span class="p">,</span>
+        <span class="n">renderer</span><span class="p">:</span> <span class="n">SplatRenderer</span><span class="p">[</span><span class="n">SplatRenderPayloadT</span><span class="p">],</span>
+        <span class="n">loss_fn</span><span class="p">:</span> <span class="n">SplatLossFn</span><span class="p">[</span><span class="n">SplatRenderPayloadT</span><span class="p">],</span>
+        <span class="n">data_provider</span><span class="p">:</span> <span class="n">SplatDataProvider</span><span class="p">[</span><span class="n">SplatRenderPayloadT</span><span class="p">,</span> <span class="n">SplatDataItemT</span><span class="p">],</span>
+        <span class="n">densification</span><span class="p">:</span> <span class="n">SplatDensification</span><span class="p">[</span><span class="n">SplatRenderPayloadT</span><span class="p">],</span>
+        <span class="n">modules</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">SplatBaseModule</span><span class="p">[</span><span class="n">SplatRenderPayloadT</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[],</span>
+        <span class="n">logger</span><span class="p">:</span> <span class="n">SplatLogger</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">ckpt_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">local_rank</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">world_rank</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">world_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize the trainer with all required components.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            config: Training configuration (see SplatTrainerConfig)</span>
+<span class="sd">            renderer: Renders Gaussians to images (e.g., Splat3DGSRenderer)</span>
+<span class="sd">            loss_fn: Computes training loss (e.g., Splat3DGSLossFn)</span>
+<span class="sd">            data_provider: Loads training images and cameras (e.g., SplatColmapDataProvider)</span>
+<span class="sd">            densification: Strategy for adding/removing Gaussians (e.g., SplatDefaultDensification)</span>
+<span class="sd">            modules: Optional list of modules for logging, visualization, etc.</span>
+<span class="sd">                     Examples: SplatViewer, SplatProgressTracker, SplatTensorboard</span>
+<span class="sd">            logger: Custom logger (creates default INFO-level logger if None)</span>
+<span class="sd">            ckpt_path: Path to checkpoint file to resume training (optional)</span>
+<span class="sd">            local_rank: GPU index on current machine (for multi-GPU, default: 0)</span>
+<span class="sd">            world_rank: Global process rank across all machines (default: 0)</span>
+<span class="sd">            world_size: Total number of processes in distributed training (default: 1)</span>
+<span class="sd">        </span>
+<span class="sd">        NOTE:</span>
+<span class="sd">            - Components must be compatible (same render payload type)</span>
+<span class="sd">            - For single GPU training, keep local_rank=0, world_rank=0, world_size=1</span>
+<span class="sd">            - Modules&#39; hooks are called in the same order as they appear in the list</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_config</span> <span class="o">=</span> <span class="n">config</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_renderer</span> <span class="o">=</span> <span class="n">renderer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_loss_fn</span> <span class="o">=</span> <span class="n">loss_fn</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data_provider</span> <span class="o">=</span> <span class="n">data_provider</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_densification</span> <span class="o">=</span> <span class="n">densification</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_modules</span> <span class="o">=</span> <span class="n">modules</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span> <span class="o">=</span> <span class="n">logger</span> <span class="k">if</span> <span class="n">logger</span> <span class="k">else</span> <span class="n">SplatLogger</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="s2">&quot;INFO&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ckpt_path</span> <span class="o">=</span> <span class="n">ckpt_path</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_local_rank</span> <span class="o">=</span> <span class="n">local_rank</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_world_rank</span> <span class="o">=</span> <span class="n">world_rank</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_world_size</span> <span class="o">=</span> <span class="n">world_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_device</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;cuda:</span><span class="si">{</span><span class="n">local_rank</span><span class="si">}</span><span class="s2">&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">__post_init__</span><span class="p">()</span></div>
+
+        
+<div class="viewcode-block" id="SplatTrainer.__post_init__">
+<a class="viewcode-back" href="../../../api/trainer.html#splatkit.trainer.SplatTrainer.__post_init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Post-initialization setup.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_validate</span><span class="p">()</span></div>
+
+        <span class="c1"># self._setup_distributed()</span>
+    
+<div class="viewcode-block" id="SplatTrainer.__class_getitem__">
+<a class="viewcode-back" href="../../../api/trainer.html#splatkit.trainer.SplatTrainer.__class_getitem__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">__class_getitem__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">generic_type</span><span class="p">):</span>        
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Class getitem hook to store the concrete generic types.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">data_t</span><span class="p">,</span> <span class="n">payload_t</span> <span class="o">=</span> <span class="n">generic_type</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">_data_item_T</span> <span class="o">=</span> <span class="n">data_t</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">_render_payload_T</span> <span class="o">=</span> <span class="n">payload_t</span>
+
+        <span class="n">new_cls</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">cls</span><span class="o">.</span><span class="vm">__bases__</span><span class="p">,</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">new_cls</span></div>
+
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_validate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Validate configuration.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Config is required&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_provider</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Trainset is required&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_renderer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Renderer is required&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loss_fn</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Loss function is required&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_world_rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_world_size</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Starting single GPU training&quot;</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="s2">&quot;SplatTrainer&quot;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_world_size</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Starting multi-GPU training: world_size=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_world_size</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="s2">&quot;SplatTrainer&quot;</span><span class="p">)</span>
+
+    
+<div class="viewcode-block" id="SplatTrainer.run">
+<a class="viewcode-back" href="../../../api/trainer.html#splatkit.trainer.SplatTrainer.run">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">leader_rank</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Core training loop implementation.</span>
+<span class="sd">        </span>
+<span class="sd">        NOTE:</span>
+<span class="sd">            - For distributed training, use SplatDistributedTrainer or manage with CLI manually</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">scene_scale</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_provider</span><span class="o">.</span><span class="n">load_data</span><span class="p">()</span>
+
+        <span class="n">all_modules</span> <span class="o">=</span> <span class="n">SplatModuleComposite</span><span class="p">[</span><span class="n">SplatRenderPayloadT</span><span class="p">](</span><span class="bp">self</span><span class="o">.</span><span class="n">_renderer</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_loss_fn</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_data_provider</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_densification</span><span class="p">,</span>
+            <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_modules</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Setup modules</span>
+        <span class="n">all_modules</span><span class="o">.</span><span class="n">on_setup</span><span class="p">(</span>
+            <span class="n">logger</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="p">,</span>
+            <span class="n">renderer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_renderer</span><span class="p">,</span>
+            <span class="n">data_provider</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_data_provider</span><span class="p">,</span>
+            <span class="n">loss_fn</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_loss_fn</span><span class="p">,</span>
+            <span class="n">densification</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_densification</span><span class="p">,</span>
+            <span class="n">modules</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_modules</span><span class="p">,</span>
+            <span class="n">max_steps</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">max_steps</span><span class="p">,</span>
+            <span class="n">world_rank</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_world_rank</span><span class="p">,</span>
+            <span class="n">world_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_world_size</span><span class="p">,</span>
+            <span class="n">scene_scale</span><span class="o">=</span><span class="n">scene_scale</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Load checkpoint or initialize from scratch</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ckpt_path</span><span class="p">:</span>
+            <span class="n">splat_training_state</span><span class="p">,</span> <span class="n">loaded_step</span> <span class="o">=</span> <span class="n">SplatTrainingState</span><span class="o">.</span><span class="n">from_ckpt</span><span class="p">(</span>
+                <span class="n">path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_ckpt_path</span><span class="p">,</span>
+                <span class="n">world_rank</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_world_rank</span><span class="p">,</span>
+                <span class="n">world_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_world_size</span><span class="p">,</span>
+                <span class="n">leader_rank</span><span class="o">=</span><span class="n">leader_rank</span><span class="p">,</span>
+                <span class="n">scene_scale</span><span class="o">=</span><span class="n">scene_scale</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">start_step</span> <span class="o">=</span> <span class="n">loaded_step</span> <span class="o">+</span> <span class="mi">1</span>  <span class="c1"># Resume from next step</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loaded checkpoint from step </span><span class="si">{</span><span class="n">loaded_step</span><span class="si">}</span><span class="s2">, resuming from step </span><span class="si">{</span><span class="n">start_step</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="s2">&quot;SplatTrainer&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+        
+            <span class="c1"># Initialize splat traininig state</span>
+            <span class="n">splat_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_provider</span><span class="o">.</span><span class="n">init_splat_model</span><span class="p">(</span>
+                <span class="n">leader_rank</span><span class="o">=</span><span class="n">leader_rank</span><span class="p">,</span>
+                <span class="n">sh_degree</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">sh_degree</span><span class="p">,</span>
+                <span class="n">init_opacity</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">init_opacity</span><span class="p">,</span>
+                <span class="n">init_scale</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">init_scale</span><span class="p">,</span>
+                <span class="n">world_rank</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_world_rank</span><span class="p">,</span>
+                <span class="n">world_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_world_size</span><span class="p">,</span>
+            <span class="p">)</span>
+            
+            <span class="n">splat_training_state</span> <span class="o">=</span> <span class="n">SplatTrainingState</span><span class="o">.</span><span class="n">from_splat_model</span><span class="p">(</span>
+                <span class="n">model</span><span class="o">=</span><span class="n">splat_model</span><span class="p">,</span>
+                <span class="n">world_rank</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_world_rank</span><span class="p">,</span>
+                <span class="n">world_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_world_size</span><span class="p">,</span>
+                <span class="n">leader_rank</span><span class="o">=</span><span class="n">leader_rank</span><span class="p">,</span>
+                <span class="n">scene_scale</span><span class="o">=</span><span class="n">scene_scale</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">del</span> <span class="n">splat_model</span>
+            <span class="n">start_step</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="n">schedulers</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">lr_scheduler</span><span class="o">.</span><span class="n">ExponentialLR</span><span class="p">(</span>
+                <span class="n">splat_training_state</span><span class="o">.</span><span class="n">optimizers</span><span class="p">[</span><span class="s1">&#39;means&#39;</span><span class="p">],</span>
+                <span class="n">gamma</span><span class="o">=</span><span class="mf">0.01</span> <span class="o">**</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">max_steps</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="p">]</span>
+        
+        <span class="c1"># NOTE: step is 1-indexed</span>
+        <span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">start_step</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">max_steps</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+
+            <span class="c1"># STEP 1: Getting training data</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_provider</span><span class="o">.</span><span class="n">next_train_data</span><span class="p">(</span><span class="n">step</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_device</span><span class="p">)</span>
+
+            <span class="n">target_frames</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">image</span>
+            <span class="n">height</span><span class="p">,</span> <span class="n">width</span> <span class="o">=</span> <span class="n">target_frames</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span>
+            <span class="n">masks</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">mask</span>
+
+            <span class="n">all_modules</span><span class="o">.</span><span class="n">pre_step</span><span class="p">(</span>
+                <span class="n">logger</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="p">,</span>
+                <span class="n">step</span><span class="o">=</span><span class="n">step</span><span class="p">,</span>
+                <span class="n">max_steps</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">max_steps</span><span class="p">,</span>
+                <span class="n">target_frames</span><span class="o">=</span><span class="n">target_frames</span><span class="p">,</span>
+                <span class="n">training_state</span><span class="o">=</span><span class="n">splat_training_state</span><span class="p">,</span>
+                <span class="n">masks</span><span class="o">=</span><span class="n">masks</span><span class="p">,</span>
+                <span class="n">world_rank</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_world_rank</span><span class="p">,</span>
+                <span class="n">world_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_world_size</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="c1"># STEP 2: Get rendered frames</span>
+            
+            <span class="n">sh_degree_to_train</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">step</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">sh_degree_interval</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">sh_degree</span><span class="p">)</span>
+            <span class="n">renders</span><span class="p">,</span> <span class="n">rend_out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_renderer</span><span class="o">.</span><span class="n">render</span><span class="p">(</span>
+                <span class="n">splat_state</span><span class="o">=</span><span class="n">splat_training_state</span><span class="p">,</span>
+                <span class="n">cam_to_worlds</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;cam_to_world&quot;</span><span class="p">],</span>
+                <span class="n">Ks</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;K&quot;</span><span class="p">],</span>
+                <span class="n">width</span><span class="o">=</span><span class="n">width</span><span class="p">,</span>
+                <span class="n">height</span><span class="o">=</span><span class="n">height</span><span class="p">,</span>
+                <span class="n">sh_degree</span><span class="o">=</span><span class="n">sh_degree_to_train</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="c1"># STEP 3: Computing Loss</span>
+            <span class="n">all_modules</span><span class="o">.</span><span class="n">pre_compute_loss</span><span class="p">(</span>
+                <span class="n">logger</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="p">,</span>
+                <span class="n">step</span><span class="o">=</span><span class="n">step</span><span class="p">,</span>
+                <span class="n">max_steps</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">max_steps</span><span class="p">,</span>
+                <span class="n">rendered_frames</span><span class="o">=</span><span class="n">renders</span><span class="p">,</span>
+                <span class="n">target_frames</span><span class="o">=</span><span class="n">target_frames</span><span class="p">,</span>
+                <span class="n">training_state</span><span class="o">=</span><span class="n">splat_training_state</span><span class="p">,</span>
+                <span class="n">rend_out</span><span class="o">=</span><span class="n">rend_out</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="c1"># STEP 4: Backward propagate loss</span>
+            <span class="n">loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loss_fn</span><span class="o">.</span><span class="n">compute_loss</span><span class="p">(</span>
+                <span class="n">logger</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="p">,</span>
+                <span class="n">renders</span><span class="o">=</span><span class="n">renders</span><span class="p">,</span>
+                <span class="n">targets</span><span class="o">=</span><span class="n">target_frames</span><span class="p">,</span>
+                <span class="n">training_state</span><span class="o">=</span><span class="n">splat_training_state</span><span class="p">,</span>
+                <span class="n">rend_out</span><span class="o">=</span><span class="n">rend_out</span><span class="p">,</span>
+                <span class="n">masks</span><span class="o">=</span><span class="n">masks</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="n">all_modules</span><span class="o">.</span><span class="n">post_compute_loss</span><span class="p">(</span>
+                <span class="n">logger</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="p">,</span>
+                <span class="n">step</span><span class="o">=</span><span class="n">step</span><span class="p">,</span>
+                <span class="n">max_steps</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">max_steps</span><span class="p">,</span>
+                <span class="n">loss</span><span class="o">=</span><span class="n">loss</span><span class="p">,</span>
+                <span class="n">training_state</span><span class="o">=</span><span class="n">splat_training_state</span><span class="p">,</span>
+                <span class="n">masks</span><span class="o">=</span><span class="n">masks</span><span class="p">,</span>
+                <span class="n">world_rank</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_world_rank</span><span class="p">,</span>
+                <span class="n">world_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_world_size</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+
+            <span class="c1"># Step 5: Step Optimizers</span>
+            <span class="k">for</span> <span class="n">optimizer</span> <span class="ow">in</span> <span class="n">splat_training_state</span><span class="o">.</span><span class="n">optimizers</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+                <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">(</span><span class="n">set_to_none</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">scheduler</span> <span class="ow">in</span> <span class="n">schedulers</span><span class="p">:</span>
+                <span class="n">scheduler</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+
+            <span class="n">all_modules</span><span class="o">.</span><span class="n">on_optimize</span><span class="p">(</span>
+                <span class="n">logger</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="p">,</span>
+                <span class="n">step</span><span class="o">=</span><span class="n">step</span><span class="p">,</span>
+                <span class="n">max_steps</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">max_steps</span><span class="p">,</span>
+                <span class="n">training_state</span><span class="o">=</span><span class="n">splat_training_state</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Step 6: Densification</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_densification</span><span class="o">.</span><span class="n">densify</span><span class="p">(</span>
+                <span class="n">step</span><span class="o">=</span><span class="n">step</span><span class="p">,</span>
+                <span class="n">max_steps</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">max_steps</span><span class="p">,</span>
+                <span class="n">rendered_frames</span><span class="o">=</span><span class="n">renders</span><span class="p">,</span>
+                <span class="n">target_frames</span><span class="o">=</span><span class="n">target_frames</span><span class="p">,</span>
+                <span class="n">training_state</span><span class="o">=</span><span class="n">splat_training_state</span><span class="p">,</span>
+                <span class="n">rend_out</span><span class="o">=</span><span class="n">rend_out</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="n">all_modules</span><span class="o">.</span><span class="n">post_step</span><span class="p">(</span>
+                <span class="n">logger</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="p">,</span>
+                <span class="n">step</span><span class="o">=</span><span class="n">step</span><span class="p">,</span>
+                <span class="n">max_steps</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">max_steps</span><span class="p">,</span>
+                <span class="n">rendered_frames</span><span class="o">=</span><span class="n">renders</span><span class="p">,</span>
+                <span class="n">target_frames</span><span class="o">=</span><span class="n">target_frames</span><span class="p">,</span>
+                <span class="n">training_state</span><span class="o">=</span><span class="n">splat_training_state</span><span class="p">,</span>
+                <span class="n">rend_out</span><span class="o">=</span><span class="n">rend_out</span><span class="p">,</span>
+            <span class="p">)</span>
+        
+        <span class="c1"># Cleanup resources</span>
+        <span class="n">all_modules</span><span class="o">.</span><span class="n">on_cleanup</span><span class="p">(</span>
+            <span class="n">logger</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="p">,</span>
+            <span class="n">world_rank</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_world_rank</span><span class="p">,</span>
+            <span class="n">world_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_world_size</span><span class="p">,</span>
+        <span class="p">)</span></div>
+</div>
+
+</pre></div>
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          
+          
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2026, Feiyou Guo
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            <div class="icons">
+              <a class="muted-link " href="https://github.com/feiyuguo/splatkit" aria-label="GitHub">
+                <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"></path>
+                </svg>
+            </a>
+              
+            </div>
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer no-toc">
+      
+      
+      
+    </aside>
+  </div>
+</div><script src="../../../_static/documentation_options.js?v=01f34227"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/scripts/furo.js?v=46bd48cc"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=fd10adb8"></script>
+    </body>
+</html>
