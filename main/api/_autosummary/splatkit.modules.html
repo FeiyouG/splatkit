@@ -1,0 +1,1275 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../../">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="../../genindex.html"><link rel="search" title="Search" href="../../search.html">
+
+    <!-- Generated with Sphinx 8.1.3 and Furo 2025.12.19 -->
+        <title>splatkit.modules - Splatkit Documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d111a655" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=8dab3a3b" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f2f2f2;
+  --color-code-foreground: #1e1e1e;
+  --color-brand-primary: #2563eb;
+  --color-brand-content: #2563eb;
+  --font-stack: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  --font-stack--monospace: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+  --font-size--normal: 17px;
+  --font-size--small: 15px;
+  --font-size--small--2: 14px;
+  --font-size--small--3: 13px;
+  --font-size--small--4: 12px;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  --color-brand-primary: #60a5fa;
+  --color-brand-content: #60a5fa;
+  --font-size--normal: 17px;
+  --font-size--small: 15px;
+  --font-size--small--2: 14px;
+  --font-size--small--3: 13px;
+  --font-size--small--4: 12px;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  --color-brand-primary: #60a5fa;
+  --color-brand-content: #60a5fa;
+  --font-size--normal: 17px;
+  --font-size--small: 15px;
+  --font-size--small--2: 14px;
+  --font-size--small--3: 13px;
+  --font-size--small--4: 12px;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../../index.html"><div class="brand">Splatkit Documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../../index.html">
+  
+  <span class="sidebar-brand-text">Splatkit Documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../quickstart.html">Quick Start</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Customization</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../customization/modules.html">Custom Modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../customization/renderers.html">Custom Renderers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../customization/loss_functions.html">Custom Loss Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../customization/data_providers.html">Custom Data Providers</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../trainer.html">Trainer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../renderer.html">Renderer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../loss_fn.html">Loss Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../data_provider.html">Data Provider</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../splat.html">Model and Training State</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../modules/index.html">Built-in Modules</a><input aria-label="Toggle navigation of Built-in Modules" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../modules/base.html">Base Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/viewer.html">Viewer Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/progress_tracker.html">Progress Tracker Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/tensorboard.html">TensorBoard Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/evaluator.html">Evaluator Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/exporter.html">Exporter Module</a></li>
+</ul>
+</li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="https://github.com/feiyuguo/splatkit/blob/main/docs/source/api/_autosummary/splatkit.modules.rst?plain=true" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div><div class="edit-this-page">
+  <a class="muted-link" href="https://github.com/feiyuguo/splatkit/edit/main/docs/source/api/_autosummary/splatkit.modules.rst" rel="edit" title="Edit this page">
+    <svg><use href="#svg-pencil"></use></svg>
+    <span class="visually-hidden">Edit this page</span>
+  </a>
+</div><div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="module-splatkit.modules">
+<span id="splatkit-modules"></span><h1>splatkit.modules<a class="headerlink" href="#module-splatkit.modules" title="Link to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="splatkit.modules.SplatBaseModule">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">splatkit.modules.</span></span><span class="sig-name descname"><span class="pre">SplatBaseModule</span></span><a class="reference internal" href="../../_modules/splatkit/modules/base.html#SplatBaseModule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.modules.SplatBaseModule" title="Link to this definition">¶</a></dt>
+<dd><p>Abstract base class for all Splat modules.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="splatkit.modules.SplatBaseModule.module_name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">module_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></em><a class="headerlink" href="#splatkit.modules.SplatBaseModule.module_name" title="Link to this definition">¶</a></dt>
+<dd><p>Return the name of this module for logging.
+Override in subclasses to provide custom names.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="splatkit.modules.SplatBaseModule.on_setup">
+<span class="sig-name descname"><span class="pre">on_setup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logger</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">renderer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_provider</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss_fn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">densification</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modules</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_rank</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scene_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/splatkit/modules/base.html#SplatBaseModule.on_setup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.modules.SplatBaseModule.on_setup" title="Link to this definition">¶</a></dt>
+<dd><p>Setup hook.</p>
+<p>This hook will be called before training loop starts on the each rank.
+Use this to initialize the module.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>logger</strong> (<em>SplatLogger</em>) – Logger instance for structured logging</p></li>
+<li><p><strong>renderer</strong> (<a class="reference internal" href="splatkit.renderer.html#splatkit.renderer.SplatRenderer" title="splatkit.renderer.SplatRenderer"><em>SplatRenderer</em></a><em>[</em><em>SplatRenderPayloadT</em><em>]</em>) – The renderer instance</p></li>
+<li><p><strong>data_provider</strong> (<a class="reference internal" href="splatkit.data_provider.html#splatkit.data_provider.SplatDataProvider" title="splatkit.data_provider.SplatDataProvider"><em>SplatDataProvider</em></a><em>[</em><em>SplatRenderPayloadT</em><em>, </em><em>Any</em><em>]</em>) – The data provider instance</p></li>
+<li><p><strong>loss_fn</strong> (<a class="reference internal" href="splatkit.loss_fn.html#splatkit.loss_fn.SplatLossFn" title="splatkit.loss_fn.SplatLossFn"><em>SplatLossFn</em></a><em>[</em><em>SplatRenderPayloadT</em><em>]</em>) – The loss function instance</p></li>
+<li><p><strong>densification</strong> (<em>SplatDensification</em><em>[</em><em>SplatRenderPayloadT</em><em>]</em>) – The densification strategy instance</p></li>
+<li><p><strong>modules</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.14)"><em>Sequence</em></a><em>[</em><a class="reference internal" href="#splatkit.modules.SplatBaseModule" title="splatkit.modules.SplatBaseModule"><em>SplatBaseModule</em></a><em>[</em><em>SplatRenderPayloadT</em><em>]</em><em>]</em>) – List of all modules (including this one)</p></li>
+<li><p><strong>max_steps</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Maximum number of training steps</p></li>
+<li><p><strong>world_rank</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – The current world rank</p></li>
+<li><p><strong>world_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – The current world size</p></li>
+<li><p><strong>scene_scale</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – The scene scale factor</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="splatkit.modules.SplatBaseModule.pre_step">
+<span class="sig-name descname"><span class="pre">pre_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logger</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_frames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">training_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">masks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_rank</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/splatkit/modules/base.html#SplatBaseModule.pre_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.modules.SplatBaseModule.pre_step" title="Link to this definition">¶</a></dt>
+<dd><p>Hook invoked before a step has been executed.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="splatkit.modules.SplatBaseModule.pre_compute_loss">
+<span class="sig-name descname"><span class="pre">pre_compute_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logger</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rendered_frames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_frames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">training_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rend_out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">masks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_rank</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/splatkit/modules/base.html#SplatBaseModule.pre_compute_loss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.modules.SplatBaseModule.pre_compute_loss" title="Link to this definition">¶</a></dt>
+<dd><p>Hook invoked before a loss has been computed.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="splatkit.modules.SplatBaseModule.post_compute_loss">
+<span class="sig-name descname"><span class="pre">post_compute_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logger</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">training_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">masks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_rank</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/splatkit/modules/base.html#SplatBaseModule.post_compute_loss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.modules.SplatBaseModule.post_compute_loss" title="Link to this definition">¶</a></dt>
+<dd><p>Hook invoked before a loss has been backwarded.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="splatkit.modules.SplatBaseModule.on_optimize">
+<span class="sig-name descname"><span class="pre">on_optimize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logger</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">training_state</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/splatkit/modules/base.html#SplatBaseModule.on_optimize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.modules.SplatBaseModule.on_optimize" title="Link to this definition">¶</a></dt>
+<dd><p>Hook invoked after an optimizer has been stepped.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="splatkit.modules.SplatBaseModule.post_step">
+<span class="sig-name descname"><span class="pre">post_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logger</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rendered_frames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_frames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">training_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rend_out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">masks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_rank</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/splatkit/modules/base.html#SplatBaseModule.post_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.modules.SplatBaseModule.post_step" title="Link to this definition">¶</a></dt>
+<dd><p>Hook invoked after a step has been executed.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="splatkit.modules.SplatBaseModule.on_cleanup">
+<span class="sig-name descname"><span class="pre">on_cleanup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logger</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_rank</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/splatkit/modules/base.html#SplatBaseModule.on_cleanup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.modules.SplatBaseModule.on_cleanup" title="Link to this definition">¶</a></dt>
+<dd><p>Hook invoked after the training loop has finished.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="splatkit.modules.SplatBaseModule.render_payload_T">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">render_payload_T</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.14)"><span class="pre">type</span></a></em><a class="headerlink" href="#splatkit.modules.SplatBaseModule.render_payload_T" title="Link to this definition">¶</a></dt>
+<dd><p>Return the concrete SplatRenderPayload type this module operates on.</p>
+<p>Works for both:
+1. Subclass specialization:</p>
+<blockquote>
+<div><p>class X(SplatBaseModule[Payload])</p>
+</div></blockquote>
+<ol class="arabic simple" start="2">
+<li><dl class="simple">
+<dt>Instance specialization:</dt><dd><p>X[Payload]()</p>
+</dd>
+</dl>
+</li>
+</ol>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This property can only be called after __init__ is finished,
+otherwise __orig_class__ is not available and the type cannot be determined
+in case of instance specialization.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="splatkit.modules.SplatRenderPayload">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">splatkit.modules.</span></span><span class="sig-name descname"><span class="pre">SplatRenderPayload</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">renders</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alphas</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radii</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">depths</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_cameras</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_batches</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">means2d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gaussian_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">depths_expected</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">depths_accumulated</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/splatkit/modules/frame.html#SplatRenderPayload"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.modules.SplatRenderPayload" title="Link to this definition">¶</a></dt>
+<dd><p>Metadata for rendered images.</p>
+<dl class="field-list simple">
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="splatkit.modules.SplatRenderPayload.renders">
+<span class="sig-name descname"><span class="pre">renders</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.10)"><span class="pre">Tensor</span></a></em><a class="headerlink" href="#splatkit.modules.SplatRenderPayload.renders" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="splatkit.modules.SplatRenderPayload.alphas">
+<span class="sig-name descname"><span class="pre">alphas</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.10)"><span class="pre">Tensor</span></a></em><a class="headerlink" href="#splatkit.modules.SplatRenderPayload.alphas" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="splatkit.modules.SplatRenderPayload.radii">
+<span class="sig-name descname"><span class="pre">radii</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.10)"><span class="pre">Tensor</span></a></em><a class="headerlink" href="#splatkit.modules.SplatRenderPayload.radii" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="splatkit.modules.SplatRenderPayload.depths">
+<span class="sig-name descname"><span class="pre">depths</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.10)"><span class="pre">Tensor</span></a></em><a class="headerlink" href="#splatkit.modules.SplatRenderPayload.depths" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="splatkit.modules.SplatRenderPayload.n_cameras">
+<span class="sig-name descname"><span class="pre">n_cameras</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></em><a class="headerlink" href="#splatkit.modules.SplatRenderPayload.n_cameras" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="splatkit.modules.SplatRenderPayload.n_batches">
+<span class="sig-name descname"><span class="pre">n_batches</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></em><a class="headerlink" href="#splatkit.modules.SplatRenderPayload.n_batches" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="splatkit.modules.SplatRenderPayload.width">
+<span class="sig-name descname"><span class="pre">width</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></em><a class="headerlink" href="#splatkit.modules.SplatRenderPayload.width" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="splatkit.modules.SplatRenderPayload.height">
+<span class="sig-name descname"><span class="pre">height</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></em><a class="headerlink" href="#splatkit.modules.SplatRenderPayload.height" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="splatkit.modules.SplatRenderPayload.means2d">
+<span class="sig-name descname"><span class="pre">means2d</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.10)"><span class="pre">Tensor</span></a></em><a class="headerlink" href="#splatkit.modules.SplatRenderPayload.means2d" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="splatkit.modules.SplatRenderPayload.gaussian_ids">
+<span class="sig-name descname"><span class="pre">gaussian_ids</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.10)"><span class="pre">Tensor</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#splatkit.modules.SplatRenderPayload.gaussian_ids" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="splatkit.modules.SplatRenderPayload.depths_expected">
+<span class="sig-name descname"><span class="pre">depths_expected</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.10)"><span class="pre">Tensor</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#splatkit.modules.SplatRenderPayload.depths_expected" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="splatkit.modules.SplatRenderPayload.depths_accumulated">
+<span class="sig-name descname"><span class="pre">depths_accumulated</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.10)"><span class="pre">Tensor</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#splatkit.modules.SplatRenderPayload.depths_accumulated" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="splatkit.modules.SplatRenderPayload.keys">
+<span class="sig-name descname"><span class="pre">keys</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/splatkit/modules/frame.html#SplatRenderPayload.keys"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.modules.SplatRenderPayload.keys" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="splatkit.modules.SplatRenderPayload.values">
+<span class="sig-name descname"><span class="pre">values</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/splatkit/modules/frame.html#SplatRenderPayload.values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.modules.SplatRenderPayload.values" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="splatkit.modules.SplatRenderPayload.items">
+<span class="sig-name descname"><span class="pre">items</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/splatkit/modules/frame.html#SplatRenderPayload.items"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.modules.SplatRenderPayload.items" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="splatkit.modules.SplatRenderPayload.to_dict">
+<span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/splatkit/modules/frame.html#SplatRenderPayload.to_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.modules.SplatRenderPayload.to_dict" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="splatkit.modules.SplatRenderPayload.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">renders</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alphas</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radii</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">depths</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_cameras</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_batches</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">means2d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gaussian_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">depths_expected</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">depths_accumulated</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#splatkit.modules.SplatRenderPayload.__init__" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="splatkit.modules.SplatModuleComposite">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">splatkit.modules.</span></span><span class="sig-name descname"><span class="pre">SplatModuleComposite</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">modules</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/splatkit/modules/composite.html#SplatModuleComposite"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.modules.SplatModuleComposite" title="Link to this definition">¶</a></dt>
+<dd><p>A composite Splat module that forwards hook calls to a list of modules
+in order.</p>
+<dl class="field-list simple">
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="splatkit.modules.SplatModuleComposite.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">modules</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/splatkit/modules/composite.html#SplatModuleComposite.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.modules.SplatModuleComposite.__init__" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="splatkit.modules.SplatModuleComposite.on_setup">
+<span class="sig-name descname"><span class="pre">on_setup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logger</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">renderer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_provider</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss_fn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">densification</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modules</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_rank</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scene_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/splatkit/modules/composite.html#SplatModuleComposite.on_setup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.modules.SplatModuleComposite.on_setup" title="Link to this definition">¶</a></dt>
+<dd><p>Setup hook.</p>
+<p>This hook will be called before training loop starts on the each rank.
+Use this to initialize the module.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>logger</strong> (<em>SplatLogger</em>) – Logger instance for structured logging</p></li>
+<li><p><strong>renderer</strong> (<a class="reference internal" href="splatkit.renderer.html#splatkit.renderer.SplatRenderer" title="splatkit.renderer.SplatRenderer"><em>SplatRenderer</em></a><em>[</em><em>SplatRenderPayloadT</em><em>]</em>) – The renderer instance</p></li>
+<li><p><strong>data_provider</strong> (<a class="reference internal" href="splatkit.data_provider.html#splatkit.data_provider.SplatDataProvider" title="splatkit.data_provider.SplatDataProvider"><em>SplatDataProvider</em></a><em>[</em><em>SplatRenderPayloadT</em><em>, </em><em>Any</em><em>]</em>) – The data provider instance</p></li>
+<li><p><strong>loss_fn</strong> (<a class="reference internal" href="splatkit.loss_fn.html#splatkit.loss_fn.SplatLossFn" title="splatkit.loss_fn.SplatLossFn"><em>SplatLossFn</em></a><em>[</em><em>SplatRenderPayloadT</em><em>]</em>) – The loss function instance</p></li>
+<li><p><strong>densification</strong> (<em>SplatDensification</em><em>[</em><em>SplatRenderPayloadT</em><em>]</em>) – The densification strategy instance</p></li>
+<li><p><strong>modules</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.14)"><em>Sequence</em></a><em>[</em><a class="reference internal" href="#splatkit.modules.SplatBaseModule" title="splatkit.modules.SplatBaseModule"><em>SplatBaseModule</em></a><em>[</em><em>SplatRenderPayloadT</em><em>]</em><em>]</em>) – List of all modules (including this one)</p></li>
+<li><p><strong>max_steps</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Maximum number of training steps</p></li>
+<li><p><strong>world_rank</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – The current world rank</p></li>
+<li><p><strong>world_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – The current world size</p></li>
+<li><p><strong>scene_scale</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – The scene scale factor</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="splatkit.modules.SplatModuleComposite.pre_step">
+<span class="sig-name descname"><span class="pre">pre_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logger</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_frames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">training_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">masks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_rank</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/splatkit/modules/composite.html#SplatModuleComposite.pre_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.modules.SplatModuleComposite.pre_step" title="Link to this definition">¶</a></dt>
+<dd><p>Hook invoked before a step has been executed.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="splatkit.modules.SplatModuleComposite.pre_compute_loss">
+<span class="sig-name descname"><span class="pre">pre_compute_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logger</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rendered_frames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_frames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">training_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rend_out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">masks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_rank</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/splatkit/modules/composite.html#SplatModuleComposite.pre_compute_loss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.modules.SplatModuleComposite.pre_compute_loss" title="Link to this definition">¶</a></dt>
+<dd><p>Hook invoked before a loss has been computed.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="splatkit.modules.SplatModuleComposite.post_compute_loss">
+<span class="sig-name descname"><span class="pre">post_compute_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logger</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">training_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">masks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_rank</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/splatkit/modules/composite.html#SplatModuleComposite.post_compute_loss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.modules.SplatModuleComposite.post_compute_loss" title="Link to this definition">¶</a></dt>
+<dd><p>Hook invoked before a loss has been backwarded.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="splatkit.modules.SplatModuleComposite.on_optimize">
+<span class="sig-name descname"><span class="pre">on_optimize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logger</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">training_state</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/splatkit/modules/composite.html#SplatModuleComposite.on_optimize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.modules.SplatModuleComposite.on_optimize" title="Link to this definition">¶</a></dt>
+<dd><p>Hook invoked after an optimizer has been stepped.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="splatkit.modules.SplatModuleComposite.post_step">
+<span class="sig-name descname"><span class="pre">post_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logger</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rendered_frames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_frames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">training_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rend_out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">masks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_rank</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/splatkit/modules/composite.html#SplatModuleComposite.post_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.modules.SplatModuleComposite.post_step" title="Link to this definition">¶</a></dt>
+<dd><p>Hook invoked after a step has been executed.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="splatkit.modules.SplatModuleComposite.on_cleanup">
+<span class="sig-name descname"><span class="pre">on_cleanup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logger</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_rank</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/splatkit/modules/composite.html#SplatModuleComposite.on_cleanup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.modules.SplatModuleComposite.on_cleanup" title="Link to this definition">¶</a></dt>
+<dd><p>Hook invoked after the training loop has finished.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="splatkit.modules.SplatEvaluator">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">splatkit.modules.</span></span><span class="sig-name descname"><span class="pre">SplatEvaluator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eval_steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_images</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_stats</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lpips_net</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'alex'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_to_console</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/splatkit/modules/evaluator.html#SplatEvaluator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.modules.SplatEvaluator" title="Link to this definition">¶</a></dt>
+<dd><p>Module for evaluating reconstruction quality on validation set.</p>
+<p>Renders validation images and computes standard 3D reconstruction metrics:
+- PSNR (Peak Signal-to-Noise Ratio): Higher is better, measures pixel-level accuracy
+- SSIM (Structural Similarity): 0-1, measures perceptual similarity
+- LPIPS (Learned Perceptual Image Patch Similarity): Lower is better, perceptual distance</p>
+<p>Saves metrics to JSON files and optionally saves comparison images.</p>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">splatkit.modules</span><span class="w"> </span><span class="kn">import</span> <span class="n">SplatEvaluator</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">evaluator</span> <span class="o">=</span> <span class="n">SplatEvaluator</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">output_dir</span><span class="o">=</span><span class="s2">&quot;results/eval&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">eval_steps</span><span class="o">=</span><span class="p">[</span><span class="mi">7_000</span><span class="p">,</span> <span class="mi">15_000</span><span class="p">,</span> <span class="mi">30_000</span><span class="p">],</span>  <span class="c1"># Evaluate at these steps</span>
+<span class="gp">... </span>    <span class="n">save_images</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># Save GT vs Rendered comparisons</span>
+<span class="gp">... </span>    <span class="n">save_stats</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>   <span class="c1"># Save metrics.json</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Add to trainer&#39;s modules list</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Metrics automatically computed and saved at specified steps</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<ul class="simple">
+<li><p>Evaluation happens on GPU and may slow down training</p></li>
+<li><p>LPIPS requires downloading pretrained weights on first use</p></li>
+<li><p>Only runs on rank 0 in distributed training</p></li>
+<li><p>Set save_images=False for faster evaluation (images can be large)</p></li>
+</ul>
+</div>
+<dl class="field-list simple">
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="splatkit.modules.SplatEvaluator.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eval_steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_images</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_stats</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lpips_net</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'alex'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_to_console</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/splatkit/modules/evaluator.html#SplatEvaluator.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.modules.SplatEvaluator.__init__" title="Link to this definition">¶</a></dt>
+<dd><p>Initialize the evaluator module.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>output_dir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Directory to save results (required)</p></li>
+<li><p><strong>eval_steps</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – Steps at which to run evaluation (e.g., [7000, 30000])</p></li>
+<li><p><strong>save_images</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – Save rendered vs GT image comparisons (default: False)</p></li>
+<li><p><strong>save_stats</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – Save metrics to JSON files (default: True)</p></li>
+<li><p><strong>lpips_net</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.14)"><em>Literal</em></a><em>[</em><em>'alex'</em><em>, </em><em>'vgg'</em><em>]</em>) – LPIPS network: “alex” (faster) or “vgg” (default: “alex”)</p></li>
+<li><p><strong>log_to_console</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – Print metrics to terminal (default: True)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="splatkit.modules.SplatEvaluator.on_setup">
+<span class="sig-name descname"><span class="pre">on_setup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logger</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">renderer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_provider</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss_fn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">densification</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modules</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_rank</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scene_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/splatkit/modules/evaluator.html#SplatEvaluator.on_setup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.modules.SplatEvaluator.on_setup" title="Link to this definition">¶</a></dt>
+<dd><p>Initialize metrics with explicit renderer and data provider.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="splatkit.modules.SplatEvaluator.post_step">
+<span class="sig-name descname"><span class="pre">post_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logger</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rendered_frames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_frames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">training_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rend_out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">masks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_rank</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/splatkit/modules/evaluator.html#SplatEvaluator.post_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.modules.SplatEvaluator.post_step" title="Link to this definition">¶</a></dt>
+<dd><p>Run evaluation if we’re at an eval step.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="splatkit.modules.SplatExporter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">splatkit.modules.</span></span><span class="sig-name descname"><span class="pre">SplatExporter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">export_steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_splat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_ckpt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">splat_format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ply'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/splatkit/modules/exporter.html#SplatExporter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.modules.SplatExporter" title="Link to this definition">¶</a></dt>
+<dd><p>Module for exporting splat models and checkpoints during training.</p>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">splatkit.modules</span><span class="w"> </span><span class="kn">import</span> <span class="n">SplatExporter</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">exporter</span> <span class="o">=</span> <span class="n">SplatExporter</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">output_dir</span><span class="o">=</span><span class="s2">&quot;results/output&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">export_steps</span><span class="o">=</span><span class="p">[</span><span class="mi">7_000</span><span class="p">,</span> <span class="mi">15_000</span><span class="p">,</span> <span class="mi">30_000</span><span class="p">],</span>
+<span class="gp">... </span>    <span class="n">save_splat</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># Save .ply files</span>
+<span class="gp">... </span>    <span class="n">save_ckpt</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>   <span class="c1"># Save training checkpoints</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Add to trainer&#39;s modules list</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Models saved to:</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1">#   results/output/splats/step_007000.ply</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1">#   results/output/ckpts/step_007000.ckpt</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<ul class="simple">
+<li><p>Only rank 0 saves files in distributed training</p></li>
+<li><p>Creates output_dir automatically if it doesn’t exist</p></li>
+</ul>
+</div>
+<dl class="field-list simple">
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="splatkit.modules.SplatExporter.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">export_steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_splat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_ckpt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">splat_format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ply'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/splatkit/modules/exporter.html#SplatExporter.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.modules.SplatExporter.__init__" title="Link to this definition">¶</a></dt>
+<dd><p>Initialize the exporter module.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>output_dir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Directory to save exports (required)</p></li>
+<li><p><strong>export_steps</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – Training steps at which to save (default: [])</p></li>
+<li><p><strong>save_splat</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – Save splat model as .ply file (default: True)</p></li>
+<li><p><strong>save_ckpt</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – Save full checkpoint for resuming training (default: True)</p></li>
+<li><p><strong>splat_format</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.14)"><em>Literal</em></a><em>[</em><em>'ply'</em><em>]</em>) – Export format for splat models (default: “ply”)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="splatkit.modules.SplatExporter.on_setup">
+<span class="sig-name descname"><span class="pre">on_setup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logger</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">renderer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_provider</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss_fn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">densification</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modules</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_rank</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scene_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/splatkit/modules/exporter.html#SplatExporter.on_setup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.modules.SplatExporter.on_setup" title="Link to this definition">¶</a></dt>
+<dd><p>Setup hook.</p>
+<p>This hook will be called before training loop starts on the each rank.
+Use this to initialize the module.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>logger</strong> (<em>SplatLogger</em>) – Logger instance for structured logging</p></li>
+<li><p><strong>renderer</strong> (<a class="reference internal" href="../modules/base.html#splatkit.modules.base.SplatBaseModule" title="splatkit.modules.base.SplatBaseModule"><em>SplatBaseModule</em></a><em>[</em><em>SplatRenderPayloadT</em><em>]</em>) – The renderer instance</p></li>
+<li><p><strong>data_provider</strong> (<a class="reference internal" href="../modules/base.html#splatkit.modules.base.SplatBaseModule" title="splatkit.modules.base.SplatBaseModule"><em>SplatBaseModule</em></a><em>[</em><em>SplatRenderPayloadT</em><em>]</em>) – The data provider instance</p></li>
+<li><p><strong>loss_fn</strong> (<a class="reference internal" href="../modules/base.html#splatkit.modules.base.SplatBaseModule" title="splatkit.modules.base.SplatBaseModule"><em>SplatBaseModule</em></a><em>[</em><em>SplatRenderPayloadT</em><em>]</em>) – The loss function instance</p></li>
+<li><p><strong>densification</strong> (<a class="reference internal" href="../modules/base.html#splatkit.modules.base.SplatBaseModule" title="splatkit.modules.base.SplatBaseModule"><em>SplatBaseModule</em></a><em>[</em><em>SplatRenderPayloadT</em><em>]</em>) – The densification strategy instance</p></li>
+<li><p><strong>modules</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.14)"><em>Sequence</em></a><em>[</em><a class="reference internal" href="../modules/base.html#splatkit.modules.base.SplatBaseModule" title="splatkit.modules.base.SplatBaseModule"><em>SplatBaseModule</em></a><em>[</em><em>SplatRenderPayloadT</em><em>]</em><em>]</em>) – List of all modules (including this one)</p></li>
+<li><p><strong>max_steps</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Maximum number of training steps</p></li>
+<li><p><strong>world_rank</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – The current world rank</p></li>
+<li><p><strong>world_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – The current world size</p></li>
+<li><p><strong>scene_scale</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – The scene scale factor</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="splatkit.modules.SplatExporter.post_step">
+<span class="sig-name descname"><span class="pre">post_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logger</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rendered_frames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_frames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">training_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rend_out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">masks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_rank</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/splatkit/modules/exporter.html#SplatExporter.post_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.modules.SplatExporter.post_step" title="Link to this definition">¶</a></dt>
+<dd><p>Hook invoked after a step has been executed.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="splatkit.modules.SplatProgressTracker">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">splatkit.modules.</span></span><span class="sig-name descname"><span class="pre">SplatProgressTracker</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">update_every</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/splatkit/modules/progress_tracker.html#SplatProgressTracker"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.modules.SplatProgressTracker" title="Link to this definition">¶</a></dt>
+<dd><p>Progress tracking module for training visualization.</p>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">splatkit.modules</span><span class="w"> </span><span class="kn">import</span> <span class="n">SplatProgressTracker</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">progress_tracker</span> <span class="o">=</span> <span class="n">SplatProgressTracker</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">update_every</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>  <span class="c1"># Update progress bar every 10 steps</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Add to trainer&#39;s modules list</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Progress bar will be updated every 10 steps</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Showing training progress, loss, and metrics</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="splatkit.modules.SplatProgressTracker.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">update_every</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/splatkit/modules/progress_tracker.html#SplatProgressTracker.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.modules.SplatProgressTracker.__init__" title="Link to this definition">¶</a></dt>
+<dd><p>Initialize progress tracker.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>update_every</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Update progress bar every N steps (default: 1)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="splatkit.modules.SplatProgressTracker.on_setup">
+<span class="sig-name descname"><span class="pre">on_setup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logger</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">renderer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_provider</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss_fn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">densification</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modules</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_rank</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scene_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/splatkit/modules/progress_tracker.html#SplatProgressTracker.on_setup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.modules.SplatProgressTracker.on_setup" title="Link to this definition">¶</a></dt>
+<dd><p>Setup progress tracker.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="splatkit.modules.SplatProgressTracker.post_step">
+<span class="sig-name descname"><span class="pre">post_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logger</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rendered_frames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_frames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">training_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rend_out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">masks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_rank</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/splatkit/modules/progress_tracker.html#SplatProgressTracker.post_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.modules.SplatProgressTracker.post_step" title="Link to this definition">¶</a></dt>
+<dd><p>Update progress bar after each training step.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="splatkit.modules.SplatProgressTracker.post_compute_loss">
+<span class="sig-name descname"><span class="pre">post_compute_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logger</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">training_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">masks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_rank</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/splatkit/modules/progress_tracker.html#SplatProgressTracker.post_compute_loss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.modules.SplatProgressTracker.post_compute_loss" title="Link to this definition">¶</a></dt>
+<dd><p>Hook before loss backward - can access loss from training_state if needed.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="splatkit.modules.SplatProgressTracker.on_cleanup">
+<span class="sig-name descname"><span class="pre">on_cleanup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logger</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_rank</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/splatkit/modules/progress_tracker.html#SplatProgressTracker.on_cleanup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.modules.SplatProgressTracker.on_cleanup" title="Link to this definition">¶</a></dt>
+<dd><p>Close progress bar after training.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="splatkit.modules.SplatTensorboard">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">splatkit.modules.</span></span><span class="sig-name descname"><span class="pre">SplatTensorboard</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_interval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_images</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_lr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_memory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comment</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable_server</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6060</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/splatkit/modules/tensorboard.html#SplatTensorboard"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.modules.SplatTensorboard" title="Link to this definition">¶</a></dt>
+<dd><p>Tensorboard logging module for splatkit.</p>
+<p>Logs training metrics, memory usage, and optionally images during training.</p>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">splatkit.modules</span><span class="w"> </span><span class="kn">import</span> <span class="n">SplatTensorboard</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tensorboard</span> <span class="o">=</span> <span class="n">SplatTensorboard</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">output_dir</span><span class="o">=</span><span class="s2">&quot;results/garden/tb&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">log_interval</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>       <span class="c1"># Log metrics every 100 steps</span>
+<span class="gp">... </span>    <span class="n">log_images</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>       <span class="c1"># Don&#39;t log images by default</span>
+<span class="gp">... </span>    <span class="n">log_lr</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>            <span class="c1"># Log learning rates</span>
+<span class="gp">... </span>    <span class="n">enable_server</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>     <span class="c1"># Auto-start TensorBoard server</span>
+<span class="gp">... </span>    <span class="n">port</span><span class="o">=</span><span class="mi">6060</span><span class="p">,</span>              <span class="c1"># Access at http://localhost:6060</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Add to trainer&#39;s modules list</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Then open http://localhost:6006 in browser</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="splatkit.modules.SplatTensorboard.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_interval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_images</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_lr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_memory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comment</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable_server</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6060</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/splatkit/modules/tensorboard.html#SplatTensorboard.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.modules.SplatTensorboard.__init__" title="Link to this definition">¶</a></dt>
+<dd><p>Initialize tensorboard logger.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>log_dir</strong> – Directory to save tensorboard logs (required)</p></li>
+<li><p><strong>log_interval</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Log metrics every N steps (default: 100)</p></li>
+<li><p><strong>log_images</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – Whether to log rendered images (GT | Rendered comparison)</p></li>
+<li><p><strong>log_lr</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – Whether to log learning rates for each optimizer</p></li>
+<li><p><strong>log_memory</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – Whether to log GPU memory usage</p></li>
+<li><p><strong>comment</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Optional comment to append to log directory name</p></li>
+<li><p><strong>enable_server</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – Whether to auto-start TensorBoard server (default: False)</p></li>
+<li><p><strong>port</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Port for TensorBoard server if enabled (default: 6060)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="splatkit.modules.SplatTensorboard.on_setup">
+<span class="sig-name descname"><span class="pre">on_setup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logger</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">renderer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_provider</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss_fn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">densification</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modules</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_rank</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scene_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/splatkit/modules/tensorboard.html#SplatTensorboard.on_setup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.modules.SplatTensorboard.on_setup" title="Link to this definition">¶</a></dt>
+<dd><p>Initialize tensorboard writer.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="splatkit.modules.SplatTensorboard.post_compute_loss">
+<span class="sig-name descname"><span class="pre">post_compute_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logger</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">training_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">masks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_rank</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/splatkit/modules/tensorboard.html#SplatTensorboard.post_compute_loss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.modules.SplatTensorboard.post_compute_loss" title="Link to this definition">¶</a></dt>
+<dd><p>Store loss for logging in post_step.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="splatkit.modules.SplatTensorboard.post_step">
+<span class="sig-name descname"><span class="pre">post_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logger</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rendered_frames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_frames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">training_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rend_out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">masks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_rank</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/splatkit/modules/tensorboard.html#SplatTensorboard.post_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.modules.SplatTensorboard.post_step" title="Link to this definition">¶</a></dt>
+<dd><p>Log metrics to tensorboard after each training step.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="splatkit.modules.SplatTensorboard.log_scalar">
+<span class="sig-name descname"><span class="pre">log_scalar</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tag</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/splatkit/modules/tensorboard.html#SplatTensorboard.log_scalar"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.modules.SplatTensorboard.log_scalar" title="Link to this definition">¶</a></dt>
+<dd><p>Log a custom scalar metric.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tag</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Metric name (e.g., “custom/my_metric”)</p></li>
+<li><p><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Metric value</p></li>
+<li><p><strong>step</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Current training step</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="splatkit.modules.SplatTensorboard.log_histogram">
+<span class="sig-name descname"><span class="pre">log_histogram</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tag</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/splatkit/modules/tensorboard.html#SplatTensorboard.log_histogram"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.modules.SplatTensorboard.log_histogram" title="Link to this definition">¶</a></dt>
+<dd><p>Log a histogram of values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tag</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Histogram name (e.g., “gaussian_params/scales”)</p></li>
+<li><p><strong>values</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.10)"><em>Tensor</em></a><em> | </em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>ndarray</em></a>) – Values to histogram</p></li>
+<li><p><strong>step</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Current training step</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="splatkit.modules.SplatTensorboard.log_image">
+<span class="sig-name descname"><span class="pre">log_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tag</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/splatkit/modules/tensorboard.html#SplatTensorboard.log_image"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.modules.SplatTensorboard.log_image" title="Link to this definition">¶</a></dt>
+<dd><p>Log an image.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tag</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Image name (e.g., “debug/depth_map”)</p></li>
+<li><p><strong>image</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.10)"><em>Tensor</em></a><em> | </em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>ndarray</em></a>) – Image tensor in [C, H, W] or [H, W, C] format</p></li>
+<li><p><strong>step</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Current training step</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="splatkit.modules.SplatTensorboard.on_cleanup">
+<span class="sig-name descname"><span class="pre">on_cleanup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logger</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_rank</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/splatkit/modules/tensorboard.html#SplatTensorboard.on_cleanup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.modules.SplatTensorboard.on_cleanup" title="Link to this definition">¶</a></dt>
+<dd><p>Close tensorboard writer after training.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="splatkit.modules.SplatViewer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">splatkit.modules.</span></span><span class="sig-name descname"><span class="pre">SplatViewer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">port</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8080</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">update_interval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'training'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/splatkit/modules/viewer.html#SplatViewer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.modules.SplatViewer" title="Link to this definition">¶</a></dt>
+<dd><p>Interactive real-time viewer for visualizing training progress.</p>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">splatkit.modules</span><span class="w"> </span><span class="kn">import</span> <span class="n">SplatViewer</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">viewer</span> <span class="o">=</span> <span class="n">SplatViewer</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">port</span><span class="o">=</span><span class="mi">8080</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">update_interval</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>  <span class="c1"># Update every 5 steps</span>
+<span class="gp">... </span>    <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;training&quot;</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Add to trainer&#39;s modules list</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Then open http://localhost:8080 in browser</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<ul class="simple">
+<li><p>Viewer only runs on rank 0 in distributed training</p></li>
+<li><p>High update frequency (interval=1) may slow down training</p></li>
+<li><p>Rendering happens on GPU; may compete with training for memory</p></li>
+</ul>
+</div>
+<dl class="field-list simple">
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="splatkit.modules.SplatViewer.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">port</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8080</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">update_interval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'training'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/splatkit/modules/viewer.html#SplatViewer.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.modules.SplatViewer.__init__" title="Link to this definition">¶</a></dt>
+<dd><p>Initialize the viewer module.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>port</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Web server port number (default: 8080)</p></li>
+<li><p><strong>output_dir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em> | </em><em>None</em>) – Directory to save screenshots and exports; if None, nothing will be saved</p></li>
+<li><p><strong>update_interval</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Update viewer every N training steps (default: 1)</p></li>
+<li><p><strong>mode</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.14)"><em>Literal</em></a><em>[</em><em>'training'</em><em>, </em><em>'rendering'</em><em>]</em>) – Viewer mode:
+- “training”: Updates during training, shows live progress
+- “rendering”: Static viewing, no training updates</p></li>
+<li><p><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – Print viser server logs (default: False)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="splatkit.modules.SplatViewer.module_name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">module_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></em><a class="headerlink" href="#splatkit.modules.SplatViewer.module_name" title="Link to this definition">¶</a></dt>
+<dd><p>Return the name of this module for logging.
+Override in subclasses to provide custom names.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="splatkit.modules.SplatViewer.on_setup">
+<span class="sig-name descname"><span class="pre">on_setup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logger</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">renderer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_provider</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss_fn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">densification</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modules</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_rank</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scene_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/splatkit/modules/viewer.html#SplatViewer.on_setup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.modules.SplatViewer.on_setup" title="Link to this definition">¶</a></dt>
+<dd><p>Setup the viewer server and initialize all components.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="splatkit.modules.SplatViewer.pre_step">
+<span class="sig-name descname"><span class="pre">pre_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logger</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_frames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">training_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">masks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_rank</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/splatkit/modules/viewer.html#SplatViewer.pre_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.modules.SplatViewer.pre_step" title="Link to this definition">¶</a></dt>
+<dd><p>Update viewer state before training step.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="splatkit.modules.SplatViewer.post_step">
+<span class="sig-name descname"><span class="pre">post_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logger</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rendered_frames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_frames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">training_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rend_out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">masks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_rank</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/splatkit/modules/viewer.html#SplatViewer.post_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.modules.SplatViewer.post_step" title="Link to this definition">¶</a></dt>
+<dd><p>Update viewer after training step.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="splatkit.modules.SplatViewer.on_cleanup">
+<span class="sig-name descname"><span class="pre">on_cleanup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logger</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_rank</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/splatkit/modules/viewer.html#SplatViewer.on_cleanup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.modules.SplatViewer.on_cleanup" title="Link to this definition">¶</a></dt>
+<dd><p>Cleanup viewer resources.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="splatkit.modules.SplatViewerTabState">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">splatkit.modules.</span></span><span class="sig-name descname"><span class="pre">SplatViewerTabState</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_train_rays_per_sec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_view_rays_per_sec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">preview_render</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">preview_fov</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">preview_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">preview_aspect</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">viewer_res</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2048</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">viewer_width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1280</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">viewer_height</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">960</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">render_width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1280</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">render_height</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">960</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/splatkit/modules/viewer.html#SplatViewerTabState"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.modules.SplatViewerTabState" title="Link to this definition">¶</a></dt>
+<dd><p>Extended render tab state with gsplat-specific controls.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Only includes viewer-controllable parameters.
+Renderer configuration (like anti-aliasing, distortion loss, etc.)
+is fixed at renderer construction and cannot be changed here.</p>
+</div>
+<dl class="field-list simple">
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="splatkit.modules.SplatViewerTabState.total_gs_count">
+<span class="sig-name descname"><span class="pre">total_gs_count</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#splatkit.modules.SplatViewerTabState.total_gs_count" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="splatkit.modules.SplatViewerTabState.rendered_gs_count">
+<span class="sig-name descname"><span class="pre">rendered_gs_count</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#splatkit.modules.SplatViewerTabState.rendered_gs_count" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="splatkit.modules.SplatViewerTabState.max_sh_degree">
+<span class="sig-name descname"><span class="pre">max_sh_degree</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></em><a class="headerlink" href="#splatkit.modules.SplatViewerTabState.max_sh_degree" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="splatkit.modules.SplatViewerTabState.near_plane">
+<span class="sig-name descname"><span class="pre">near_plane</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.01</span></em><a class="headerlink" href="#splatkit.modules.SplatViewerTabState.near_plane" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="splatkit.modules.SplatViewerTabState.far_plane">
+<span class="sig-name descname"><span class="pre">far_plane</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">100.0</span></em><a class="headerlink" href="#splatkit.modules.SplatViewerTabState.far_plane" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="splatkit.modules.SplatViewerTabState.radius_clip">
+<span class="sig-name descname"><span class="pre">radius_clip</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.0</span></em><a class="headerlink" href="#splatkit.modules.SplatViewerTabState.radius_clip" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="splatkit.modules.SplatViewerTabState.eps2d">
+<span class="sig-name descname"><span class="pre">eps2d</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.3</span></em><a class="headerlink" href="#splatkit.modules.SplatViewerTabState.eps2d" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="splatkit.modules.SplatViewerTabState.backgrounds">
+<span class="sig-name descname"><span class="pre">backgrounds</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.14)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">(0,</span> <span class="pre">0,</span> <span class="pre">0)</span></em><a class="headerlink" href="#splatkit.modules.SplatViewerTabState.backgrounds" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="splatkit.modules.SplatViewerTabState.render_mode">
+<span class="sig-name descname"><span class="pre">render_mode</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'rgb'</span></em><a class="headerlink" href="#splatkit.modules.SplatViewerTabState.render_mode" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="splatkit.modules.SplatViewerTabState.normalize_nearfar">
+<span class="sig-name descname"><span class="pre">normalize_nearfar</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#splatkit.modules.SplatViewerTabState.normalize_nearfar" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="splatkit.modules.SplatViewerTabState.inverse">
+<span class="sig-name descname"><span class="pre">inverse</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#splatkit.modules.SplatViewerTabState.inverse" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="splatkit.modules.SplatViewerTabState.colormap">
+<span class="sig-name descname"><span class="pre">colormap</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.14)"><span class="pre">Literal</span></a><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'turbo'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'viridis'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'magma'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'inferno'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'cividis'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'gray'</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'turbo'</span></em><a class="headerlink" href="#splatkit.modules.SplatViewerTabState.colormap" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="splatkit.modules.SplatViewerTabState.camera_model">
+<span class="sig-name descname"><span class="pre">camera_model</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.14)"><span class="pre">Literal</span></a><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'pinhole'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'ortho'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'fisheye'</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'pinhole'</span></em><a class="headerlink" href="#splatkit.modules.SplatViewerTabState.camera_model" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<p class="rubric">Modules</p>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="splatkit.modules.base.html#module-splatkit.modules.base" title="splatkit.modules.base"><code class="xref py py-obj docutils literal notranslate"><span class="pre">base</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="splatkit.modules.composite.html#module-splatkit.modules.composite" title="splatkit.modules.composite"><code class="xref py py-obj docutils literal notranslate"><span class="pre">composite</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="splatkit.modules.evaluator.html#module-splatkit.modules.evaluator" title="splatkit.modules.evaluator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">evaluator</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="splatkit.modules.exporter.html#module-splatkit.modules.exporter" title="splatkit.modules.exporter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">exporter</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="splatkit.modules.frame.html#module-splatkit.modules.frame" title="splatkit.modules.frame"><code class="xref py py-obj docutils literal notranslate"><span class="pre">frame</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="splatkit.modules.progress_tracker.html#module-splatkit.modules.progress_tracker" title="splatkit.modules.progress_tracker"><code class="xref py py-obj docutils literal notranslate"><span class="pre">progress_tracker</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="splatkit.modules.tensorboard.html#module-splatkit.modules.tensorboard" title="splatkit.modules.tensorboard"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tensorboard</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="splatkit.modules.viewer.html#module-splatkit.modules.viewer" title="splatkit.modules.viewer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">viewer</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          
+          
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2026, Feiyou Guo
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            <div class="icons">
+              <a class="muted-link " href="https://github.com/feiyuguo/splatkit" aria-label="GitHub">
+                <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"></path>
+                </svg>
+            </a>
+              
+            </div>
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">splatkit.modules</a><ul>
+<li><a class="reference internal" href="#splatkit.modules.SplatBaseModule"><code class="docutils literal notranslate"><span class="pre">SplatBaseModule</span></code></a><ul>
+<li><a class="reference internal" href="#splatkit.modules.SplatBaseModule.module_name"><code class="docutils literal notranslate"><span class="pre">SplatBaseModule.module_name</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.SplatBaseModule.on_setup"><code class="docutils literal notranslate"><span class="pre">SplatBaseModule.on_setup()</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.SplatBaseModule.pre_step"><code class="docutils literal notranslate"><span class="pre">SplatBaseModule.pre_step()</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.SplatBaseModule.pre_compute_loss"><code class="docutils literal notranslate"><span class="pre">SplatBaseModule.pre_compute_loss()</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.SplatBaseModule.post_compute_loss"><code class="docutils literal notranslate"><span class="pre">SplatBaseModule.post_compute_loss()</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.SplatBaseModule.on_optimize"><code class="docutils literal notranslate"><span class="pre">SplatBaseModule.on_optimize()</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.SplatBaseModule.post_step"><code class="docutils literal notranslate"><span class="pre">SplatBaseModule.post_step()</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.SplatBaseModule.on_cleanup"><code class="docutils literal notranslate"><span class="pre">SplatBaseModule.on_cleanup()</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.SplatBaseModule.render_payload_T"><code class="docutils literal notranslate"><span class="pre">SplatBaseModule.render_payload_T</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#splatkit.modules.SplatRenderPayload"><code class="docutils literal notranslate"><span class="pre">SplatRenderPayload</span></code></a><ul>
+<li><a class="reference internal" href="#splatkit.modules.SplatRenderPayload.renders"><code class="docutils literal notranslate"><span class="pre">SplatRenderPayload.renders</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.SplatRenderPayload.alphas"><code class="docutils literal notranslate"><span class="pre">SplatRenderPayload.alphas</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.SplatRenderPayload.radii"><code class="docutils literal notranslate"><span class="pre">SplatRenderPayload.radii</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.SplatRenderPayload.depths"><code class="docutils literal notranslate"><span class="pre">SplatRenderPayload.depths</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.SplatRenderPayload.n_cameras"><code class="docutils literal notranslate"><span class="pre">SplatRenderPayload.n_cameras</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.SplatRenderPayload.n_batches"><code class="docutils literal notranslate"><span class="pre">SplatRenderPayload.n_batches</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.SplatRenderPayload.width"><code class="docutils literal notranslate"><span class="pre">SplatRenderPayload.width</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.SplatRenderPayload.height"><code class="docutils literal notranslate"><span class="pre">SplatRenderPayload.height</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.SplatRenderPayload.means2d"><code class="docutils literal notranslate"><span class="pre">SplatRenderPayload.means2d</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.SplatRenderPayload.gaussian_ids"><code class="docutils literal notranslate"><span class="pre">SplatRenderPayload.gaussian_ids</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.SplatRenderPayload.depths_expected"><code class="docutils literal notranslate"><span class="pre">SplatRenderPayload.depths_expected</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.SplatRenderPayload.depths_accumulated"><code class="docutils literal notranslate"><span class="pre">SplatRenderPayload.depths_accumulated</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.SplatRenderPayload.keys"><code class="docutils literal notranslate"><span class="pre">SplatRenderPayload.keys()</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.SplatRenderPayload.values"><code class="docutils literal notranslate"><span class="pre">SplatRenderPayload.values()</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.SplatRenderPayload.items"><code class="docutils literal notranslate"><span class="pre">SplatRenderPayload.items()</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.SplatRenderPayload.to_dict"><code class="docutils literal notranslate"><span class="pre">SplatRenderPayload.to_dict()</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.SplatRenderPayload.__init__"><code class="docutils literal notranslate"><span class="pre">SplatRenderPayload.__init__()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#splatkit.modules.SplatModuleComposite"><code class="docutils literal notranslate"><span class="pre">SplatModuleComposite</span></code></a><ul>
+<li><a class="reference internal" href="#splatkit.modules.SplatModuleComposite.__init__"><code class="docutils literal notranslate"><span class="pre">SplatModuleComposite.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.SplatModuleComposite.on_setup"><code class="docutils literal notranslate"><span class="pre">SplatModuleComposite.on_setup()</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.SplatModuleComposite.pre_step"><code class="docutils literal notranslate"><span class="pre">SplatModuleComposite.pre_step()</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.SplatModuleComposite.pre_compute_loss"><code class="docutils literal notranslate"><span class="pre">SplatModuleComposite.pre_compute_loss()</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.SplatModuleComposite.post_compute_loss"><code class="docutils literal notranslate"><span class="pre">SplatModuleComposite.post_compute_loss()</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.SplatModuleComposite.on_optimize"><code class="docutils literal notranslate"><span class="pre">SplatModuleComposite.on_optimize()</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.SplatModuleComposite.post_step"><code class="docutils literal notranslate"><span class="pre">SplatModuleComposite.post_step()</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.SplatModuleComposite.on_cleanup"><code class="docutils literal notranslate"><span class="pre">SplatModuleComposite.on_cleanup()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#splatkit.modules.SplatEvaluator"><code class="docutils literal notranslate"><span class="pre">SplatEvaluator</span></code></a><ul>
+<li><a class="reference internal" href="#splatkit.modules.SplatEvaluator.__init__"><code class="docutils literal notranslate"><span class="pre">SplatEvaluator.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.SplatEvaluator.on_setup"><code class="docutils literal notranslate"><span class="pre">SplatEvaluator.on_setup()</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.SplatEvaluator.post_step"><code class="docutils literal notranslate"><span class="pre">SplatEvaluator.post_step()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#splatkit.modules.SplatExporter"><code class="docutils literal notranslate"><span class="pre">SplatExporter</span></code></a><ul>
+<li><a class="reference internal" href="#splatkit.modules.SplatExporter.__init__"><code class="docutils literal notranslate"><span class="pre">SplatExporter.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.SplatExporter.on_setup"><code class="docutils literal notranslate"><span class="pre">SplatExporter.on_setup()</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.SplatExporter.post_step"><code class="docutils literal notranslate"><span class="pre">SplatExporter.post_step()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#splatkit.modules.SplatProgressTracker"><code class="docutils literal notranslate"><span class="pre">SplatProgressTracker</span></code></a><ul>
+<li><a class="reference internal" href="#splatkit.modules.SplatProgressTracker.__init__"><code class="docutils literal notranslate"><span class="pre">SplatProgressTracker.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.SplatProgressTracker.on_setup"><code class="docutils literal notranslate"><span class="pre">SplatProgressTracker.on_setup()</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.SplatProgressTracker.post_step"><code class="docutils literal notranslate"><span class="pre">SplatProgressTracker.post_step()</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.SplatProgressTracker.post_compute_loss"><code class="docutils literal notranslate"><span class="pre">SplatProgressTracker.post_compute_loss()</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.SplatProgressTracker.on_cleanup"><code class="docutils literal notranslate"><span class="pre">SplatProgressTracker.on_cleanup()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#splatkit.modules.SplatTensorboard"><code class="docutils literal notranslate"><span class="pre">SplatTensorboard</span></code></a><ul>
+<li><a class="reference internal" href="#splatkit.modules.SplatTensorboard.__init__"><code class="docutils literal notranslate"><span class="pre">SplatTensorboard.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.SplatTensorboard.on_setup"><code class="docutils literal notranslate"><span class="pre">SplatTensorboard.on_setup()</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.SplatTensorboard.post_compute_loss"><code class="docutils literal notranslate"><span class="pre">SplatTensorboard.post_compute_loss()</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.SplatTensorboard.post_step"><code class="docutils literal notranslate"><span class="pre">SplatTensorboard.post_step()</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.SplatTensorboard.log_scalar"><code class="docutils literal notranslate"><span class="pre">SplatTensorboard.log_scalar()</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.SplatTensorboard.log_histogram"><code class="docutils literal notranslate"><span class="pre">SplatTensorboard.log_histogram()</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.SplatTensorboard.log_image"><code class="docutils literal notranslate"><span class="pre">SplatTensorboard.log_image()</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.SplatTensorboard.on_cleanup"><code class="docutils literal notranslate"><span class="pre">SplatTensorboard.on_cleanup()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#splatkit.modules.SplatViewer"><code class="docutils literal notranslate"><span class="pre">SplatViewer</span></code></a><ul>
+<li><a class="reference internal" href="#splatkit.modules.SplatViewer.__init__"><code class="docutils literal notranslate"><span class="pre">SplatViewer.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.SplatViewer.module_name"><code class="docutils literal notranslate"><span class="pre">SplatViewer.module_name</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.SplatViewer.on_setup"><code class="docutils literal notranslate"><span class="pre">SplatViewer.on_setup()</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.SplatViewer.pre_step"><code class="docutils literal notranslate"><span class="pre">SplatViewer.pre_step()</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.SplatViewer.post_step"><code class="docutils literal notranslate"><span class="pre">SplatViewer.post_step()</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.SplatViewer.on_cleanup"><code class="docutils literal notranslate"><span class="pre">SplatViewer.on_cleanup()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#splatkit.modules.SplatViewerTabState"><code class="docutils literal notranslate"><span class="pre">SplatViewerTabState</span></code></a><ul>
+<li><a class="reference internal" href="#splatkit.modules.SplatViewerTabState.total_gs_count"><code class="docutils literal notranslate"><span class="pre">SplatViewerTabState.total_gs_count</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.SplatViewerTabState.rendered_gs_count"><code class="docutils literal notranslate"><span class="pre">SplatViewerTabState.rendered_gs_count</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.SplatViewerTabState.max_sh_degree"><code class="docutils literal notranslate"><span class="pre">SplatViewerTabState.max_sh_degree</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.SplatViewerTabState.near_plane"><code class="docutils literal notranslate"><span class="pre">SplatViewerTabState.near_plane</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.SplatViewerTabState.far_plane"><code class="docutils literal notranslate"><span class="pre">SplatViewerTabState.far_plane</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.SplatViewerTabState.radius_clip"><code class="docutils literal notranslate"><span class="pre">SplatViewerTabState.radius_clip</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.SplatViewerTabState.eps2d"><code class="docutils literal notranslate"><span class="pre">SplatViewerTabState.eps2d</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.SplatViewerTabState.backgrounds"><code class="docutils literal notranslate"><span class="pre">SplatViewerTabState.backgrounds</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.SplatViewerTabState.render_mode"><code class="docutils literal notranslate"><span class="pre">SplatViewerTabState.render_mode</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.SplatViewerTabState.normalize_nearfar"><code class="docutils literal notranslate"><span class="pre">SplatViewerTabState.normalize_nearfar</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.SplatViewerTabState.inverse"><code class="docutils literal notranslate"><span class="pre">SplatViewerTabState.inverse</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.SplatViewerTabState.colormap"><code class="docutils literal notranslate"><span class="pre">SplatViewerTabState.colormap</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.modules.SplatViewerTabState.camera_model"><code class="docutils literal notranslate"><span class="pre">SplatViewerTabState.camera_model</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=fd10adb8"></script>
+    </body>
+</html>
