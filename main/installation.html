@@ -323,7 +323,19 @@ pip<span class="w"> </span>install<span class="w"> </span>torch<span class="w"> 
 pip<span class="w"> </span>install<span class="w"> </span>torch<span class="w"> </span>torchvision<span class="w"> </span>--index-url<span class="w"> </span>https://download.pytorch.org/whl/cu118
 </pre></div>
 </div>
-<p><strong>Step 2: Install splatkit</strong></p>
+<p><strong>Step 2: Install fused-ssim (Optional but Recommended)</strong></p>
+<p>For improved training performance with optimized SSIM computation:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>git+https://github.com/rahul-goel/fused-ssim@98126b7781f9e563234c92d2bf08ee0994f4f175
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>fused-ssim</strong> provides a CUDA-accelerated SSIM loss implementation that significantly
+improves training speed and quality. While optional, it is <strong>highly recommended</strong> for
+optimal performance. If not installed, a fallback PyTorch-based SSIM implementation
+will be used automatically, though it may be slower.</p>
+</div>
+<p><strong>Step 3: Install splatkit</strong></p>
 <p>Clone the repository and install the core package:</p>
 <p><strong>Using pip:</strong></p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/YOUR_USERNAME/splatkit.git
@@ -345,6 +357,9 @@ uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </s
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># First, ensure PyTorch with CUDA is installed</span>
 uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>torch<span class="w"> </span>torchvision<span class="w"> </span>--index-url<span class="w"> </span>https://download.pytorch.org/whl/cu121
 
+<span class="c1"># Install fused-ssim for better training performance (recommended)</span>
+pip<span class="w"> </span>install<span class="w"> </span>git+https://github.com/rahul-goel/fused-ssim@98126b7781f9e563234c92d2bf08ee0994f4f175
+
 <span class="c1"># Add splatkit to your project</span>
 uv<span class="w"> </span>add<span class="w"> </span>git+https://github.com/YOUR_USERNAME/splatkit.git
 
@@ -357,6 +372,24 @@ uv<span class="w"> </span>add<span class="w"> </span><span class="s2">&quot;spla
 <section id="optional-dependencies">
 <h2>Optional Dependencies<a class="headerlink" href="#optional-dependencies" title="Link to this heading">¶</a></h2>
 <p>Install with specific features based on your needs. Use either <strong>pip</strong> or <strong>uv</strong>:</p>
+<section id="fused-ssim-highly-recommended">
+<h3>Fused SSIM (Highly Recommended)<a class="headerlink" href="#fused-ssim-highly-recommended" title="Link to this heading">¶</a></h3>
+<p>For significantly faster training with optimized SSIM computation:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>git+https://github.com/rahul-goel/fused-ssim@98126b7781f9e563234c92d2bf08ee0994f4f175
+</pre></div>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>This is technically optional, but <strong>highly recommended</strong> for production use. The fused SSIM
+implementation provides:</p>
+<ul class="simple">
+<li><p><strong>Faster training</strong>: CUDA-optimized SSIM computation</p></li>
+<li><p><strong>Better quality</strong>: More accurate structural similarity measurements</p></li>
+<li><p><strong>Lower memory usage</strong>: Efficient GPU memory utilization</p></li>
+</ul>
+<p>Without it, a fallback PyTorch-based SSIM implementation will be used automatically.</p>
+</div>
+</section>
 <section id="real-time-viewer">
 <h3>Real-time Viewer<a class="headerlink" href="#real-time-viewer" title="Link to this heading">¶</a></h3>
 <p>For interactive visualization with nerfview:</p>
@@ -434,6 +467,42 @@ uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </s
 </pre></div>
 </div>
 <p>You should see the version number printed without any errors.</p>
+<p>To check if fused-ssim is installed:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">fused_ssim</span><span class="w"> </span><span class="kn">import</span> <span class="n">fused_ssim</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;✓ fused-ssim is installed (recommended)&quot;</span><span class="p">)</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;✗ fused-ssim not found. Install for better performance:&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  pip install git+https://github.com/rahul-goel/fused-ssim@98126b7...&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="troubleshooting">
+<h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading">¶</a></h2>
+<p><strong>Missing fused-ssim warning during training</strong></p>
+<p>If you see a warning like:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>WARNING: fused-ssim is not installed, using ssim instead
+</pre></div>
+</div>
+<p>This is normal - a fallback SSIM implementation will be used. For better performance, install fused-ssim:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>git+https://github.com/rahul-goel/fused-ssim@98126b7781f9e563234c92d2bf08ee0994f4f175
+</pre></div>
+</div>
+<p><strong>CUDA out of memory errors</strong></p>
+<p>If you encounter CUDA out of memory errors:</p>
+<ul class="simple">
+<li><p>Reduce batch size in your data provider configuration</p></li>
+<li><p>Use smaller image resolutions for training</p></li>
+<li><p>Ensure no other processes are using GPU memory</p></li>
+</ul>
+<p><strong>PyTorch/CUDA version mismatch</strong></p>
+<p>Ensure your PyTorch installation matches your CUDA version:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;PyTorch: </span><span class="si">{</span><span class="n">torch</span><span class="o">.</span><span class="n">__version__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;CUDA available: </span><span class="si">{</span><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;CUDA version: </span><span class="si">{</span><span class="n">torch</span><span class="o">.</span><span class="n">version</span><span class="o">.</span><span class="n">cuda</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 </section>
 </section>
 
@@ -505,6 +574,7 @@ uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </s
 <li><a class="reference internal" href="#basic-installation">Basic Installation</a></li>
 <li><a class="reference internal" href="#using-splatkit-as-a-library">Using splatkit as a Library</a></li>
 <li><a class="reference internal" href="#optional-dependencies">Optional Dependencies</a><ul>
+<li><a class="reference internal" href="#fused-ssim-highly-recommended">Fused SSIM (Highly Recommended)</a></li>
 <li><a class="reference internal" href="#real-time-viewer">Real-time Viewer</a></li>
 <li><a class="reference internal" href="#progress-tracking">Progress Tracking</a></li>
 <li><a class="reference internal" href="#tensorboard-logging">TensorBoard Logging</a></li>
@@ -514,6 +584,7 @@ uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </s
 <li><a class="reference internal" href="#development-installation">Development Installation</a></li>
 <li><a class="reference internal" href="#available-options">Available Options</a></li>
 <li><a class="reference internal" href="#verify-installation">Verify Installation</a></li>
+<li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
 </ul>
 </li>
 </ul>
@@ -525,7 +596,7 @@ uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </s
       
     </aside>
   </div>
-</div><script src="_static/documentation_options.js?v=5929fcd5"></script>
+</div><script src="_static/documentation_options.js?v=01f34227"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>

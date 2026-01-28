@@ -352,7 +352,7 @@
     
 <div class="viewcode-block" id="Splat2DGSLossFn.compute_loss">
 <a class="viewcode-back" href="../../../api/loss_fn.html#splatkit.loss_fn.Splat2DGSLossFn.compute_loss">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">compute_loss</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">renders</span><span class="p">,</span> <span class="n">targets</span><span class="p">,</span> <span class="n">training_state</span><span class="p">,</span> <span class="n">rend_out</span><span class="p">,</span> <span class="n">masks</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compute_loss</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logger</span><span class="p">:</span> <span class="n">SplatLogger</span><span class="p">,</span> <span class="n">renders</span><span class="p">,</span> <span class="n">targets</span><span class="p">,</span> <span class="n">training_state</span><span class="p">,</span> <span class="n">rend_out</span><span class="p">,</span> <span class="n">masks</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute loss including normal consistency and distortion regularization.</span>
 <span class="sd">        </span>
@@ -379,13 +379,13 @@
             <span class="p">)</span>
             <span class="n">renders</span> <span class="o">=</span> <span class="n">renders</span> <span class="o">*</span> <span class="n">masks</span>
             <span class="n">targets</span> <span class="o">=</span> <span class="n">targets</span> <span class="o">*</span> <span class="n">masks</span>
-            <span class="n">photometric_loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_photometric_loss</span><span class="p">(</span><span class="n">renders</span><span class="p">,</span> <span class="n">targets</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ssim_lambda</span><span class="p">)</span>
+            <span class="n">photometric_loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_photometric_loss</span><span class="p">(</span><span class="n">logger</span><span class="p">,</span> <span class="n">renders</span><span class="p">,</span> <span class="n">targets</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ssim_lambda</span><span class="p">)</span>
 
             <span class="n">bg_mask</span> <span class="o">=</span> <span class="o">~</span><span class="n">masks</span>
             <span class="n">bg_loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bg_lambda</span> <span class="o">*</span> <span class="p">(</span><span class="n">alphas</span> <span class="o">*</span> <span class="n">bg_mask</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">renders</span><span class="p">,</span> <span class="n">targets</span> <span class="o">=</span> <span class="n">normalize_batch_tensors</span><span class="p">(</span><span class="n">renders</span><span class="p">,</span> <span class="n">targets</span><span class="p">,</span> <span class="n">spatial_ndim</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
-            <span class="n">photometric_loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_photometric_loss</span><span class="p">(</span><span class="n">renders</span><span class="p">,</span> <span class="n">targets</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ssim_lambda</span><span class="p">)</span>
+            <span class="n">photometric_loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_photometric_loss</span><span class="p">(</span><span class="n">logger</span><span class="p">,</span> <span class="n">renders</span><span class="p">,</span> <span class="n">targets</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ssim_lambda</span><span class="p">)</span>
 
         <span class="c1"># Regularization</span>
         <span class="n">opa_loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_opacity_reg</span><span class="p">(</span><span class="n">training_state</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s2">&quot;opacities&quot;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">opacity_reg</span><span class="p">)</span>
@@ -499,7 +499,7 @@
       
     </aside>
   </div>
-</div><script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+</div><script src="../../../_static/documentation_options.js?v=01f34227"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/scripts/furo.js?v=46bd48cc"></script>
