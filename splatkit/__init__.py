@@ -8,28 +8,3 @@ training Gaussian Splatting models with reproducibility and extensibility in min
 __version__ = "0.1.0"
 __author__ = "Feiyou Guo"
 __license__ = "Apache-2.0"
-
-# Import main components for convenience
-from .trainer import SplatTrainer, SplatTrainerConfig
-from .data_provider import (
-    SplatDataProvider,
-    SplatColmapDataProvider,
-    SplatColmapDataProviderConfig,
-)
-from .renderer import Splat3DGSRenderer, Splat2DGSRenderer
-from .loss_fn import Splat3DGSLossFn, Splat2DGSLossFn
-from .densification import SplatDefaultDensification
-
-__all__ = [
-    "__version__",
-    "SplatTrainer",
-    "SplatTrainerConfig",
-    "SplatDataProvider",
-    "SplatColmapDataProvider",
-    "SplatColmapDataProviderConfig",
-    "Splat3DGSRenderer",
-    "Splat2DGSRenderer",
-    "Splat3DGSLossFn",
-    "Splat2DGSLossFn",
-    "SplatDefaultDensification",
-]
