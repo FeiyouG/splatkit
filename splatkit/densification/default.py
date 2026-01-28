@@ -16,11 +16,13 @@ class SplatDefaultDensification(
     SplatDensification[SplatRenderPayload]
 ):
     """
-    Default densification module that works with both 3DGS and 2DGS.
+    Default densification module
+
+    Built on top of gsplat's DefaultStrategy.
     
     Automatically detects the correct gradient key from render output:
-    - "gradient_2dgs" for 2DGS
-    - "means2d" as fallback for 3DGS and 2DGS-inria
+        - "gradient_2dgs" for 2DGS
+        - "means2d" as fallback for 3DGS and 2DGS-inria
     """
 
     _default_strategy: DefaultStrategy
@@ -195,14 +197,7 @@ class SplatDefaultDensification(
         world_rank: int = 0,
         world_size: int = 1,
     ):
-        """
-        Hook invoked after a loss has been computed.
-        """
         info = rend_out.to_dict()
-        
-        # gaussian_ids may not be available in non-packed mode
-        if "gaussian_ids" not in info or info["gaussian_ids"] is None:
-            info["gaussian_ids"] = None
 
         self._default_strategy.step_post_backward(
             params=training_state.params,

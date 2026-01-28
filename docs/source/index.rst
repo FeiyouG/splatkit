@@ -65,6 +65,7 @@ Next Steps
    customization/renderers
    customization/loss_functions
    customization/data_providers
+   customization/densification
 
 .. toctree::
    :maxdepth: 2
@@ -76,6 +77,7 @@ Next Steps
    api/loss_fn
    api/data_provider
    api/splat
+   api/densification
    api/modules/index
 
 .. toctree::

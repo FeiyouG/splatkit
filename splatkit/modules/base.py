@@ -58,7 +58,7 @@ class SplatBaseModule(Generic[SplatRenderPayloadT], ABC):
             world_size: The current world size
             scene_scale: The scene scale factor
         """
-        pass
+        logger.info(f"Initializing module {self.__class__.__name__}")
     
     def pre_step(
         self,
@@ -151,7 +151,7 @@ class SplatBaseModule(Generic[SplatRenderPayloadT], ABC):
         """
         Hook invoked after the training loop has finished.
         """
-        pass
+        logger.info(f"Cleaning up module {self.__class__.__name__}")
 
     @property
     def render_payload_T(self) -> type:
