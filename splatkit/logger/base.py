@@ -1,11 +1,12 @@
 import logging
 import sys
 from typing import Literal, Sequence
-from ..modules import SplatRenderPayloadT
+from typing_extensions import override
+from ..modules import SplatRenderPayload
 from ..modules.base import SplatBaseModule
 
 class SplatLogger(
-    SplatBaseModule[SplatRenderPayloadT],
+    SplatBaseModule[SplatRenderPayload],
 ):
     """
     Logger wrapper for splatkit using Python's built-in logging.    
@@ -48,17 +49,22 @@ class SplatLogger(
             file_handler.setFormatter(StructuredFormatter(format))
             self._logger.addHandler(file_handler)
         
-        self._world_rank = 0,
+        self._world_rank = 0
         self._world_size = 1
     
+    @property
+    def module_name(self) -> str:
+        return "SplatLogger"
+    
+    @override
     def on_setup(
         self,
         logger: "SplatLogger",
-        renderer: SplatBaseModule[SplatRenderPayloadT],
-        data_provider: SplatBaseModule[SplatRenderPayloadT],
-        loss_fn: SplatBaseModule[SplatRenderPayloadT],
-        densification: SplatBaseModule[SplatRenderPayloadT],
-        modules: Sequence[SplatBaseModule[SplatRenderPayloadT]], 
+        renderer: SplatBaseModule[SplatRenderPayload],
+        data_provider: SplatBaseModule[SplatRenderPayload],
+        loss_fn: SplatBaseModule[SplatRenderPayload],
+        densification: SplatBaseModule[SplatRenderPayload],
+        modules: Sequence[SplatBaseModule[SplatRenderPayload]], 
         max_steps: int,
         world_rank: int = 0,
         world_size: int = 1,
