@@ -136,7 +136,6 @@ class SplatViewer(SplatBaseModule[SplatRenderPayload]):
         """Setup the viewer server and initialize all components."""
         # Only run viewer on rank 0 in distributed training
         if world_rank != 0:
-            logger.info("Viewer disabled on non-zero ranks", module=self.module_name)
             return
         
         if world_size > 1:
@@ -150,7 +149,7 @@ class SplatViewer(SplatBaseModule[SplatRenderPayload]):
         
         # Get available visualization options from renderer
         self._available_render_modes = renderer.get_visualization_options()
-        logger.info(f"Setting up viewer with available visualization modes: {', '.join(self._available_render_modes)}", module=self.module_name)
+        logger.info(f"Successfully set up viewer with available visualization modes: {', '.join(self._available_render_modes)}", module=self.module_name)
         
         # Initialize viser server (silence npm/node output)
         try:

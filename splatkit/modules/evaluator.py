@@ -140,13 +140,14 @@ class SplatEvaluator(SplatBaseModule[SplatRenderPayload]):
             if self._save_images:
                 images_dir = Path(self._output_dir) / "images"
                 images_dir.mkdir(parents=True, exist_ok=True)
+                logger.info(f"Evaluation images will be saved to: {images_dir}", module=self.module_name)
             
             if self._save_stats:
                 stats_dir = Path(self._output_dir) / "stats"
                 stats_dir.mkdir(parents=True, exist_ok=True)
+                logger.info(f"Evaluation statistics will be saved to: {stats_dir}", module=self.module_name)
             
-            logger.info(f"Initialized. Will evaluate at steps: {sorted(self._eval_steps)}", module=self.module_name)
-            logger.info(f"Output dir: {self._output_dir}", module=self.module_name)
+            logger.info(f"Successfully set up evaluator. Will evaluate at steps: {sorted(self._eval_steps)}", module=self.module_name)
     
     @override
     def post_step(

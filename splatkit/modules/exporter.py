@@ -84,11 +84,13 @@ class SplatExporter(SplatBaseModule[SplatRenderPayload]):
     ):
         if self._save_splat:
             os.makedirs(self._splat_dir, exist_ok=True)
-            logger.info(f"Create splat output directory: {self._splat_dir}", module=self.module_name)
+            logger.info(f"Splats will be saved to: {self._splat_dir}", module=self.module_name)
 
         if self._save_ckpt:
             os.makedirs(self._ckpt_dir, exist_ok=True)
-            logger.info(f"Create checkpoint output directory: {self._ckpt_dir}", module=self.module_name)
+            logger.info(f"Checkpoints will be saved to: {self._ckpt_dir}", module=self.module_name)
+        
+        logger.info(f"Successfully set up exporter. Will export at steps: {sorted(self._export_steps)}", module=self.module_name)
 
     @override
     def post_step(

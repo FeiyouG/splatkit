@@ -9,12 +9,18 @@ A modular toolkit for Gaussian Splatting training, built on top of [gsplat](http
 ```bash
 pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
 ```
+(Optional) For fused SSIM support:
+
+```bash
+pip install git+https://github.com/rahul-goel/fused-ssim@98126b7781f9e563234c92d2bf08ee0994f4f175
+```
 
 **Step 2:** Install splatkit:
 
 ```bash
 # From PyPI (once published)
 pip install splatkit[all]
+
 # or using uv
 uv add splatkit --extra all
 
@@ -22,12 +28,6 @@ uv add splatkit --extra all
 git clone https://github.com/veristic/splatkit.git
 cd splatkit
 pip install -e ".[all]"  # or: uv pip install -e ".[all]"
-```
-
-**Optional:** For fused SSIM support (improves training quality):
-
-```bash
-pip install git+https://github.com/rahul-goel/fused-ssim@98126b7781f9e563234c92d2bf08ee0994f4f175
 ```
 
 See the [installation guide](docs/source/installation.rst) for more options.
@@ -69,10 +69,11 @@ trainer = SplatTrainer(
 trainer.run()
 ```
 
-## Documentation
-
-📚 **[Full Documentation](docs/)** — Installation, guides, API reference, and customization examples.
-
 Check out `examples/` folder for more:
 - `examples/3dgs/simple_3dgs.py` — 3D Gaussian Splatting
 - `examples/2dgs/simple_2dgs.py` — 2D Gaussian Splatting
+
+
+## Documentation
+
+📚 **[Full Documentation](https://feiyoug.github.io/splatkit/main/index.html)** — Installation, guides, API reference, and customization examples.

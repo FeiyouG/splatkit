@@ -1,7 +1,7 @@
 [project]
 name = "splatkit"
 version = "0.1.0"
-description = "A modular toolkit for 3D and 2D Gaussian Splatting"
+description = "A modular toolkit for Gaussian Splatting Training"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [

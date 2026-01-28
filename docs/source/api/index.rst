@@ -9,6 +9,7 @@ This section contains the complete API reference for splatkit.
    trainer
    renderer
    loss_fn
+   densification
    data_provider
    splat
    modules/index

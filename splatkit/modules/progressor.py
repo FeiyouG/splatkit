@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from ..logger import SplatLogger
 
 
-class SplatProgressTracker(SplatBaseModule[SplatRenderPayload]):
+class SplatProgressor(SplatBaseModule[SplatRenderPayload]):
     """
     Progress tracking module for training visualization.
     
@@ -71,7 +71,7 @@ class SplatProgressTracker(SplatBaseModule[SplatRenderPayload]):
             ncols=120,
             bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}, {postfix}]'
         )
-        logger.info(f"Initialized progress tracker for {max_steps} steps", module=self.module_name)
+        logger.info(f"Successfully set up progress visualizer for {max_steps} steps, updating every {self._update_every} steps", module=self.module_name)
     
     @override
     def post_step(

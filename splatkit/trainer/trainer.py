@@ -132,8 +132,11 @@ class SplatTrainer(Generic[SplatDataItemT, SplatRenderPayloadT]):
                 self._logger.info("Starting single GPU training", module="SplatTrainer")
             elif self._world_size > 1:
                 self._logger.info(f"Starting multi-GPU training: world_size={self._world_size}", module="SplatTrainer")
+            
+    @property
+    def module_name(self) -> str:
+        return "SplatTrainer"
 
-    
     def run(self, leader_rank: int = 0):
         """
         Core training loop implementation.
@@ -142,7 +145,7 @@ class SplatTrainer(Generic[SplatDataItemT, SplatRenderPayloadT]):
             - For distributed training, use SplatDistributedTrainer or manage with CLI manually
         """
 
-        scene_scale = self._data_provider.load_data()
+        scene_scale = self._data_provider.load_data(logger=self._logger)
 
         all_modules = SplatModuleComposite[SplatRenderPayloadT](self._renderer,
             self._loss_fn,
@@ -164,6 +167,7 @@ class SplatTrainer(Generic[SplatDataItemT, SplatRenderPayloadT]):
             world_size=self._world_size,
             scene_scale=scene_scale,
         )
+        self._logger.info(f"Successfully set up all modules", module=self.module_name)
 
         # Load checkpoint or initialize from scratch
         if self._ckpt_path:
@@ -197,6 +201,7 @@ class SplatTrainer(Generic[SplatDataItemT, SplatRenderPayloadT]):
             )
             del splat_model
             start_step = 1
+            self._logger.info(f"Successfully initialized splat training state from data provider", module=self.module_name)
 
         schedulers = [
             torch.optim.lr_scheduler.ExponentialLR(
@@ -206,6 +211,7 @@ class SplatTrainer(Generic[SplatDataItemT, SplatRenderPayloadT]):
         ]
         
         # NOTE: step is 1-indexed
+        self._logger.info(f"Starting training loop from step {start_step} to {self._config.max_steps}", module=self.module_name)
         for step in range(start_step, self._config.max_steps + 1):
 
             # STEP 1: Getting training data
@@ -307,9 +313,11 @@ class SplatTrainer(Generic[SplatDataItemT, SplatRenderPayloadT]):
                 rend_out=rend_out,
             )
         
+        self._logger.info(f"Training loop completed", module=self.module_name)
         # Cleanup resources
         all_modules.on_cleanup(
             logger=self._logger,
             world_rank=self._world_rank,
             world_size=self._world_size,
         )
+        self._logger.info(f"Successfully cleaned up all modules", module=self.module_name)

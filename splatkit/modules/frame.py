@@ -7,15 +7,15 @@ class SplatRenderPayload:
     """
     Metadata for rendered images.
     """
-    renders: Tensor  # (..., H, W, 3)
-    alphas: Tensor  # (..., H, W, 1)
-    radii: Tensor  # (..., H, W, 1)
-    depths: Tensor # (..., H, W, 1)
+    renders: Tensor  # (..., H, W, 3) - rendered images
+    alphas: Tensor  # (..., H, W, 1) - rendered alpha
+    depths: Tensor # (..., C, N) - per-gaussian depths (C=cameras, N=gaussians)
+    radii: Tensor  # (..., C, N, 2) - per-gaussian radii in x/y (C=cameras, N=gaussians)
     n_cameras: int
     n_batches: int
     width: int
     height: int
-    means2d: Tensor # (..., H, W, 2)
+    means2d: Tensor # (..., C, N, 2) - per-gaussian 2D means (C=cameras, N=gaussians)
 
     gaussian_ids: Tensor | None # Visible gaussian indices for densification
     depths_expected: Tensor | None # (..., H, W, 1) - expected depths; will be None if render_mode is not "RGB+D" or "RGB+ED"

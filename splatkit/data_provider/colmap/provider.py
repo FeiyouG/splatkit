@@ -52,13 +52,14 @@ class SplatColmapDataProvider(
                 raise FileNotFoundError(f"Mask directory not found: {self._config.masks_dir}")
             
     @override
-    def load_data(self): 
+    def load_data(self, logger: "SplatLogger"): 
         self._colmap_dataset = SplatColmapDataset(self._config)
 
         stride = int(self._config.train_test_ratio * 10)
         self._train_dataset = self._colmap_dataset.split(lambda i, _: i % stride != 0)
         self._test_dataset = self._colmap_dataset.split(lambda i, _: i % stride == 0)
 
+        logger.info(f"Successfully loaded data: config={self._config}", module=self.module_name)
         return self._colmap_dataset.scene_scale
 
     @override
@@ -75,9 +76,6 @@ class SplatColmapDataProvider(
         world_size: int = 1,
         scene_scale: float = 1.0,
     ): 
-       
-        logger.info(f"Train set: {len(self._train_dataset)} images, Test set: {len(self._test_dataset)} images", module=self.module_name)
-
         self._train_data_loader = DataLoader[ColmapDataItem](
             dataset=self._train_dataset,
             batch_size=self._config.batch_size,
@@ -93,6 +91,9 @@ class SplatColmapDataProvider(
             num_workers=self._config.num_workers,
             collate_fn=ColmapDataItem.from_batch,
         )
+
+        logger.info(f"Successfully setup data provider: Train set: {len(self._train_dataset)} images, Test set: {len(self._test_dataset)} images", module=self.module_name)
+
     
     def get_test_data_size(self, world_rank: int = 0, world_size: int = 1) -> int:
         return len(self._test_dataset)
