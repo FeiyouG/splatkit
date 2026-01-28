@@ -19,7 +19,7 @@ class Splat3dgsRenderPayload(SplatRenderPayload):
     """
     
     conics: Tensor
-    """2D Gaussian covariance matrices, shape (..., H, W, 3). Upper triangular: [a, b, c] represents [[a, b], [b, c]]"""
+    """2D Gaussian covariance matrices, shape (..., C, N, 3) where C=cameras, N=gaussians. Upper triangular: [a, b, c] represents [[a, b], [b, c]]"""
 
 class Splat3DGSRenderer(SplatRenderer[Splat3dgsRenderPayload]):
     """
@@ -259,7 +259,9 @@ class Splat3DGSRenderer(SplatRenderer[Splat3dgsRenderPayload]):
         )
         
         # Calculate stats
-        rendered_gaussians = int((payload.radii > 0).sum().item())
+        # radii shape: [1, 1, N, 2] where N=gaussians, 2=x/y (single camera in viewer)
+        # Check if both x and y radii > 0 for each gaussian
+        rendered_gaussians = int((payload.radii > 0).all(-1).sum().item())
         
         # Process based on visualization mode
         if visualization_mode == "rgb":

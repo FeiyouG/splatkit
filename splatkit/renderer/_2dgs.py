@@ -292,7 +292,9 @@ class Splat2DGSRenderer(SplatRenderer[Splat2dgsRenderPayload]):
         )
         
         # Calculate stats
-        rendered_gaussians = int((payload.radii > 0).sum().item())
+        # radii shape: [1, 1, N, 2] where N=gaussians, 2=x/y (single camera in viewer)
+        # Check if both x and y radii > 0 for each gaussian
+        rendered_gaussians = int((payload.radii > 0).all(-1).sum().item())
         
         # Process based on visualization mode
         if visualization_mode == "rgb":
