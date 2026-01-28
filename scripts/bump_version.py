@@ -5,6 +5,9 @@ Helper script to bump version numbers consistently across files.
 Usage:
     python scripts/bump_version.py 0.2.0
     python scripts/bump_version.py 1.0.0
+    python scripts/bump_version.py 0.1.0a1
+    python scripts/bump_version.py 0.2.0.dev1
+    python scripts/bump_version.py 0.2.0.post1
 """
 
 import sys
@@ -49,10 +52,12 @@ def main():
     
     version = sys.argv[1]
     
-    # Validate version format (simple check)
-    if not re.match(r'^\d+\.\d+\.\d+([a-z]\d+)?$', version):
+    # Validate version format (PEP 440 compliant)
+    # Supports: release (X.Y.Z), pre-release (aN, bN, rcN), dev (.devN), post (.postN)
+    if not re.match(r'^\d+\.\d+\.\d+(a\d+|b\d+|rc\d+|\.dev\d+|\.post\d+)?$', version):
         print(f"❌ Invalid version format: {version}")
-        print("Expected format: X.Y.Z or X.Y.Za1 (e.g., 1.0.0 or 1.0.0a1)")
+        print("Expected PEP 440 format: X.Y.Z[a|b|rc|.dev|.post]N")
+        print("Examples: 1.0.0, 1.0.0a1, 1.0.0b2, 1.0.0rc1, 1.0.0.dev1, 1.0.0.post1")
         sys.exit(1)
     
     root = Path(__file__).parent.parent
