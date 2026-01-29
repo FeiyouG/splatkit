@@ -1,4 +1,4 @@
-from typing import Generic
+from typing import TYPE_CHECKING, Any, Dict, Generic
 from typing_extensions import override
 from abc import ABC, abstractmethod
 
@@ -8,6 +8,9 @@ from ..modules import SplatRenderPayloadT
 from ..splat.training_state import SplatTrainingState
 from ..data_provider import SplatDataItemT
 from ..modules.base import SplatBaseModule
+
+if TYPE_CHECKING:
+    from ..logger import SplatLogger
 
 class SplatDensification(
     SplatBaseModule[SplatRenderPayloadT],
@@ -23,6 +26,7 @@ class SplatDensification(
         - Prune Gaussians (remove transparent or invisible ones)
     
     Subclasses must implement:
+        - state: Dict[str, Any] - state of the densification strategy
         - densify(): Perform densification operations
     
     Example:
@@ -34,10 +38,14 @@ class SplatDensification(
         - Modifies training_state in-place (adds/removes Gaussians)
         - Must work correctly in distributed training (all ranks)
     """
+    @property
+    def state(self) -> Dict[str, Any]:
+        raise NotImplementedError("Subclasses must implement state property")
 
     @abstractmethod
     def densify(
-        self, 
+        self,   
+        logger: "SplatLogger",
         step: int, 
         max_steps:  int, 
         rendered_frames: torch.Tensor, 
@@ -47,7 +55,7 @@ class SplatDensification(
         masks: torch.Tensor | None = None, 
         world_rank: int = 0, 
         world_size: int = 1
-    ):
+    ) -> torch.Tensor | None:
         """
         Perform densification: clone, split, and prune Gaussians.
         
@@ -55,6 +63,7 @@ class SplatDensification(
         optimizer updates parameters.
         
         Args:
+            logger: Logger instance for structured logging
             step: Current training step
             max_steps: Total training steps
             rendered_frames: Rendered images from this step
@@ -64,6 +73,9 @@ class SplatDensification(
             masks: Optional masks for valid pixels
             world_rank: Current process rank
             world_size: Total number of processes
+            
+        Returns:
+            Last prune mask, if any Gaussians were ever pruned.
         
         NOTE:
             - Modifies training_state.params and optimizers in-place

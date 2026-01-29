@@ -20,7 +20,7 @@ class Splat2DGSLossFn(
     def __init__(
         self,
         ssim_lambda: float = 0.2,
-        bg_lambda: float = 1.0,
+        bg_lambda: float = 0.5,
         opacity_reg: float = 0.0,
         scale_reg: float = 0.0,
         normal_lambda: float = 0.05,

@@ -577,7 +577,7 @@ class SplatViewer(SplatBaseModule[SplatRenderPayload]):
             )
             
             # Update stats
-            tab_state.total_gs_count = len(self._training_state.params["means"])
+            tab_state.total_gs_count = self._training_state.num_gaussians
             tab_state.rendered_gs_count = rendered_gaussians
             
             return output
