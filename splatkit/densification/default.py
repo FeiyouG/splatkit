@@ -1,6 +1,7 @@
-from typing import TYPE_CHECKING, Dict, Any, Sequence
+from typing import TYPE_CHECKING, Dict, Any, Sequence, Union
 
 from gsplat.strategy import DefaultStrategy
+from gsplat.strategy.ops import remove
 from typing_extensions import override
 import torch
 
@@ -25,7 +26,7 @@ class SplatDefaultDensification(
         - "means2d" as fallback for 3DGS and 2DGS-inria
     """
 
-    _default_strategy: DefaultStrategy
+    _default_strategy: "PruneAwareDefaultStrategy"
     _state: Dict[str, Any]
     _prune_opa: float
     _grow_grad2d: float
@@ -80,6 +81,10 @@ class SplatDefaultDensification(
         self._absgrad = absgrad
         self._revised_opacity = revised_opacity
         self._verbose = verbose
+    
+    @property
+    def state(self) -> Dict[str, Any]:
+        return self._state
 
     @override
     def on_setup(self,
@@ -95,7 +100,7 @@ class SplatDefaultDensification(
         scene_scale: float = 1.0,
     ):
         # Don't set key_for_gradient yet - will be detected automatically
-        self._default_strategy = DefaultStrategy(
+        self._default_strategy = PruneAwareDefaultStrategy(
             verbose=self._verbose,
             prune_opa=self._prune_opa,
             grow_grad2d=self._grow_grad2d,
@@ -184,6 +189,7 @@ class SplatDefaultDensification(
     @override
     def densify(
         self, 
+        logger: "SplatLogger",
         step: int,
         max_steps: int,
         rendered_frames: torch.Tensor, # (..., H, W, 3)
@@ -193,13 +199,77 @@ class SplatDefaultDensification(
         masks: torch.Tensor | None = None, # (..., H, W)
         world_rank: int = 0,
         world_size: int = 1,
-    ):
+    ) -> torch.Tensor | None:
         info = rend_out.to_dict()
 
-        self._default_strategy.step_post_backward(
+        last_prune_mask = self._default_strategy.step_post_backward_with_prune_mask(
             params=training_state.params,
             optimizers=training_state.optimizers,
             state=self._state,
             step=step,
             info=info
         )
+
+        return last_prune_mask
+
+
+class PruneAwareDefaultStrategy(DefaultStrategy):
+    """
+    Default strategy that is aware of pruning.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._last_prune_mask: torch.Tensor | None = None
+    
+    def step_post_backward_with_prune_mask(
+        self,
+        params: Union[Dict[str, torch.nn.Parameter], torch.nn.ParameterDict],
+        optimizers: Dict[str, torch.optim.Optimizer],
+        state: Dict[str, Any],
+        step: int,
+        info: Dict[str, Any],
+        packed: bool = False,
+    ) -> torch.Tensor | None:
+        super().step_post_backward(params, optimizers, state, step, info, packed)
+
+        last_prune_mask = self._last_prune_mask
+        self.last_prune_mask = None
+        return last_prune_mask
+    
+    @override
+    @torch.no_grad()
+    def _prune_gs(
+        self,
+        params,
+        optimizers,
+        state,
+        step: int,
+    ) -> int:
+        """
+        This is copied from gsplat's DefaultStrategy._prune_gs, 
+        except we store and expose last_prune_mask.
+        """
+        is_prune = torch.sigmoid(params["opacities"].flatten()) < self.prune_opa
+
+        if step > self.reset_every:
+            is_too_big = (
+                torch.exp(params["scales"]).max(dim=-1).values
+                > self.prune_scale3d * state["scene_scale"]
+            )
+            if step < self.refine_scale2d_stop_iter:
+                is_too_big |= state["radii"] > self.prune_scale2d
+
+            is_prune = is_prune | is_too_big
+
+        n_prune = int(is_prune.sum().item())
+
+        # 🔹 NEW: store mask (clone to avoid future mutation issues)
+        self._last_prune_mask = is_prune.clone() if n_prune > 0 else None
+
+        if n_prune > 0:
+            remove(params=params, optimizers=optimizers, state=state, mask=is_prune)
+
+        return n_prune
+
+        

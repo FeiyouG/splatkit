@@ -296,6 +296,7 @@ class SplatTrainer(Generic[SplatDataItemT, SplatRenderPayloadT]):
 
             # Step 6: Densification
             self._densification.densify(
+                logger=self._logger,
                 step=step,
                 max_steps=self._config.max_steps,
                 rendered_frames=renders,
