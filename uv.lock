@@ -784,17 +784,13 @@ wheels = [
 [[package]]
 name = "gsplat"
 version = "1.5.3"
-source = { registry = "https://pypi.org/simple" }
+source = { git = "https://github.com/FeiyouG/gsplat.git?rev=d1c516adf5473dc87d4f77a651a53f09e7b54bf5#d1c516adf5473dc87d4f77a651a53f09e7b54bf5" }
 dependencies = [
     { name = "jaxtyping" },
     { name = "ninja" },
     { name = "numpy" },
     { name = "rich" },
     { name = "torch" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/6d/94/a0963873708223385ac926112dc3e40ab08297784ac53d95309b4cb5a801/gsplat-1.5.3.tar.gz", hash = "sha256:343f080c470e891ba3c697c03bdf0952cb982d1d535fdc24adb23c2cb4fba906", size = 4743603, upload-time = "2025-07-04T16:50:42.899Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/aa/68/c5cbbdb86421a3f45ac0b52cf9860b1048d089335151d3f37c23aabcbef1/gsplat-1.5.3-py3-none-any.whl", hash = "sha256:515a3773641f5e7f7717acab6276c0b1d6dbcad087b7968ca653337c3189a982", size = 6519041, upload-time = "2025-07-04T16:50:40.559Z" },
 ]
 
 [[package]]
@@ -3211,7 +3207,7 @@ requires-dist = [
     { name = "black", marker = "extra == 'dev'", specifier = ">=23.0.0" },
     { name = "dill", specifier = ">=0.4.0" },
     { name = "furo", marker = "extra == 'docs'", specifier = ">=2024.1.0" },
-    { name = "gsplat", specifier = ">=1.5.3" },
+    { name = "gsplat", git = "https://github.com/FeiyouG/gsplat.git?rev=d1c516adf5473dc87d4f77a651a53f09e7b54bf5" },
     { name = "imageio", specifier = ">=2.37.2" },
     { name = "isort", marker = "extra == 'dev'", specifier = ">=5.12.0" },
     { name = "matplotlib", specifier = ">=3.10.8" },

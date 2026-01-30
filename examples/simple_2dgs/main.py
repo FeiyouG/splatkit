@@ -39,7 +39,8 @@ if __name__ == "__main__":
     renderer = Splat2DGSRenderer(
         near_plane=0.2,
         far_plane=200.0,
-        distloss=True,  # Enable distortion loss computation
+        distloss=True,
+        depth_mode="median", # For bounded-scenes, median depth is recommended
     )
     
     # 2DGS loss function with normal consistency and distortion losses
@@ -60,14 +61,6 @@ if __name__ == "__main__":
             output_dir=os.path.join(args.output_dir, "eval"),
             eval_steps=[trainer_config.max_steps],
         ),
-        # Uncomment to enable viewer
-        # Make sure viewer dependency is installed: pip install -e ".[viewer]"
-        # SplatViewer(    
-        #     port=8080,
-        #     output_dir=os.path.join(args.output_dir, "viewer"),
-        #     update_interval=1,
-        #     mode="training",
-        # ),
     ]
 
     trainer = SplatTrainer[ColmapDataItem, Splat2dgsRenderPayload](
