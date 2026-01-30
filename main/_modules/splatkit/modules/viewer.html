@@ -875,7 +875,7 @@
             <span class="p">)</span>
             
             <span class="c1"># Update stats</span>
-            <span class="n">tab_state</span><span class="o">.</span><span class="n">total_gs_count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_training_state</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s2">&quot;means&quot;</span><span class="p">])</span>
+            <span class="n">tab_state</span><span class="o">.</span><span class="n">total_gs_count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_training_state</span><span class="o">.</span><span class="n">num_gaussians</span>
             <span class="n">tab_state</span><span class="o">.</span><span class="n">rendered_gs_count</span> <span class="o">=</span> <span class="n">rendered_gaussians</span>
             
             <span class="k">return</span> <span class="n">output</span>

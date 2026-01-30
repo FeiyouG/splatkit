@@ -359,6 +359,7 @@
         
         <span class="c1"># 2DGS specific</span>
         <span class="n">distloss</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">depth_mode</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;expected&quot;</span><span class="p">,</span> <span class="s2">&quot;median&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;expected&quot;</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initialize 2DGS renderer with fixed configuration.</span>
@@ -387,7 +388,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_eps2d</span> <span class="o">=</span> <span class="n">eps2d</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_absgrad</span> <span class="o">=</span> <span class="n">absgrad</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_channel_chunk</span> <span class="o">=</span> <span class="n">channel_chunk</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_distloss</span> <span class="o">=</span> <span class="n">distloss</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_distloss</span> <span class="o">=</span> <span class="n">distloss</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_depth_mode</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;expected&quot;</span><span class="p">,</span> <span class="s2">&quot;median&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">depth_mode</span></div>
 
     
 <div class="viewcode-block" id="Splat2DGSRenderer.render">
@@ -477,7 +479,7 @@
             <span class="n">absgrad</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_absgrad</span><span class="p">,</span>
             <span class="n">packed</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>  <span class="c1"># Never pack</span>
             <span class="n">distloss</span><span class="o">=</span><span class="n">disloss</span><span class="p">,</span>
-            <span class="n">depth_mode</span><span class="o">=</span><span class="s2">&quot;expected&quot;</span><span class="p">,</span>
+            <span class="n">depth_mode</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_depth_mode</span><span class="p">,</span>
         <span class="p">)</span>
 
         <span class="n">batch_dims</span> <span class="o">=</span> <span class="n">means</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
@@ -657,7 +659,6 @@
             <span class="n">depth_norm</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">depth_norm</span>
         
         <span class="k">return</span> <span class="n">apply_float_colormap</span><span class="p">(</span><span class="n">depth_norm</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">colormap</span><span class="p">)</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>  <span class="c1"># type: ignore</span></div>
-
 
 </pre></div>
         </article>

@@ -276,9 +276,10 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for splatkit.densification.default</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Sequence</span>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Union</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">gsplat.strategy</span><span class="w"> </span><span class="kn">import</span> <span class="n">DefaultStrategy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">gsplat.strategy.ops</span><span class="w"> </span><span class="kn">import</span> <span class="n">remove</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing_extensions</span><span class="w"> </span><span class="kn">import</span> <span class="n">override</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
 
@@ -305,7 +306,7 @@
 <span class="sd">        - &quot;means2d&quot; as fallback for 3DGS and 2DGS-inria</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">_default_strategy</span><span class="p">:</span> <span class="n">DefaultStrategy</span>
+    <span class="n">_default_strategy</span><span class="p">:</span> <span class="s2">&quot;PruneAwareDefaultStrategy&quot;</span>
     <span class="n">_state</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
     <span class="n">_prune_opa</span><span class="p">:</span> <span class="nb">float</span>
     <span class="n">_grow_grad2d</span><span class="p">:</span> <span class="nb">float</span>
@@ -363,6 +364,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_revised_opacity</span> <span class="o">=</span> <span class="n">revised_opacity</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_verbose</span> <span class="o">=</span> <span class="n">verbose</span></div>
 
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">state</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span>
 
 <div class="viewcode-block" id="SplatDefaultDensification.on_setup">
 <a class="viewcode-back" href="../../../api/densification.html#splatkit.densification.default.SplatDefaultDensification.on_setup">[docs]</a>
@@ -380,7 +385,7 @@
         <span class="n">scene_scale</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="c1"># Don&#39;t set key_for_gradient yet - will be detected automatically</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_default_strategy</span> <span class="o">=</span> <span class="n">DefaultStrategy</span><span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_default_strategy</span> <span class="o">=</span> <span class="n">PruneAwareDefaultStrategy</span><span class="p">(</span>
             <span class="n">verbose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_verbose</span><span class="p">,</span>
             <span class="n">prune_opa</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_prune_opa</span><span class="p">,</span>
             <span class="n">grow_grad2d</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_grow_grad2d</span><span class="p">,</span>
@@ -475,6 +480,7 @@
     <span class="nd">@override</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">densify</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> 
+        <span class="n">logger</span><span class="p">:</span> <span class="s2">&quot;SplatLogger&quot;</span><span class="p">,</span>
         <span class="n">step</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">max_steps</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">rendered_frames</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="c1"># (..., H, W, 3)</span>
@@ -484,18 +490,82 @@
         <span class="n">masks</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="c1"># (..., H, W)</span>
         <span class="n">world_rank</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
         <span class="n">world_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
-    <span class="p">):</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">info</span> <span class="o">=</span> <span class="n">rend_out</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_default_strategy</span><span class="o">.</span><span class="n">step_post_backward</span><span class="p">(</span>
+        <span class="n">last_prune_mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_default_strategy</span><span class="o">.</span><span class="n">step_post_backward_with_prune_mask</span><span class="p">(</span>
             <span class="n">params</span><span class="o">=</span><span class="n">training_state</span><span class="o">.</span><span class="n">params</span><span class="p">,</span>
             <span class="n">optimizers</span><span class="o">=</span><span class="n">training_state</span><span class="o">.</span><span class="n">optimizers</span><span class="p">,</span>
             <span class="n">state</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="p">,</span>
             <span class="n">step</span><span class="o">=</span><span class="n">step</span><span class="p">,</span>
             <span class="n">info</span><span class="o">=</span><span class="n">info</span>
-        <span class="p">)</span></div>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">last_prune_mask</span></div>
 </div>
 
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">PruneAwareDefaultStrategy</span><span class="p">(</span><span class="n">DefaultStrategy</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Default strategy that is aware of pruning.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_last_prune_mask</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">step_post_backward_with_prune_mask</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">params</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">],</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">ParameterDict</span><span class="p">],</span>
+        <span class="n">optimizers</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Optimizer</span><span class="p">],</span>
+        <span class="n">state</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+        <span class="n">step</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">info</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+        <span class="n">packed</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">step_post_backward</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">optimizers</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">step</span><span class="p">,</span> <span class="n">info</span><span class="p">,</span> <span class="n">packed</span><span class="p">)</span>
+
+        <span class="n">last_prune_mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_prune_mask</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_prune_mask</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">last_prune_mask</span>
+    
+    <span class="nd">@override</span>
+    <span class="nd">@torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">()</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_prune_gs</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">params</span><span class="p">,</span>
+        <span class="n">optimizers</span><span class="p">,</span>
+        <span class="n">state</span><span class="p">,</span>
+        <span class="n">step</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This is copied from gsplat&#39;s DefaultStrategy._prune_gs, </span>
+<span class="sd">        except we store and expose last_prune_mask.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">is_prune</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s2">&quot;opacities&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">prune_opa</span>
+
+        <span class="k">if</span> <span class="n">step</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">reset_every</span><span class="p">:</span>
+            <span class="n">is_too_big</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s2">&quot;scales&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">values</span>
+                <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">prune_scale3d</span> <span class="o">*</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;scene_scale&quot;</span><span class="p">]</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">step</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">refine_scale2d_stop_iter</span><span class="p">:</span>
+                <span class="n">is_too_big</span> <span class="o">|=</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;radii&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">prune_scale2d</span>
+
+            <span class="n">is_prune</span> <span class="o">=</span> <span class="n">is_prune</span> <span class="o">|</span> <span class="n">is_too_big</span>
+
+        <span class="n">n_prune</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">is_prune</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+
+        <span class="c1"># 🔹 NEW: store mask (clone to avoid future mutation issues)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_last_prune_mask</span> <span class="o">=</span> <span class="n">is_prune</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span> <span class="k">if</span> <span class="n">n_prune</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">n_prune</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">remove</span><span class="p">(</span><span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">,</span> <span class="n">optimizers</span><span class="o">=</span><span class="n">optimizers</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">is_prune</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">n_prune</span>
+
+        
 </pre></div>
         </article>
       </div>

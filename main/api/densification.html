@@ -306,6 +306,7 @@ reconstruction quality. Strategies decide when and how to:</p>
 </div></blockquote>
 <dl class="simple">
 <dt>Subclasses must implement:</dt><dd><ul class="simple">
+<li><p>state: Dict[str, Any] - state of the densification strategy</p></li>
 <li><p>densify(): Perform densification operations</p></li>
 </ul>
 </dd>
@@ -323,15 +324,21 @@ reconstruction quality. Strategies decide when and how to:</p>
 <li><p>Must work correctly in distributed training (all ranks)</p></li>
 </ul>
 </div>
+<dl class="py property">
+<dt class="sig sig-object py" id="splatkit.densification.base.SplatDensification.state">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">state</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#splatkit.densification.base.SplatDensification.state" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="splatkit.densification.base.SplatDensification.densify">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">densify</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rendered_frames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_frames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">training_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rend_out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">masks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_rank</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/splatkit/densification/base.html#SplatDensification.densify"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.densification.base.SplatDensification.densify" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">densify</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logger</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rendered_frames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_frames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">training_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rend_out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">masks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_rank</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/splatkit/densification/base.html#SplatDensification.densify"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.densification.base.SplatDensification.densify" title="Link to this definition">¶</a></dt>
 <dd><p>Perform densification: clone, split, and prune Gaussians.</p>
 <p>Called during training after gradients are computed but before
 optimizer updates parameters.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
+<li><p><strong>logger</strong> (<em>SplatLogger</em>) – Logger instance for structured logging</p></li>
 <li><p><strong>step</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Current training step</p></li>
 <li><p><strong>max_steps</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Total training steps</p></li>
 <li><p><strong>rendered_frames</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.10)"><em>Tensor</em></a>) – Rendered images from this step</p></li>
@@ -342,6 +349,12 @@ optimizer updates parameters.</p>
 <li><p><strong>world_rank</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Current process rank</p></li>
 <li><p><strong>world_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Total number of processes</p></li>
 </ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Last prune mask, if any Gaussians were ever pruned.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.10)"><em>Tensor</em></a> | None</p>
 </dd>
 </dl>
 <div class="admonition note">
@@ -396,6 +409,11 @@ optimizer updates parameters.</p>
 </dl>
 </dd></dl>
 
+<dl class="py property">
+<dt class="sig sig-object py" id="splatkit.densification.default.SplatDefaultDensification.state">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">state</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#splatkit.densification.default.SplatDefaultDensification.state" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="splatkit.densification.default.SplatDefaultDensification.on_setup">
 <span class="sig-name descname"><span class="pre">on_setup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logger</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">renderer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_provider</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss_fn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">densification</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modules</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_rank</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scene_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/splatkit/densification/default.html#SplatDefaultDensification.on_setup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.densification.default.SplatDefaultDensification.on_setup" title="Link to this definition">¶</a></dt>
@@ -430,13 +448,14 @@ Use this to initialize the module.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="splatkit.densification.default.SplatDefaultDensification.densify">
-<span class="sig-name descname"><span class="pre">densify</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rendered_frames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_frames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">training_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rend_out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">masks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_rank</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/splatkit/densification/default.html#SplatDefaultDensification.densify"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.densification.default.SplatDefaultDensification.densify" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">densify</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logger</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rendered_frames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_frames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">training_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rend_out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">masks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_rank</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/splatkit/densification/default.html#SplatDefaultDensification.densify"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.densification.default.SplatDefaultDensification.densify" title="Link to this definition">¶</a></dt>
 <dd><p>Perform densification: clone, split, and prune Gaussians.</p>
 <p>Called during training after gradients are computed but before
 optimizer updates parameters.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
+<li><p><strong>logger</strong> (<em>SplatLogger</em>) – Logger instance for structured logging</p></li>
 <li><p><strong>step</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Current training step</p></li>
 <li><p><strong>max_steps</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Total training steps</p></li>
 <li><p><strong>rendered_frames</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.10)"><em>Tensor</em></a>) – Rendered images from this step</p></li>
@@ -447,6 +466,12 @@ optimizer updates parameters.</p>
 <li><p><strong>world_rank</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Current process rank</p></li>
 <li><p><strong>world_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Total number of processes</p></li>
 </ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Last prune mask, if any Gaussians were ever pruned.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.10)"><em>Tensor</em></a> | None</p>
 </dd>
 </dl>
 <div class="admonition note">
@@ -499,6 +524,11 @@ optimizer updates parameters.</p>
 </dl>
 </dd></dl>
 
+<dl class="py property">
+<dt class="sig sig-object py" id="splatkit.densification.mcmc.SplatMCMCDensification.state">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">state</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#splatkit.densification.mcmc.SplatMCMCDensification.state" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="splatkit.densification.mcmc.SplatMCMCDensification.on_setup">
 <span class="sig-name descname"><span class="pre">on_setup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logger</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">renderer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_provider</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss_fn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">densification</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modules</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_rank</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scene_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/splatkit/densification/mcmc.html#SplatMCMCDensification.on_setup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.densification.mcmc.SplatMCMCDensification.on_setup" title="Link to this definition">¶</a></dt>
@@ -509,13 +539,14 @@ optimizer updates parameters.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="splatkit.densification.mcmc.SplatMCMCDensification.densify">
-<span class="sig-name descname"><span class="pre">densify</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rendered_frames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_frames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">training_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rend_out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">masks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_rank</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/splatkit/densification/mcmc.html#SplatMCMCDensification.densify"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.densification.mcmc.SplatMCMCDensification.densify" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">densify</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logger</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rendered_frames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_frames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">training_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rend_out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">masks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_rank</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/splatkit/densification/mcmc.html#SplatMCMCDensification.densify"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#splatkit.densification.mcmc.SplatMCMCDensification.densify" title="Link to this definition">¶</a></dt>
 <dd><p>Perform densification: clone, split, and prune Gaussians.</p>
 <p>Called during training after gradients are computed but before
 optimizer updates parameters.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
+<li><p><strong>logger</strong> (<em>SplatLogger</em>) – Logger instance for structured logging</p></li>
 <li><p><strong>step</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Current training step</p></li>
 <li><p><strong>max_steps</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Total training steps</p></li>
 <li><p><strong>rendered_frames</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.10)"><em>Tensor</em></a>) – Rendered images from this step</p></li>
@@ -526,6 +557,9 @@ optimizer updates parameters.</p>
 <li><p><strong>world_rank</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Current process rank</p></li>
 <li><p><strong>world_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Total number of processes</p></li>
 </ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Last prune mask, if any Gaussians were ever pruned.</p>
 </dd>
 </dl>
 <div class="admonition note">
@@ -607,6 +641,7 @@ optimizer updates parameters.</p>
 <li><a class="reference internal" href="#">Densification</a><ul>
 <li><a class="reference internal" href="#base-splat-densification">Base Splat Densification</a><ul>
 <li><a class="reference internal" href="#splatkit.densification.base.SplatDensification"><code class="docutils literal notranslate"><span class="pre">SplatDensification</span></code></a><ul>
+<li><a class="reference internal" href="#splatkit.densification.base.SplatDensification.state"><code class="docutils literal notranslate"><span class="pre">SplatDensification.state</span></code></a></li>
 <li><a class="reference internal" href="#splatkit.densification.base.SplatDensification.densify"><code class="docutils literal notranslate"><span class="pre">SplatDensification.densify()</span></code></a></li>
 </ul>
 </li>
@@ -615,6 +650,7 @@ optimizer updates parameters.</p>
 <li><a class="reference internal" href="#default-densification">Default Densification</a><ul>
 <li><a class="reference internal" href="#splatkit.densification.default.SplatDefaultDensification"><code class="docutils literal notranslate"><span class="pre">SplatDefaultDensification</span></code></a><ul>
 <li><a class="reference internal" href="#splatkit.densification.default.SplatDefaultDensification.__init__"><code class="docutils literal notranslate"><span class="pre">SplatDefaultDensification.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.densification.default.SplatDefaultDensification.state"><code class="docutils literal notranslate"><span class="pre">SplatDefaultDensification.state</span></code></a></li>
 <li><a class="reference internal" href="#splatkit.densification.default.SplatDefaultDensification.on_setup"><code class="docutils literal notranslate"><span class="pre">SplatDefaultDensification.on_setup()</span></code></a></li>
 <li><a class="reference internal" href="#splatkit.densification.default.SplatDefaultDensification.pre_compute_loss"><code class="docutils literal notranslate"><span class="pre">SplatDefaultDensification.pre_compute_loss()</span></code></a></li>
 <li><a class="reference internal" href="#splatkit.densification.default.SplatDefaultDensification.densify"><code class="docutils literal notranslate"><span class="pre">SplatDefaultDensification.densify()</span></code></a></li>
@@ -625,6 +661,7 @@ optimizer updates parameters.</p>
 <li><a class="reference internal" href="#mcmc-densification">MCMC Densification</a><ul>
 <li><a class="reference internal" href="#splatkit.densification.mcmc.SplatMCMCDensification"><code class="docutils literal notranslate"><span class="pre">SplatMCMCDensification</span></code></a><ul>
 <li><a class="reference internal" href="#splatkit.densification.mcmc.SplatMCMCDensification.__init__"><code class="docutils literal notranslate"><span class="pre">SplatMCMCDensification.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#splatkit.densification.mcmc.SplatMCMCDensification.state"><code class="docutils literal notranslate"><span class="pre">SplatMCMCDensification.state</span></code></a></li>
 <li><a class="reference internal" href="#splatkit.densification.mcmc.SplatMCMCDensification.on_setup"><code class="docutils literal notranslate"><span class="pre">SplatMCMCDensification.on_setup()</span></code></a></li>
 <li><a class="reference internal" href="#splatkit.densification.mcmc.SplatMCMCDensification.densify"><code class="docutils literal notranslate"><span class="pre">SplatMCMCDensification.densify()</span></code></a></li>
 </ul>

@@ -435,10 +435,11 @@
 <span class="sd">        NOTE:</span>
 <span class="sd">            - For distributed training, use SplatDistributedTrainer or manage with CLI manually</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">scene_scale</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_provider</span><span class="o">.</span><span class="n">load_data</span><span class="p">(</span><span class="n">logger</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1.1</span> <span class="c1"># Per gsplat&#39;s implementation</span>
 
-        <span class="n">scene_scale</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_provider</span><span class="o">.</span><span class="n">load_data</span><span class="p">(</span><span class="n">logger</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="p">)</span>
-
-        <span class="n">all_modules</span> <span class="o">=</span> <span class="n">SplatModuleComposite</span><span class="p">[</span><span class="n">SplatRenderPayloadT</span><span class="p">](</span><span class="bp">self</span><span class="o">.</span><span class="n">_renderer</span><span class="p">,</span>
+        <span class="n">all_modules</span> <span class="o">=</span> <span class="n">SplatModuleComposite</span><span class="p">[</span><span class="n">SplatRenderPayloadT</span><span class="p">](</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_renderer</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_loss_fn</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_data_provider</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_densification</span><span class="p">,</span>
@@ -586,6 +587,7 @@
 
             <span class="c1"># Step 6: Densification</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_densification</span><span class="o">.</span><span class="n">densify</span><span class="p">(</span>
+                <span class="n">logger</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="p">,</span>
                 <span class="n">step</span><span class="o">=</span><span class="n">step</span><span class="p">,</span>
                 <span class="n">max_steps</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">max_steps</span><span class="p">,</span>
                 <span class="n">rendered_frames</span><span class="o">=</span><span class="n">renders</span><span class="p">,</span>

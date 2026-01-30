@@ -348,6 +348,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_min_opacity</span> <span class="o">=</span> <span class="n">min_opacity</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_verbose</span> <span class="o">=</span> <span class="n">verbose</span></div>
 
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">state</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span>
 
 <div class="viewcode-block" id="SplatMCMCDensification.on_setup">
 <a class="viewcode-back" href="../../../api/densification.html#splatkit.densification.mcmc.SplatMCMCDensification.on_setup">[docs]</a>
@@ -388,6 +392,7 @@
     <span class="nd">@override</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">densify</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> 
+        <span class="n">logger</span><span class="p">:</span> <span class="s2">&quot;SplatLogger&quot;</span><span class="p">,</span>
         <span class="n">step</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">max_steps</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">rendered_frames</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="c1"># (..., H, W, 3)</span>
@@ -415,7 +420,10 @@
             <span class="n">step</span><span class="o">=</span><span class="n">step</span><span class="p">,</span>
             <span class="n">info</span><span class="o">=</span><span class="n">info</span><span class="p">,</span>
             <span class="n">lr</span><span class="o">=</span><span class="n">lr</span><span class="p">,</span>
-        <span class="p">)</span></div>
+        <span class="p">)</span>
+
+        <span class="c1"># In gsplat&#39;s MCMCStrategy, the gaussians were never pruned.</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
 </div>
 
 </pre></div>
