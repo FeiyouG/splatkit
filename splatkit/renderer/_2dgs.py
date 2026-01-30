@@ -74,6 +74,7 @@ class Splat2DGSRenderer(SplatRenderer[Splat2dgsRenderPayload]):
         
         # 2DGS specific
         distloss: bool = True,
+        depth_mode: Literal["expected", "median"] = "expected",
     ):
         """
         Initialize 2DGS renderer with fixed configuration.
@@ -103,6 +104,7 @@ class Splat2DGSRenderer(SplatRenderer[Splat2dgsRenderPayload]):
         self._absgrad = absgrad
         self._channel_chunk = channel_chunk
         self._distloss = distloss
+        self._depth_mode: Literal["expected", "median"] = depth_mode
     
     def render(
         self,
@@ -189,7 +191,7 @@ class Splat2DGSRenderer(SplatRenderer[Splat2dgsRenderPayload]):
             absgrad=self._absgrad,
             packed=False,  # Never pack
             distloss=disloss,
-            depth_mode="expected",
+            depth_mode=self._depth_mode,
         )
 
         batch_dims = means.shape[:-2]
@@ -353,4 +355,3 @@ class Splat2DGSRenderer(SplatRenderer[Splat2dgsRenderPayload]):
             depth_norm = 1 - depth_norm
         
         return apply_float_colormap(depth_norm.unsqueeze(-1), colormap).cpu().numpy()  # type: ignore
-

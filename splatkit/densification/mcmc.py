@@ -65,6 +65,10 @@ class SplatMCMCDensification(
         self._refine_every = refine_every
         self._min_opacity = min_opacity
         self._verbose = verbose
+    
+    @property
+    def state(self) -> Dict[str, Any]:
+        return self._state
 
     @override
     def on_setup(self,
@@ -100,6 +104,7 @@ class SplatMCMCDensification(
     @override
     def densify(
         self, 
+        logger: "SplatLogger",
         step: int,
         max_steps: int,
         rendered_frames: torch.Tensor, # (..., H, W, 3)
@@ -128,3 +133,6 @@ class SplatMCMCDensification(
             info=info,
             lr=lr,
         )
+
+        # In gsplat's MCMCStrategy, the gaussians were never pruned.
+        return None

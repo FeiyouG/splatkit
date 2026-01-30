@@ -3,7 +3,6 @@ from typing_extensions import override
 
 from ..utils.batched import normalize_batch_tensors
 from ..splat.training_state import SplatTrainingState
-from .base import SplatLossFn
 import torch
 import torch.nn.functional as F
 
@@ -11,6 +10,7 @@ from ..renderer._2dgs import Splat2dgsRenderPayload
 from ..logger import SplatLogger
 from ..modules import SplatRenderPayloadT
 from ..modules.base import SplatBaseModule
+from .base import SplatLossFn
 
 class Splat2DGSLossFn(
     SplatLossFn[Splat2dgsRenderPayload],
@@ -20,7 +20,7 @@ class Splat2DGSLossFn(
     def __init__(
         self,
         ssim_lambda: float = 0.2,
-        bg_lambda: float = 1.0,
+        bg_lambda: float = 0.5,
         opacity_reg: float = 0.0,
         scale_reg: float = 0.0,
         normal_lambda: float = 0.05,
@@ -114,47 +114,31 @@ class Splat2DGSLossFn(
         dist_loss = self._compute_distortion_loss(rend_out)
 
         # Combine all losses
-        loss = photometric_loss + bg_loss + opa_loss + scale_loss + normal_loss + dist_loss
+        loss = photometric_loss + bg_loss + opa_loss + scale_loss
         
         return loss
-    
+
     def _compute_normal_loss(self, rend_out: Splat2dgsRenderPayload) -> torch.Tensor:
-        """
-        Compute normal consistency loss between rendered normals and normals from depth.
-        
-        This regularization encourages the rendered surface normals to be consistent
-        with the normals derived from the depth map.
-        """
-        if self._current_step < self.normal_start_iter or self.normal_lambda == 0.0:
+        if self._current_step <= self.normal_start_iter or self.normal_lambda == 0.0:
             return torch.tensor(0.0, device=rend_out.normals.device)
-        
-        # Get normals
-        normals = rend_out.normals  # [..., H, W, 3]
-        normals_from_depth = rend_out.normals_from_depth  # [..., H, W, 3]
-        alphas = rend_out.alphas  # [..., H, W, 1]
-        
-        # Weight normals from depth by alpha (opacity mask)
+
+        # [1, H, W, 3] -> [3, H, W]
+        normals = rend_out.normals.squeeze(0).permute(2, 0, 1)
+        normals_from_depth = rend_out.normals_from_depth.squeeze(0)
+        alphas = rend_out.alphas.squeeze(0)
+
+        # gsplat-style alpha masking
         normals_from_depth = normals_from_depth * alphas.detach()
-        
-        # Normalize to channel-first for computation
-        # Reshape to [B, 3, H, W] if needed
-        if len(normals.shape) == 4:  # [B, H, W, 3]
-            normals_flat = normals.permute(0, 3, 1, 2)  # [B, 3, H, W]
-            normals_from_depth_flat = normals_from_depth.permute(0, 3, 1, 2)  # [B, 3, H, W]
-        else:  # [..., H, W, 3] - handle arbitrary batch dims
-            original_shape = normals.shape
-            normals_flat = normals.reshape(-1, *original_shape[-3:]).permute(0, 3, 1, 2)
-            normals_from_depth_flat = normals_from_depth.reshape(-1, *original_shape[-3:]).permute(0, 3, 1, 2)
-        
-        # Compute cosine similarity loss: 1 - cos(θ)
-        # Dot product along channel dimension
-        dot_product = (normals_flat * normals_from_depth_flat).sum(dim=1, keepdim=True)  # [B, 1, H, W]
-        normal_error = 1.0 - dot_product
-        
-        # Mean over all pixels
+
+        # [H, W, 3] -> [3, H, W]
+        normals_from_depth = normals_from_depth.permute(2, 0, 1)
+
+        # normal consistency loss
+        normal_error = 1.0 - (normals * normals_from_depth).sum(dim=0, keepdim=True)
         loss = self.normal_lambda * normal_error.mean()
-        
+
         return loss
+
     
     def _compute_distortion_loss(self, rend_out: "Splat2dgsRenderPayload") -> torch.Tensor:
         """

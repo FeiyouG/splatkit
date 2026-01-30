@@ -2,6 +2,7 @@ import os
 import argparse
 from typing import Any
 
+from .densification import ObjectCentricDensification
 
 from splatkit.trainer import SplatTrainer, SplatTrainerConfig
 from splatkit.data_provider import SplatColmapDataProvider, SplatColmapDataProviderConfig, ColmapDataItem
@@ -47,6 +48,7 @@ if __name__ == "__main__":
     
     # Default densification works for both 3DGS and 2DGS (auto-detects gradient key)
     densification = SplatDefaultDensification()
+    densification = ObjectCentricDensification(densification)
 
     modules = [
         SplatProgressor(
@@ -60,14 +62,6 @@ if __name__ == "__main__":
             output_dir=os.path.join(args.output_dir, "eval"),
             eval_steps=[trainer_config.max_steps],
         ),
-        # Uncomment to enable viewer
-        # Make sure viewer dependency is installed: pip install -e ".[viewer]"
-        # SplatViewer(    
-        #     port=8080,
-        #     output_dir=os.path.join(args.output_dir, "viewer"),
-        #     update_interval=1,
-        #     mode="training",
-        # ),
     ]
 
     trainer = SplatTrainer[ColmapDataItem, Splat2dgsRenderPayload](

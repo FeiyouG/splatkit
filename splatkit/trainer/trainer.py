@@ -144,10 +144,11 @@ class SplatTrainer(Generic[SplatDataItemT, SplatRenderPayloadT]):
         NOTE:
             - For distributed training, use SplatDistributedTrainer or manage with CLI manually
         """
+        scene_scale = self._data_provider.load_data(logger=self._logger) * 1.1 # Per gsplat's implementation
 
-        scene_scale = self._data_provider.load_data(logger=self._logger)
-
-        all_modules = SplatModuleComposite[SplatRenderPayloadT](self._renderer,
+        all_modules = SplatModuleComposite[SplatRenderPayloadT](
+            self._logger,
+            self._renderer,
             self._loss_fn,
             self._data_provider,
             self._densification,
@@ -295,6 +296,7 @@ class SplatTrainer(Generic[SplatDataItemT, SplatRenderPayloadT]):
 
             # Step 6: Densification
             self._densification.densify(
+                logger=self._logger,
                 step=step,
                 max_steps=self._config.max_steps,
                 rendered_frames=renders,
