@@ -1,4 +1,6 @@
-def normalize_batch_tensors(*tensors, spatial_ndim: int):
+import torch
+
+def normalize_batch_tensors(*tensors, spatial_ndim: int) -> tuple[torch.Tensor, ...]:
     """
     Normalize tensors so that all have compatible batch dimensions.
     If a tensor is None, it is returned as is.

@@ -221,6 +221,7 @@ class SplatTrainer(Generic[SplatDataItemT, SplatRenderPayloadT]):
             target_frames = data.image
             height, width = target_frames.shape[1:3]
             masks = data.mask
+            K = data["K"]
 
             all_modules.pre_step(
                 logger=self._logger,
@@ -259,8 +260,10 @@ class SplatTrainer(Generic[SplatDataItemT, SplatRenderPayloadT]):
             # STEP 4: Backward propagate loss
             loss = self._loss_fn.compute_loss(
                 logger=self._logger,
+                step=step,
                 renders=renders,
                 targets=target_frames,
+                K=K,
                 training_state=splat_training_state,
                 rend_out=rend_out,
                 masks=masks,

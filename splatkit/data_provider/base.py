@@ -15,39 +15,28 @@ class SplatDataItem():
     
     This is returned by data providers for each training step. Contains all
     information needed to render and compare against ground truth.
-    
-    Gotchas:
-        - Images are float32 in [0, 1], not uint8 in [0, 255]
-        - Frozen dataclass (immutable after creation)
-        - Use .to(device) to move all tensors to GPU
+
+    Args:
+        id: Unique identifier for this data item
+        image_name: Original image filename (for logging/debugging)
+        camera_model: Camera type ("pinhole", "ortho", "fisheye", or "ftheta")
+        K: Camera intrinsics matrix, shape (B, 3, 3). Contains focal lengths (fx, fy) and principal point (cx, cy)
+        cam_to_world: Camera-to-world transformation, shape (B, 4, 4). Converts camera space to world space
+        image: RGB image in [0, 1] range, shape (B, H, W, 3), dtype float32
+        mask: Optional binary mask, shape (B, H, W), dtype bool. True = valid pixel, False = ignore (e.g., sky, dynamic objects)
+        points: Optional 2D feature points, shape (B, M, 2). For depth supervision or sparse matching
+        depths: Optional depth values at points, shape (B, M). Corresponding depths for the 2D points
     """
     
     id: int
-    """Unique identifier for this data item"""
-    
     image_name: str
-    """Original image filename (for logging/debugging)"""
-    
     camera_model: str
-    """Camera type ("pinhole", "ortho", "fisheye", or "ftheta")"""
-
     K: torch.Tensor
-    """Camera intrinsics matrix, shape (B, 3, 3). Contains focal lengths (fx, fy) and principal point (cx, cy)"""
-    
     cam_to_world: torch.Tensor
-    """Camera-to-world transformation, shape (B, 4, 4). Converts camera space to world space"""
-    
     image: torch.Tensor
-    """RGB image in [0, 1] range, shape (B, H, W, 3), dtype float32"""
-    
     mask: torch.Tensor | None = None
-    """Optional binary mask, shape (B, H, W), dtype bool. True = valid pixel, False = ignore (e.g., sky, dynamic objects)"""
-    
     points: torch.Tensor | None = None
-    """Optional 2D feature points, shape (B, M, 2). For depth supervision or sparse matching"""
-    
     depths: torch.Tensor | None = None
-    """Optional depth values at points, shape (B, M). Corresponding depths for the 2D points"""
 
     
     def __getitem__(self, key: str) -> Any:

@@ -35,8 +35,10 @@ class SplatLossFn(
     @abstractmethod
     def compute_loss(self,
         logger: SplatLogger,
+        step: int,
         renders: torch.Tensor, # (..., H, W, 3)
         targets: torch.Tensor, # (..., H, W, 3)
+        K: torch.Tensor, # (..., 3, 3)
         training_state: SplatTrainingState,
         rend_out: SplatRenderPayloadT,
         masks: torch.Tensor | None = None, # (..., H, W)
@@ -79,6 +81,14 @@ class SplatLossFn(
         Returns:
             Scalar photometric loss
         """
+        ssim_loss = self._ssim_loss(logger, renders, targets, ssim_lambda)
+        l1_loss = self._l1_loss(logger, renders, targets, 1 - ssim_lambda)
+        return l1_loss * (1 - ssim_lambda) + ssim_loss * ssim_lambda
+    
+    def _ssim_loss(self, logger: SplatLogger, renders: torch.Tensor, targets: torch.Tensor, ssim_lambda: float = 0.2) -> torch.Tensor:
+        """
+        Compute SSIM loss.
+        """
         try:
             from fused_ssim import fused_ssim
             ssim_loss = 1.0 - fused_ssim(
@@ -87,10 +97,13 @@ class SplatLossFn(
         except ImportError:
             logger.warning("fused-ssim is not installed, using ssim instead")
             ssim_loss = self._ssim(renders, targets)
-
-        l1_loss = F.l1_loss(renders, targets)
-        
-        return l1_loss * (1 - ssim_lambda) + ssim_loss * ssim_lambda
+        return ssim_loss * ssim_lambda
+    
+    def _l1_loss(self, logger: SplatLogger, renders: torch.Tensor, targets: torch.Tensor, l1_lambda: float = 1.0) -> torch.Tensor:
+        """
+        Compute L1 loss.
+        """
+        return l1_lambda * F.l1_loss(renders, targets)
 
     def _opacity_reg(self, opacities: torch.Tensor, opacity_reg: float = 0.0) -> torch.Tensor:
         """

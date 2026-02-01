@@ -1,0 +1,34 @@
+[project]
+name = "rade-gs"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = "==3.10.*"
+dependencies = [
+    "fused-ssim",
+    "gsplat",
+    "splatkit[all-dev]",
+    "tetra-nerf",
+    "torch>=2.5.1",
+    "torchvision>=0.20.1",
+    "trimesh>=4.11.1",
+]
+
+[tool.uv.sources]
+splatkit = { path = "../.." }
+gsplat = { git = "https://github.com/FeiyouG/gsplat.git", rev = "7651ff8cf6c87dc67765e0ea4126e6609401d625" }
+fused-ssim = { git = "https://github.com/rahul-goel/fused-ssim" }
+torch = { index = "pytorch-cu121", marker = "sys_platform == 'linux'" }
+torchvision = { index = "pytorch-cu121", marker = "sys_platform == 'linux'" }
+tetra-nerf = { git = "https://github.com/jkulhanek/tetra-nerf" }
+
+[[tool.uv.index]]
+name = "pytorch-cu121"
+url = "https://download.pytorch.org/whl/cu121"
+explicit = true
+
+[tool.uv]
+override-dependencies = [
+    "gsplat",  # Force your version
+    "opencv-python>=4.11.0.86",  # Force your version
+]

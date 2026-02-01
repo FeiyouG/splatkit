@@ -6,27 +6,23 @@ from torch import Tensor
 
 from gsplat.rendering import rasterization
 
-from ..modules import SplatBaseModule, SplatRenderPayload
-from ..splat.training_state import SplatTrainingState
-from .base import SplatRenderer
+from splatkit.modules import SplatBaseModule, SplatRenderPayload
+from splatkit.splat.training_state import SplatTrainingState
+from splatkit.renderer.base import SplatRenderer
 
 @dataclass(frozen=True)
-class Splat3dgsRenderPayload(SplatRenderPayload):
+class SplatRaDeRenderPayload(SplatRenderPayload):
     """
-    Render output for 3D Gaussian Splatting (extends SplatRenderPayload).
-    
-    Adds 3DGS-specific outputs like conics (Gaussian covariance in 2D).
+    Render output for RaDe-GS (extends SplatRenderPayload).
     """
     
     conics: Tensor
+    median_depths: Tensor
+    expected_normals: Tensor
 
-class Splat3DGSRenderer(SplatRenderer[Splat3dgsRenderPayload]):
+class SplatRaDeRenderer(SplatRenderer[SplatRaDeRenderPayload]):
     """
-    3D Gaussian Splatting renderer.
-
-    NOTE:
-            In 3DGS, depth images are volumetric (no true surface).
-            depths_expected represents expected ray depth.
+    RaDe renderer.
     """
 
     _camera_model: Literal["pinhole", "ortho", "fisheye", "ftheta"]
@@ -102,7 +98,7 @@ class Splat3DGSRenderer(SplatRenderer[Splat3dgsRenderPayload]):
         sh_degree: int | None = None,
         world_rank: int = 0,
         world_size: int = 1,
-    ) -> Tuple[Tensor, Splat3dgsRenderPayload]:
+    ) -> Tuple[Tensor, SplatRaDeRenderPayload]:
         """
         Render splats from camera viewpoints.
         
@@ -137,6 +133,12 @@ class Splat3DGSRenderer(SplatRenderer[Splat3dgsRenderPayload]):
         if camera_model is None:
             camera_model = self._camera_model
         
+        # The expected depth is rendered separately from colors
+        if render_mode == "RGB+ED":
+            render_mode = "RGB+D"
+        elif render_mode == "ED":
+            render_mode = "D"
+        
         # Call gsplat's rasterization with private config
         render_colors, alphas, info = rasterization(
             means=means,
@@ -165,20 +167,15 @@ class Splat3DGSRenderer(SplatRenderer[Splat3dgsRenderPayload]):
             packed=False, # Never pack
         )
 
-        expected_depths = None
         accumulated_depths = None
         if render_mode in ["D", "RGB+D"]:
             accumulated_depths = render_colors[..., -1:]
-        elif render_mode in ["ED", "RGB+ED"]:
-            expected_depths = render_colors[..., -1:]
         
         if render_mode in ["RGB+D", "RGB+ED"]:
             render_colors = render_colors[..., :-1]
 
-
-
         # Build render_meta with alphas included
-        outputs = Splat3dgsRenderPayload(
+        outputs = SplatRaDeRenderPayload(
             renders=render_colors,
             alphas=alphas,
             n_cameras=info["n_cameras"],
@@ -186,15 +183,16 @@ class Splat3DGSRenderer(SplatRenderer[Splat3dgsRenderPayload]):
             radii=info["radii"],
             means2d=info["means2d"],
             depths=info["depths"],
-            depths_expected=expected_depths,
+            depths_expected=info["expected_depths"],
             depths_accumulated=accumulated_depths,
             conics=info["conics"],
             width=info["width"],
             height=info["height"],
+            median_depths=info["median_depths"],
+            expected_normals=info["expected_normals"],
             gaussian_ids=info.get("gaussian_ids", None),
         )
         return render_colors, outputs
-
 
     
     # Setters for commonly adjusted parameters

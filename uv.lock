@@ -784,13 +784,17 @@ wheels = [
 [[package]]
 name = "gsplat"
 version = "1.5.3"
-source = { git = "https://github.com/FeiyouG/gsplat.git?rev=d1c516adf5473dc87d4f77a651a53f09e7b54bf5#d1c516adf5473dc87d4f77a651a53f09e7b54bf5" }
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "jaxtyping" },
     { name = "ninja" },
     { name = "numpy" },
     { name = "rich" },
     { name = "torch" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/6d/94/a0963873708223385ac926112dc3e40ab08297784ac53d95309b4cb5a801/gsplat-1.5.3.tar.gz", hash = "sha256:343f080c470e891ba3c697c03bdf0952cb982d1d535fdc24adb23c2cb4fba906", size = 4743603, upload-time = "2025-07-04T16:50:42.899Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/aa/68/c5cbbdb86421a3f45ac0b52cf9860b1048d089335151d3f37c23aabcbef1/gsplat-1.5.3-py3-none-any.whl", hash = "sha256:515a3773641f5e7f7717acab6276c0b1d6dbcad087b7968ca653337c3189a982", size = 6519041, upload-time = "2025-07-04T16:50:40.559Z" },
 ]
 
 [[package]]
@@ -3190,7 +3194,7 @@ docs = [
     { name = "sphinx-autodoc-typehints", version = "3.6.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
     { name = "sphinx-copybutton" },
 ]
-progress = [
+progressor = [
     { name = "tqdm" },
 ]
 tensorboard = [
@@ -3207,7 +3211,7 @@ requires-dist = [
     { name = "black", marker = "extra == 'dev'", specifier = ">=23.0.0" },
     { name = "dill", specifier = ">=0.4.0" },
     { name = "furo", marker = "extra == 'docs'", specifier = ">=2024.1.0" },
-    { name = "gsplat", git = "https://github.com/FeiyouG/gsplat.git?rev=d1c516adf5473dc87d4f77a651a53f09e7b54bf5" },
+    { name = "gsplat", specifier = ">=1.5.3" },
     { name = "imageio", specifier = ">=2.37.2" },
     { name = "isort", marker = "extra == 'dev'", specifier = ">=5.12.0" },
     { name = "matplotlib", specifier = ">=3.10.8" },
@@ -3226,15 +3230,15 @@ requires-dist = [
     { name = "sphinx-autodoc-typehints", marker = "extra == 'docs'", specifier = ">=1.24.0" },
     { name = "sphinx-copybutton", marker = "extra == 'docs'", specifier = ">=0.5.0" },
     { name = "splatkit", extras = ["all", "dev", "docs"], marker = "extra == 'all-dev'" },
-    { name = "splatkit", extras = ["viewer", "progress", "tensorboard"], marker = "extra == 'all'" },
+    { name = "splatkit", extras = ["viewer", "progressor", "tensorboard"], marker = "extra == 'all'" },
     { name = "splines", marker = "extra == 'viewer'", specifier = ">=0.3.3" },
     { name = "tensorboard", marker = "extra == 'tensorboard'", specifier = ">=2.20.0" },
     { name = "torchmetrics", specifier = ">=1.8.2" },
-    { name = "tqdm", marker = "extra == 'progress'", specifier = ">=4.67.1" },
+    { name = "tqdm", marker = "extra == 'progressor'", specifier = ">=4.67.1" },
     { name = "tyro", specifier = ">=1.0.3" },
     { name = "viser", marker = "extra == 'viewer'", specifier = ">=1.0.21" },
 ]
-provides-extras = ["viewer", "progress", "tensorboard", "dev", "docs", "all", "all-dev"]
+provides-extras = ["viewer", "progressor", "tensorboard", "dev", "docs", "all", "all-dev"]
 
 [[package]]
 name = "splines"

@@ -49,26 +49,8 @@ class Splat2DGSLossFn(
         self.normal_start_iter = normal_start_iter
         self.dist_lambda = dist_lambda
         self.dist_start_iter = dist_start_iter
-        self._current_step = 0
-
-    @override
-    def pre_compute_loss(
-        self,
-        logger: SplatLogger,
-        step: int,
-        max_steps: int,
-        rendered_frames: torch.Tensor,
-        target_frames: torch.Tensor,
-        training_state: SplatTrainingState,
-        rend_out: Splat2dgsRenderPayload,
-        masks: torch.Tensor | None = None,
-        world_rank: int = 0,
-        world_size: int = 1,
-    ):
-        """Update the current step for scheduled losses."""
-        self._current_step = step
     
-    def compute_loss(self, logger: SplatLogger, renders, targets, training_state, rend_out, masks=None):
+    def compute_loss(self, logger: SplatLogger, step: int, renders, targets, K, training_state, rend_out, masks=None):
         """
         Compute loss including normal consistency and distortion regularization.
         
@@ -108,18 +90,18 @@ class Splat2DGSLossFn(
         scale_loss = self._scale_reg(training_state.params["scales"], self.scale_reg)
 
         # Normal consistency loss (2DGS specific)
-        normal_loss = self._compute_normal_loss(rend_out)
+        normal_loss = self._compute_normal_loss(step, rend_out)
         
         # Distortion loss (2DGS specific)
-        dist_loss = self._compute_distortion_loss(rend_out)
+        dist_loss = self._compute_distortion_loss(step, rend_out)
 
         # Combine all losses
         loss = photometric_loss + bg_loss + opa_loss + scale_loss
         
         return loss
 
-    def _compute_normal_loss(self, rend_out: Splat2dgsRenderPayload) -> torch.Tensor:
-        if self._current_step <= self.normal_start_iter or self.normal_lambda == 0.0:
+    def _compute_normal_loss(self, step: int, rend_out: Splat2dgsRenderPayload) -> torch.Tensor:
+        if step <= self.normal_start_iter or self.normal_lambda == 0.0:
             return torch.tensor(0.0, device=rend_out.normals.device)
 
         # [1, H, W, 3] -> [3, H, W]
@@ -140,14 +122,14 @@ class Splat2DGSLossFn(
         return loss
 
     
-    def _compute_distortion_loss(self, rend_out: "Splat2dgsRenderPayload") -> torch.Tensor:
+    def _compute_distortion_loss(self, step: int, rend_out: "Splat2dgsRenderPayload") -> torch.Tensor:
         """
         Compute distortion loss to encourage compact, well-separated gaussians.
         
         This regularization helps prevent overlapping gaussians and encourages
         better spatial distribution.
         """
-        if self._current_step < self.dist_start_iter or self.dist_lambda == 0.0:
+        if step < self.dist_start_iter or self.dist_lambda == 0.0:
             return torch.tensor(0.0, device=rend_out.render_distort.device)
         
         # Get distortion map

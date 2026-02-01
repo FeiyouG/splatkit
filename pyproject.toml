@@ -29,7 +29,7 @@ viewer = [
 ]
 
 # Progress tracking and visualization
-progress = [
+progressor = [
     "tqdm>=4.67.1",
 ]
 
@@ -58,7 +58,7 @@ docs = [
 
 # Everything (all optional dependencies)
 all = [
-    "splatkit[viewer,progress,tensorboard]",
+    "splatkit[viewer,progressor,tensorboard]",
 ]
 
 # Everything including development tools

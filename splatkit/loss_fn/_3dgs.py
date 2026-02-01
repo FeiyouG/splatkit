@@ -31,7 +31,7 @@ class Splat3DGSLossFn(
         self.opacity_reg = opacity_reg
         self.scale_reg = scale_reg
     
-    def compute_loss(self, logger: SplatLogger, renders, targets, training_state, rend_out, masks=None):
+    def compute_loss(self, logger: SplatLogger, step: int, renders, targets, K, training_state, rend_out, masks=None):
         """
         Compute loss.
         """
